@@ -1,21 +1,22 @@
-export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"										# findutils
+export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"				    # findutils
 export MANPATH="/usr/local/opt/findutils/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"											# gnu-tar
+export PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"                   # gnu-tar
 export MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"											# gnu-sed
+export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"			        # gnu-sed
 export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/share/john/:$PATH"                                    # load scripts from John the Ripper
-
-export HOMEBREW_NO_ANALYTICS=1                                                # disable Homebrew Analytics
+export PATH="/usr/local/opt/util-linux/bin:$PATH"                           # util-linux
+export PATH="/usr/local/share/john/:$PATH"                                  # load scripts from John the Ripper
+export HOMEBREW_NO_ANALYTICS=1                                              # disable Homebrew Analytics
 
 # requires additional packages
 #     `brew install brightness`
-alias dark='brightness 0 2>/dev/null'                                         # set display brightness to 0
-alias gls='gls --color=auto'                                                  # export color scheme for GNU ls
-alias lck='pmset displaysleepnow'                                             # switch off display
-alias paste='gpaste'                                                          # use the GNU version by default
-alias shred='gshred -vfzu -n 10'                                              # securely erase the file
-alias slp='pmset sleepnow'                                                    # go to sleep
+alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
+alias gls='gls --color=auto'                                                # export color scheme for GNU ls
+alias head='ghead'                                                          # `head -n0` should work
+alias lck='pmset displaysleepnow'                                           # switch off display
+alias paste='gpaste'                                                        # `paste -sd' '` should work
+alias shred='gshred -vfzu -n 10'                                            # securely erase the file
+alias slp='pmset sleepnow'                                                  # go to sleep
 
 # send notification and make a sound
 # requires additional packages
