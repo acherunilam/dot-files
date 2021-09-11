@@ -1,0 +1,2 @@
+# case insensitive search if the pattern is all lower case
+--smart-case

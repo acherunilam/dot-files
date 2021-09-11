@@ -84,3 +84,6 @@ export LESSOPEN="|lesspipe.sh %s"
 # enable color support within less
 # search within less is case insensitive unless the pattern contains uppercase letters
 export LESS="-Ri"
+
+# set up Ripgrep
+export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
