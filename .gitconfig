@@ -32,7 +32,7 @@
   # commit using the given message
   cm = commit --message
   # amend the most recent commit
-  cmd = commit --amend
+  cmd = commit --amend --no-edit
   # commit all changes using the given message
   cam = commit --all --message
   # switch branches or restore working tree files
