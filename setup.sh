@@ -33,6 +33,7 @@ existing dot files will be taken prior to copying this over.
 --git               install the git config file
 --help              print this help
 --readline          install the readline config file
+--ripgrep           install the ripgrep config file
 --screen            install the screen config file
 --skip-existing     skip installing the dot file if it already exists locally
 --ssh               install the ssh config file
@@ -64,6 +65,9 @@ for arg in "$@"; do
         ;;
     --readline)
         INSTALL_READLINE=1
+        ;;
+    --ripgrep)
+        INSTALL_RIPGREP=1
         ;;
     --skip-existing)
         SKIP_EXISTING=1
@@ -100,6 +104,7 @@ if [[ $INSTALL_ALL == 1 ]] ; then
     INSTALL_FZF=1
     INSTALL_GIT=1
     INSTALL_READLINE=1
+    INSTALL_RIPGREP=1
     INSTALL_SCREEN=1
     INSTALL_SSH=1
     INSTALL_TMUX=1
@@ -114,6 +119,7 @@ if [[ $INSTALL_FZF == 1 ]] ; then
 fi
 [[ $INSTALL_GIT == 1 ]] && SOURCE+=" ./.gitconfig"
 [[ $INSTALL_READLINE == 1 ]] && SOURCE+=" ./.inputrc"
+[[ $INSTALL_RIPGREP == 1 ]] && SOURCE+=" ./.ripgreprc"
 [[ $INSTALL_SCREEN == 1 ]] && SOURCE+=" ./.screenrc"
 [[ $INSTALL_SSH == 1 ]] && SOURCE+=" ./.ssh"
 [[ $INSTALL_TMUX == 1 ]] && SOURCE+=" ./.tmux.conf"
