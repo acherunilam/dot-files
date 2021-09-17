@@ -33,14 +33,14 @@ asn() {
     # IPv4
     if [[ $input =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] ; then
         prefix="$(echo "$input" | command tr '.' '\n' | command tac | paste -sd'.')"
-        output="$(query_cymru "$prefix.$V4_CYMRU_NS")"
+        output="$(query_cymru "$prefix.$V4_CYMRU_NS" | command head -n1)"
         append_asn_and_print "$output"
     # IPv6
     elif [[ ${input,,} == *:* ]] ; then
         hextets=$(echo "$input" | command sed 's/::/:/g;s/:/\n/g;/^$/d' | command wc -l)
         exploded_ip="$(echo "$input" | command sed -E "s/::/:$(yes "0:" | head -n $((8 - hextets)) | paste -sd '')/g;s/^://g;s/:$//g")"
         prefix="$(echo "$exploded_ip" | command tr ':' '\n' | while read -r line ; do printf "%04x\n" "0x$line" ; done | command tac | command rev | command sed -E 's/./&\./g' | paste -sd '' | command sed -E 's/\.$//g')"
-        output="$(query_cymru "$prefix.$V6_CYMRU_NS")"
+        output="$(query_cymru "$prefix.$V6_CYMRU_NS" | command head -n1)"
         append_asn_and_print "$output"
     # ASN
     elif [[ ${input^^} =~ ^[0-9]+$|^AS[0-9]+$ ]] ; then
