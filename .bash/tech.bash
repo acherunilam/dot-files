@@ -1,3 +1,6 @@
+# shellcheck disable=SC2181
+
+
 # Geolocates the IP.
 #
 # Dependencies:

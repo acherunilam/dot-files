@@ -1,3 +1,6 @@
+# shellcheck disable=SC2155
+
+
 # Golang
 export GOPATH="$HOME/go"
 if [[ "$OSTYPE" == "linux"* ]] ; then
@@ -7,23 +10,17 @@ elif [[ "$OSTYPE" == "darwin"* ]] ; then
 fi
 export PATH="$PATH:$GOPATH/bin"
 
+
 # Java
 if [[ "$OSTYPE" == "linux"* ]] ; then
     export JAVA_HOME=$(
-        find "/usr/lib/jvm" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | \
-                sort -nr -t'-' -k2 | head -n1
+        command find "/usr/lib/jvm" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | \
+            command sort -nr -t'-' -k2 | command head -n1
     )
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
     export JAVA_HOME=$(/usr/libexec/java_home)
 fi
 
-# Perl
-# PERL_MM_OPT="INSTALL_BASE=$HOME/perl5" cpan local::lib
-export PATH="$HOME/perl5/bin${PATH:+:${PATH}}"
-export PERL5LIB="$HOME/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"
-export PERL_LOCAL_LIB_ROOT="$HOME/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"
-export PERL_MB_OPT="--install_base \"$HOME/perl5\""
-export PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"
 
 # Python
 export PYTHONSTARTUP="$HOME/.pythonrc"
@@ -33,6 +30,7 @@ elif [[ "$OSTYPE" == "darwin"* ]] ; then
     export PATH="$BREW_PREFIX/miniconda3/bin:$PATH"
 fi
 export PATH="$HOME/.local/bin:$PATH"
+
 
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"

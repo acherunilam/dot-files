@@ -1,29 +1,31 @@
-export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"				    # findutils
-export MANPATH="/usr/local/opt/findutils/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"                   # gnu-tar
-export MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"			        # gnu-sed
-export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/opt/util-linux/bin:$PATH"                           # util-linux
-export PATH="/usr/local/share/john/:$PATH"                                  # load scripts from John the Ripper
-export HOMEBREW_NO_ANALYTICS=1                                              # disable Homebrew Analytics
+# shellcheck disable=SC2155
 
-# requires additional packages
-#     `brew install brightness`
+
+# Load GNU binaries instead of the BSD variants.
+export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
+export MANPATH="/usr/local/opt/findutils/libexec/gnuman:$MANPATH"
+export PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
+export MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:$MANPATH"
+export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
+export PATH="/usr/local/opt/util-linux/bin:$PATH"
+export PATH="/usr/local/share/john/:$PATH"
+export HOMEBREW_NO_ANALYTICS=1
+
+
+# Dependencies:
+#       brew install brightness coreutils terminal-notifier
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
 alias head='ghead'                                                          # `head -n0` should work
 alias lck='pmset displaysleepnow'                                           # switch off display
+alias notify='terminal-notifier -sound Ping -message'                       # send notification and make a sound
 alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
 
-# send notification and make a sound
-# requires additional packages
-#     `brew install terminal-notifier`
-alias notify='terminal-notifier -sound Ping -message'
 
-# change directory to the one open in Finder
+# cd into the directory that is currently open in Finder.
 cdf() {
     local target
     target=$(
@@ -32,88 +34,82 @@ cdf() {
             window as text)" 2>/dev/null
     )
     if [[ -n $target ]] ; then
-        cd "$target"
+        cd "$target" || exit 1
     else
-        echo "No Finder window found" >&2
+        echo "cdf: no Finder window found" >&2
         return 2
     fi
 }
 
-# clears all recent files accessed through the GUI and CLI
-# optional additional configuration
-#     `echo "export CLEAR_HISTORY_BASH_KEYWORDS='<keyword1:keyword2>'" >>~/.bash/private.bash`
-#     `echo "export CLEAR_HISTORY_FASD_PATH='<path1:path2>'" >>~/.bash/private.bash`
+
+# Clears all recent files accessed through the GUI and CLI.
+#
+# Environment variables:
+#       echo "export CLEAR_HISTORY_BASH_KEYWORDS='<keyword1:keyword2>'" >>~/.bash/private.bash
+#       echo "export CLEAR_HISTORY_FASD_PATH='<path1:path2>'" >>~/.bash/private.bash
 clear-history() {
-    # clear recent files
-    osascript -e "tell application \"System Events\" to click menu item \
-        \"Clear Menu\" of menu of menu item \"Recent Items\" of menu of \
-        menu bar item \"Apple\" of menu bar of process \"Finder\"" \
-        1>/dev/null && \
-        echo "Recent files cleared successfully" || \
-        echo "Unable to clear recent files" >&2
-    # clear recent folders
+    # Clear recent files.
+    osascript -e "tell application \"System Events\" to click menu item \"Clear Menu\" of menu \
+        of menu item \"Recent Items\" of menu of menu bar item \"Apple\" of menu bar of process \
+        \"Finder\"" 1>/dev/null || echo "clear-history: unable to clear recent files" >&2
+    # Clear recent folders.
     osascript -e "tell application \"System Events\" to click menu item \
         \"Clear Menu\" of menu of menu item \"Recent Folders\" of menu of \
         menu bar item \"Go\" of menu bar of process \"Finder\"" \
-        1>/dev/null && \
-        echo "Recent folders cleared successfully" || \
-        echo "Unable to clear recent folders" >&2
-    # clear Go to Folder
+        1>/dev/null || echo "clear-history: unable to clear recent folders" >&2
+    # Clear 'Go to' Folder.
     defaults delete com.apple.finder GoToField &>/dev/null
     defaults delete com.apple.finder GoToFieldHistory &>/dev/null
-    killall Finder && \
-        echo "Go to Folder cleared successfully" || \
-        echo "Unable to clear Go to Folder" >&2
-    # clear VLC's recent files
+    killall Finder || echo "clear-history: unable to clear Go to Folder" >&2
+    # Clear VLC's recent files.
     osascript -e "tell application \"VLC\" to activate" 1>/dev/null && \
-        osascript -e "tell application \"Finder\" to set visible of process \
-        \"VLC\" to false" 1>/dev/null && \
-        osascript -e "tell application \"System Events\" to click menu item \
-        \"Clear Menu\" of menu of menu item \"Open Recent\" of menu of menu \
-        bar item \"File\" of menu bar 1 of process \"VLC\"" 1>/dev/null && \
-        killall VLC && \
-        echo "Recent VLC files cleared successfully" || \
-        echo "Unable to clear recent VLC files" >&2
-    # clear Bash keywords
+        osascript -e "tell application \"Finder\" to set visible of process \"VLC\" to \
+            false" 1>/dev/null && \
+        osascript -e "tell application \"System Events\" to click menu item \"Clear Menu\" \
+            of menu of menu item \"Open Recent\" of menu of menu bar item \"File\" of menu \
+            bar 1 of process \"VLC\"" 1>/dev/null && \
+        killall VLC || echo "clear-history: unable to clear recent VLC files" >&2
+    # Clear Bash history lines containing any of the specified keywords.
     if [[ -n "$CLEAR_HISTORY_BASH_KEYWORDS" ]] ; then
         local hist_file="${HISTFILE:-$HOME/.bash_history}"
         local tmp_file="$(mktemp)"
-        echo -e "${CLEAR_HISTORY_BASH_KEYWORDS//:/\\n}" | while read k ; do
-            tail -r "$hist_file" | sed "/${k//\//\\/}/,+1d" | tail -r >"$tmp_file" && \
-                command cp -f "$tmp_file" "$hist_file"
-        done &&  echo "Bash history keywords cleared successfully" || \
-            echo "Unable to clear Bash history keywords" >&2
+        echo -e "${CLEAR_HISTORY_BASH_KEYWORDS//:/\\n}" | while read -r k ; do
+            command tail -r "$hist_file" | command sed "/${k//\//\\/}/,+1d" | command tail -r \
+                >"$tmp_file" && command cp -f "$tmp_file" "$hist_file"
+        done || echo "clear-history: unable to clear Bash history keywords" >&2
     fi
-    # clear Fasd paths
+    # Clear Fasd paths containing any of the specified paths.
     if [[ -n "$CLEAR_HISTORY_FASD_PATH" ]] ; then
-        echo -e "${CLEAR_HISTORY_FASD_PATH//:/\\n}" | while read p ; do
+        echo -e "${CLEAR_HISTORY_FASD_PATH//:/\\n}" | while read -r p ; do
             sed -i "/${p//\//\\/}/d" "${_FASD_DATA:-$HOME/.fasd}"
-        done &&  echo "Fasd paths cleared successfully" || \
-            echo "Unable to clear Fasd paths" >&2
+        done || echo "clear-history: unable to clear Fasd paths" >&2
     fi
 }
 
-# unmount all DMGs or external HDDs
+
+# Unmount all DMGs or external HDDs.
+#
 # Usage:
-#     unmount               unmount the DMGs
-#     unmount -e            unmount the HDDs
+#     unmount               Unmount the DMGs
+#     unmount -e            Unmount the HDDs
 eject() {
     local volume volumes disk_type label device devices
     volumes=$(diskutil list | grep "/dev/disk")
     [[ "$1" == "-e" ]] && disk_type='external' || disk_type='image'
-    while read volume ; do
-        if grep -q $disk_type <<< $volume ; then
-            label=$(echo $volume | awk '{print $1}')
+    while read -r volume ; do
+        if command grep -q $disk_type <<< "$volume" ; then
+            label=$(awk '{print $1}' <<< "$volume")
             devices+=" $label"
         fi
-    done <<< $volumes
+    done <<< "$volumes"
     for device in $devices ; do
-        diskutil eject $device
+        command diskutil eject "$device"
     done
 }
 
 
-# wrapper for notifying user on the status of an operation on an array of items
+# Wrapper for notifying user on the status of an operation on an array of items.
+# 
 # Usage:
 #     download() {
 #         local operation operation_title operation_item
@@ -125,6 +121,7 @@ eject() {
 #     download <file1> <file2>        downloads both files sequentially, then notifies user on Desktop
 #     download -p <file>              downloads file, notifies user on Desktop and Cell phone
 #     download                        downloads file whose link is there on the clipboard, notifies user on Desktop
+# shellcheck disable=SC2034,SC2086,SC2154
 _notify() {
     local push_notify words word no_of_arguments total_failed message
     words=""
@@ -135,12 +132,11 @@ _notify() {
         [[ "$word" == "-p" ]] || [[ "$word" == "--push" ]] && \
             push_notify=true || words+=" $word"
     done
-    [[ -z "$words" ]] && words=$(pbpaste)
+    [[ -z "$words" ]] && words=$(command pbpaste)
     no_of_arguments=$(wc -w <<< "$words" | tr -d ' ')
     total_failed=0
     for item in $words ; do
-        eval $operation
-        [[ $? -ne 0 ]] && total_failed=$(($total_failed + 1))
+        eval $operation || total_failed=$((total_failed + 1))
     done
     if [[ $total_failed -eq 0 ]] ; then
         message="All $no_of_arguments $operation_item completed"
@@ -154,8 +150,9 @@ _notify() {
     return $total_failed
 }
 
-# remove extended attributes for a file downloaded from the internet
+
+# Remove extended attributes for a file downloaded from the internet.
 whitelist() {
-    sudo xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
-    sudo xattr -rd com.apple.quarantine "$@"
+    sudo command xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
+    sudo command xattr -rd com.apple.quarantine "$@"
 }
