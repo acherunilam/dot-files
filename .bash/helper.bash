@@ -139,7 +139,29 @@ pb() {
     )"
     short_url="$pb_url/$(echo "$response" | cut -d'"' -f4)"
     echo "$short_url"
-    [[ "$OSTYPE" == "darwin"* ]] && echo -n "$short_url" | pbcopy
+    echo -n "$short_url" | pbcopy
+}
+
+
+# Copies data from STDIN to the clipboard. For Linux, both iTerm and Tmux are supported.
+# For the former, you'll have to enable "Preferences > General >  Selection > Applications
+# in terminal may access clipboard".
+#
+# Usage:
+#       echo "text message" | pbcopy
+pbcopy() {
+    if [[ "$OSTYPE" == "darwin"* ]] ; then
+        command pbcopy
+        exit $?
+    fi
+    content="$(</dev/stdin)"
+    if [[ -z "$content" ]] ; then
+        echo "pbcopy: missing input, please pass the text" >&2
+        exit 2
+    fi
+    output="$(printf '\033]52;c;%s\a' "$(command base64 -w0 <<< "$content")")"
+    [[ -n "$TMUX" ]] && output="$(printf '\033Ptmux;\033%s\033\\' "$output")"
+    printf "%s" "$output"
 }
 
 # show public IP
@@ -162,7 +184,7 @@ ppb() {
     fi
     short_url="$(echo "$content" | curl -sS -F 'sprunge=<-' http://sprunge.us)"
     echo "$short_url"
-    [[ "$OSTYPE" == "darwin"* ]] && echo -n "$short_url" | pbcopy
+    echo -n "$short_url" | pbcopy
 }
 
 # send push notifications to your mobile device via the service Pushover
@@ -226,5 +248,5 @@ url-shorten() {
     fi
     short_url="$(jq '.shortUrl' <<< "$result" | sed -E 's/"//g')"
     echo "$short_url"
-    [[ "$OSTYPE" == "darwin"* ]] && echo -n "$short_url" | pbcopy
+    echo -n "$short_url" | pbcopy
 }

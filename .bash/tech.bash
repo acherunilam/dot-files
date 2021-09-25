@@ -58,9 +58,9 @@ asn() {
 #
 # Usage:
 #       iata sea        # Case insensitive search
+#       iata -v sea     # Print verbose details of the airport
 #       iata -i         # Install a cron job to periodically update the IATA DB
 #       iata -s         # Sync the local IATA DB to the latest version
-#       iata -v         # Print verbose details of the airport
 #
 # Dependencies:
 #       dnf install util-linux
