@@ -1,17 +1,15 @@
-# move up the directory
+# Move up the directory.
 alias ..='cd ..'
 alias ..2='cd ../..'
 alias ..3='cd ../../..'
 alias ..4='cd ../../../..'
 alias ..5='cd ../../../../..'
-
-# always be verbose/succinct
+# Always be verbose/succinct.
 alias cp='cp -v'
 alias dig='dig +short'
 alias mv='mv -v'
 alias rm='rm -v'
-
-# shorten frequently used commands
+# Shorten frequently used commands.
 alias ga='git add -A' && __git_complete ga _git_add 2>/dev/null
 alias gd='git diff' && __git_complete gd _git_diff 2>/dev/null
 alias gl='git lg' && __git_complete gl _git_log 2>/dev/null
@@ -22,14 +20,12 @@ alias ld='ls -d */ 2>/dev/null'                                                #
 alias lh='ls -d .??* 2>/dev/null'                                              # list only hidden files
 alias ll='ls -alFh'                                                            # list all files with their details
 alias x='extract'                                                              # extract the contents of an archive
-
-# run with elevated privileges
+# Run with elevated privileges.
 alias mtr='sudo mtr'
 alias pls='sudo $(history -p \!\!)'                                            # re-execute last command with elevated privileges
 alias sudo='sudo '                                                             # required to enable auto-completion if alias is prefixed with sudo
 alias service='sudo service'
-
-# inspect system
+# Inspect the system.
 if [[ "$OSTYPE" == "linux"* ]] ; then
     alias osv='cat /etc/os-release'                                            # output Linux distribution
     alias port='sudo ss -tulpn'                                                # show all listening ports
@@ -37,22 +33,22 @@ elif [[ "$OSTYPE" == "darwin"* ]] ; then
     alias osv='sw_vers'                                                        # output Mac system version
     alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"'        # show all ports listening for connections
 fi
-
-# run with specific settings
+# Run with specific settings.
 alias mkdir='mkdir -p'                                                         # create parent directory if it doesn't exist
 alias rsync='rsync -avzhPLK --partial-dir=.rsync-partial'                      # enable compression and partial synchronization
 alias xargs='xargs -rd\\n '                                                    # set default delimiter to newline instead of whitespace
-
-# colorize output
+# Colorize output.
 if [[ "$OSTYPE" == "linux"* ]] ; then
     alias ls='ls --color=auto'
 fi
 alias grep='grep --color=auto '
 alias watch='watch --color '
 
-# extract the contents of an archive
-# requires additional packages
-#     `dnf install binutils cabextract p7zip p7zip-plugins unrar xz`
+
+# Extract the contents of an archive.
+#
+# Dependencies:
+#       dnf install binutils cabextract p7zip p7zip-plugins unrar xz
 extract() {
     if [[ -f "$1" ]] ; then
         case "$1" in
@@ -79,26 +75,28 @@ extract() {
             *.zip)      7z x "$1"               ;;
             *.Z)        uncompress "$1"         ;;
             *)
-                echo "'$1' cannot be extracted" >&2
+                echo "extract: '$1' cannot be extracted" >&2
                 return 2                          ;;
         esac
     else
-        echo "'$1' is not a file" >&2
+        echo "extract: '$1' is not a file" >&2
         return 2
     fi
 }
 
-# find file by name
+
+# Find file by name.
 ff() {
     find -L . -type f -iname '*'"$*"'*' -ls 2>/dev/null
 }
 
-# search the command line history and show the matches
+
+# Search the command line history and show the matches.
 his() {
     grep "$*" "$HISTFILE" | less +G
 }
 
-# list all network interfaces and their IPs
+# List all network interfaces and their IPs.
 ipp() {
     local interfaces ips
     interfaces="$(command ifconfig | command awk '!/^\s+/ && !/^$/ {gsub(/:$/, "", $1); print $1}')"
@@ -108,19 +106,25 @@ ipp() {
     done
 }
 
-# like mv, but with progress bar
+
+# Like mv, but with a progress bar.
 msync() {
     rsync --remove-source-files "$@"
-    if [[ $? -eq 0 ]] && [[ -d "$1" ]] ; then
-        find "$1" -type d -empty -delete
+    local exit_code=$?
+    if [[ $exit_code -eq 0 ]] && [[ -d "$1" ]] ; then
+        command find "$1" -type d -empty -delete
     fi
+    return $exit_code
 }
 
-# upload contents to Haste, an open-source Node.js pastebin
-# if no input is passed, then the contents of the clipboard will be used
-# requires additional configuration
-#     `echo "export PASTEBIN_URL='<url-of-pastebin>'" >>~/.bash/private.bash`
-#     `echo "export PASTEBIN_AUTH_BASIC='user:pass'" >>~/.bash/private.bash`
+
+# Upload contents to Haste, an open-source Node.js pastebin. If no input is passed,
+# then the contents of the clipboard will be used.
+#
+# Environment variables:
+#       echo "export PASTEBIN_URL='<url-of-pastebin>'" >>~/.bash/private.bash
+#       echo "export PASTEBIN_AUTH_BASIC='user:pass'" >>~/.bash/private.bash
+# shellcheck disable=SC2086
 pb() {
     local pb_url content response short_url
     local curl_auth_arg=""
@@ -133,46 +137,46 @@ pb() {
         return 2
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
-    response="$(
-        echo "$content" | \
-            curl -sS -XPOST $curl_auth_arg --data-binary @- "$pb_url/documents"
-    )"
+    response="$(echo "$content" | curl -sS -XPOST $curl_auth_arg --data-binary @- "$pb_url/documents")"
     short_url="$pb_url/$(echo "$response" | cut -d'"' -f4)"
     echo "$short_url"
     echo -n "$short_url" | pbcopy
 }
 
 
-# Copies data from STDIN to the clipboard. For Linux, both iTerm and Tmux are supported.
-# For the former, you'll have to enable "Preferences > General >  Selection > Applications
-# in terminal may access clipboard".
+# Copies data from STDIN to the clipboard. For Linux, both iTerm and Tmux are
+# supported. For the former, you'll have to enable "Preferences > General >
+# Selection > Applications in terminal may access clipboard".
 #
 # Usage:
 #       echo "text message" | pbcopy
+# shellcheck disable=SC1003
 pbcopy() {
     if [[ "$OSTYPE" == "darwin"* ]] ; then
         command pbcopy
-        exit $?
+        return $?
     fi
     content="$(</dev/stdin)"
     if [[ -z "$content" ]] ; then
         echo "pbcopy: missing input, please pass the text" >&2
-        exit 2
+        return 2
     fi
     output="$(printf '\033]52;c;%s\a' "$(command base64 -w0 <<< "$content")")"
     [[ -n "$TMUX" ]] && output="$(printf '\033Ptmux;\033%s\033\\' "$output")"
     printf "%s" "$output"
 }
 
-# show public IP
+
+# Show the public IP.
+# shellcheck disable=SC2086
 pipp() {
     local DIG_OPTS="+short +timeout=1 +retry=1 myip.opendns.com @resolver1.opendns.com"
     command dig -4 A $DIG_OPTS
     command dig -6 AAAA $DIG_OPTS
 }
 
-# upload contents to Sprunge, a public pastebin
-# if no input is passed, then the contents of the clipboard will be used
+# Upload contents to Sprunge, a public pastebin. If no input is passed, then the
+# contents of the clipboard will be used.
 ppb() {
     local content short_url
     if [[ -p /dev/stdin ]] ; then
@@ -187,20 +191,23 @@ ppb() {
     echo -n "$short_url" | pbcopy
 }
 
-# send push notifications to your mobile device via the service Pushover
-# requires additional configuration
-#     `echo "export PUSHOVER_USER='<user>'" >>~/.bash/private.bash`
-#     `echo "export PUSHOVER_TOKEN='<token>'" >>~/.bash/private.bash`
-# token can be fetched from here (https://pushover.net/apps/build)
+
+# Send push notifications to your mobile device via the service Pushover.
+# The token can be fetched from over here (https://pushover.net/apps/build).
+#
+# Environment variables:
+#       echo "export PUSHOVER_USER='<user>'" >>~/.bash/private.bash
+#       echo "export PUSHOVER_TOKEN='<token>'" >>~/.bash/private.bash
+# 
 # Usage:
-#     push foo              sends the message 'foo'
-#     push -h bar           sends the message 'bar' with high priority
+#     push foo              Sends the message 'foo'
+#     push -h bar           Sends the message 'bar' with high priority
 push() {
     local priority=0
     [[ "$1" == "-h" ]] || [[ "$1" == "--high" ]] && priority=1 && shift
     local message="$1"
     if [[ -z "$message" ]] ; then
-        echo "Please pass a message to push as an argument" >&2
+        echo "push: please pass a message" >&2
         return 2
     fi
     curl -sS --form-string "user=$PUSHOVER_USER" \
@@ -211,17 +218,20 @@ push() {
 }
 
 
-# shorten the given URL using Shlink, an open-source URL Shortener
-# requires additional packages
-#     `dnf install jq`
-# requires additional configuration
-#     `echo "export URL_SHORTENER_ENDPOINT='<url-of-endpoint>'" >>~/.bash/private.bash`
-#     `echo "export URL_SHORTENER_API_KEY='<generated-api-key>'" >>~/.bash/private.bash`
-# API key can be generated from by running `bin/cli api-key:generate`
+# Shorten the given URL using Shlink, an open-source URL Shortener. The API key can be
+# generated from by running `bin/cli api-key:generate`
+# 
+# Dependencies:
+#       dnf install jq
+#
+# Environment variables:
+#       echo "export URL_SHORTENER_ENDPOINT='<url-of-endpoint>'" >>~/.bash/private.bash
+#       echo "export URL_SHORTENER_API_KEY='<generated-api-key>'" >>~/.bash/private.bash
+# 
 # Usage:
 #     url-shorten <url>             Shortens the given URL, uses a randomized 4-letter slug
-#     url-shorten <url> <slug>      Shortens the given URL using the given slug
-#                                   If slug already exists, then it overwrites it
+#     url-shorten <url> <slug>      Shortens the given URL using the given slug. If slug
+#                                       already exists, then it overwrites it
 url-shorten() {
     local url result short_url custom_slug
     local url="$1"
