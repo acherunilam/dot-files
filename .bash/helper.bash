@@ -45,6 +45,30 @@ alias grep='grep --color=auto '
 alias watch='watch --color '
 
 
+# Simplified awk.
+#
+# Usage:
+#       aw 1-3          Prints the first 3 columns
+#       aw 2 5          Prints the 2nd and 5th columns
+#       aw 1-3,7        Prints the first 3 columns, followed by the 7th
+aw() {
+    local ranges start end
+    local columns=""
+    IFS=', ' read -ra ranges <<< "$*"
+    for range in "${ranges[@]}" ; do
+        IFS='-' read -r start end <<< "$range"
+        if [[ $start =~ ^[0-9]+$ ]] && [[ $end =~ ^[0-9]*$ ]] ; then
+            columns+="$(command seq -s ',' -f '$%g' "$start" "${end:-$start}")"
+        else
+            echo "aw: invalid input" >&2
+            return 2
+        fi
+    done
+    # The BSD seq's output will have a trailing comma which we need to remove.
+    command awk '{print '"${columns%,}"'}'
+}
+
+
 # Downloads files. If no file is specified, then we attempt to detect the link from
 # the clipboard.
 #
