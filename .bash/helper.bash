@@ -218,7 +218,7 @@ pb() {
 pbcopy() {
     if [[ "$OSTYPE" == "darwin"* ]] ; then
         command pbcopy
-        return $?
+        return
     fi
     content="$(</dev/stdin)"
     if [[ -z "$content" ]] ; then
