@@ -70,7 +70,8 @@ aw() {
 
 
 # Downloads files. If no file is specified, then we attempt to detect the link from
-# the clipboard.
+# the clipboard. It notifies once the download is complete using an iTerm-specific
+# escape sequence (https://iterm2.com/documentation-escape-codes.html).
 #
 # Dependencies:
 #       dnf install aria2
@@ -208,9 +209,10 @@ pb() {
 }
 
 
-# Copies data from STDIN to the clipboard. For Linux, both iTerm and Tmux are
-# supported. For the former, you'll have to enable "Preferences > General >
-# Selection > Applications in terminal may access clipboard".
+# Copies data from STDIN to the clipboard. For Linux, both iTerm and Tmux are supported.
+# For the former, you'll have to enable "Preferences > General > Selection > Applications
+# in terminal may access clipboard". It works using OCS 52, an Xterm-specific escape
+# sequence used to copy printed text into the clipboard.
 #
 # Usage:
 #       echo "text message" | pbcopy
