@@ -51,7 +51,7 @@ asn() {
         output="$(query_cymru "AS$prefix.$AS_CYMRU_NS")"
         echo "$output"
     else
-        echo "asn: invalid input, please pass an IP or ASN" >&2
+        echo "${FUNCNAME[0]}: invalid input, please pass an IP or ASN" >&2
         return 2
     fi
 }
@@ -76,7 +76,7 @@ iata() {
     }
 
     help() {
-    echo "Usage: iata [options] <iata_code>
+    echo "Usage: ${FUNCNAME[0]} [options] <iata_code>
 Prints the details for the given IATA airport code.
 
 Options:
@@ -93,20 +93,20 @@ Options:
             i)  # install
                 echo -e "$(command crontab -l)\n\n# Update IATA DB.\n$CRON_SCHEDULE bash -ic 'iata -s'" | command crontab -
                 if [[ $? -eq 0 ]] ; then
-                    echo "iata: installed cron tab"
+                    echo "${FUNCNAME[0]}: installed cron tab"
                     return
                 else
-                    echo "iata: installation failed" >&2
+                    echo "${FUNCNAME[0]}: installation failed" >&2
                     return 1
                 fi
                 ;;
             s)  # sync
                 download_iata_db
                 if [[ $? -eq 0 ]] ; then
-                    echo "iata: synced IATA DB"
+                    echo "${FUNCNAME[0]}: synced IATA DB"
                     return
                 else
-                    echo "iata: sync failed" >&2
+                    echo "${FUNCNAME[0]}: sync failed" >&2
                     return 1
                 fi
                 ;;
@@ -123,7 +123,7 @@ Options:
     done
     shift $((OPTIND-1))
     if [[ $# -eq 0 ]] ; then
-        echo "iata: missing input, please pass the airport code" >&2
+        echo "${FUNCNAME[0]}: missing input, please pass the airport code" >&2
         return 2
     fi
 

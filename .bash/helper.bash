@@ -60,7 +60,7 @@ aw() {
         if [[ $start =~ ^[0-9]+$ ]] && [[ $end =~ ^[0-9]*$ ]] ; then
             columns+="$(command seq -s ',' -f '$%g' "$start" "${end:-$start}")"
         else
-            echo "aw: invalid input" >&2
+            echo "${FUNCNAME[0]}: invalid input" >&2
             return 2
         fi
     done
@@ -137,11 +137,11 @@ extract() {
             *.zip)      7z x "$1"               ;;
             *.Z)        uncompress "$1"         ;;
             *)
-                echo "extract: '$1' cannot be extracted" >&2
+                echo "${FUNCNAME[0]}: '$1' cannot be extracted" >&2
                 return 2                          ;;
         esac
     else
-        echo "extract: '$1' is not a file" >&2
+        echo "${FUNCNAME[0]}: '$1' is not a file" >&2
         return 2
     fi
 }
@@ -191,7 +191,7 @@ pb() {
     local content response short_url
     local curl_auth_arg=""
     if [[ -z "$PASTEBIN_URL" ]] ; then
-        echo "pb: please set the environment variable \$PASTEBIN_URL" >&2
+        echo "${FUNCNAME[0]}: please set the environment variable \$PASTEBIN_URL" >&2
         return 1
     fi
     if [[ -p /dev/stdin ]] ; then
@@ -224,7 +224,7 @@ pbcopy() {
     fi
     content="$(</dev/stdin)"
     if [[ -z "$content" ]] ; then
-        echo "pbcopy: missing input, please pass the text" >&2
+        echo "${FUNCNAME[0]}: missing input, please pass the text" >&2
         return 2
     fi
     output="$(printf '\033]52;c;%s\a' "$(command base64 -w0 <<< "$content")")"
@@ -271,13 +271,13 @@ ppb() {
 push() {
     local priority=0
     if [[ -z "$PUSHOVER_USER" ]] || [[ -z "$PUSHOVER_TOKEN" ]]; then
-        echo "push: please set both the environment variables \$PUSHOVER_USER and \$PUSHOVER_TOKEN" >&2
+        echo "${FUNCNAME[0]}: please set both the environment variables \$PUSHOVER_USER and \$PUSHOVER_TOKEN" >&2
         return 1
     fi
     [[ "$1" == "-h" ]] || [[ "$1" == "--high" ]] && priority=1 && shift
     local message="$*"
     if [[ -z "$message" ]] ; then
-        echo "push: please pass a message" >&2
+        echo "${FUNCNAME[0]}: please pass a message" >&2
         return 2
     fi
     curl -sS --form-string "user=$PUSHOVER_USER" \
@@ -306,15 +306,15 @@ url-shorten() {
     local result short_url custom_slug
     local url="$1"
     if [[ -z "$URL_SHORTENER_ENDPOINT" ]] || [[ -z "$URL_SHORTENER_API_KEY" ]]; then
-        echo "url-shorten: please set both the environment variables \$URL_SHORTENER_ENDPOINT \
+        echo "${FUNCNAME[0]}: please set both the environment variables \$URL_SHORTENER_ENDPOINT \
             and \$URL_SHORTENER_API_KEY" >&2
         return 1
     fi
     if [[ -z $url ]] ; then
-        echo "url-shorten: please pass the URL as the first argument" >&2
+        echo "${FUNCNAME[0]}: please pass the URL as the first argument" >&2
         return 2
     elif [[ ! $url =~ ^https?://[^\ ]+$ ]] ; then
-        echo "url-shorten: '$url' is not a valid URL" >&2
+        echo "${FUNCNAME[0]}: '$url' is not a valid URL" >&2
         return 2
     fi
     [[ -n "$2" ]] && custom_slug=", \"customSlug\": \"$2\""
