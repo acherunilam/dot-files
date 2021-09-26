@@ -45,6 +45,43 @@ alias grep='grep --color=auto '
 alias watch='watch --color '
 
 
+# Downloads files. If no file is specified, then we attempt to detect the link from
+# the clipboard.
+#
+# Dependencies:
+#       dnf install aria2
+#
+# Environment variables:
+#       export DOWNLOAD_ARIA_OPTIONS='(
+#           ["*uri_regex1*"]="--http-user=user --http-passwd=pass"
+#           ["*uri_regex2*"]="--header=\"Referer: https://example.com\""
+#       )'
+#
+# Usage:
+#       download [<file>...]
+# shellcheck disable=SC1003,SC2086
+download() {
+    local file files file_count failed message
+    local opts="--follow-torrent=false -x8 --continue=true"
+    files="$*"
+    [[ -z "$files" ]] && files="$(pbpaste)"
+    [[ -z "$files" ]] && return 1
+    file_count=$(command wc -w <<< "$files" | command tr -d ' ')
+    failed=0
+    declare -A download_opts=$DOWNLOAD_ARIA_OPTIONS
+    for file in $files ; do
+        extra_opts=""
+        for uri_regex in "${!download_opts[@]}" ; do
+            [[ $file =~ $uri_regex ]] && extra_opts+=" ${download_opts[$uri_regex]}" && break
+        done
+        command aria2c $opts$extra_opts "$file" || ((failed+=1))
+    done
+    [[ $failed -eq 0 ]] && message="download: success" || message="download: $failed/$file_count failed"
+    printf '\033]9;%s\033\\' "$message"
+    return $failed
+}
+
+
 # Extract the contents of an archive.
 #
 # Dependencies:
@@ -205,7 +242,7 @@ ppb() {
 push() {
     local priority=0
     [[ "$1" == "-h" ]] || [[ "$1" == "--high" ]] && priority=1 && shift
-    local message="$1"
+    local message="$*"
     if [[ -z "$message" ]] ; then
         echo "push: please pass a message" >&2
         return 2
@@ -213,7 +250,7 @@ push() {
     curl -sS --form-string "user=$PUSHOVER_USER" \
         --form-string "token=$PUSHOVER_TOKEN" \
         --form-string "priority=$priority" \
-        --form-string "message=$1" \
+        --form-string "message=$message" \
         "https://api.pushover.net/1/messages.json" 1>/dev/null
 }
 
