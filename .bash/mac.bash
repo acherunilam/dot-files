@@ -45,8 +45,8 @@ cdf() {
 # Clears all recent files accessed through the GUI and CLI.
 #
 # Environment variables:
-#       echo "export CLEAR_HISTORY_BASH_KEYWORDS='<keyword1:keyword2>'" >>~/.bash/private.bash
-#       echo "export CLEAR_HISTORY_FASD_PATH='<path1:path2>'" >>~/.bash/private.bash
+#       export CLEAR_HISTORY_BASH_KEYWORDS="<keyword1:keyword2>"
+#       export CLEAR_HISTORY_FASD_PATH="<path1:path2>"
 clear-history() {
     # Clear recent files.
     osascript -e "tell application \"System Events\" to click menu item \"Clear Menu\" of menu \
