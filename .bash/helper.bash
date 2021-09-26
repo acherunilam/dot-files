@@ -159,8 +159,8 @@ msync() {
 # then the contents of the clipboard will be used.
 #
 # Environment variables:
-#       echo "export PASTEBIN_URL='<url-of-pastebin>'" >>~/.bash/private.bash
-#       echo "export PASTEBIN_AUTH_BASIC='user:pass'" >>~/.bash/private.bash
+#       export PASTEBIN_URL="<url-of-pastebin>"
+#       export PASTEBIN_AUTH_BASIC="user:pass"
 # shellcheck disable=SC2086
 pb() {
     local pb_url content response short_url
@@ -233,8 +233,8 @@ ppb() {
 # The token can be fetched from over here (https://pushover.net/apps/build).
 #
 # Environment variables:
-#       echo "export PUSHOVER_USER='<user>'" >>~/.bash/private.bash
-#       echo "export PUSHOVER_TOKEN='<token>'" >>~/.bash/private.bash
+#       export PUSHOVER_USER="<user>"
+#       export PUSHOVER_TOKEN="<token>"
 # 
 # Usage:
 #     push foo              Sends the message 'foo'
@@ -256,14 +256,14 @@ push() {
 
 
 # Shorten the given URL using Shlink, an open-source URL Shortener. The API key can be
-# generated from by running `bin/cli api-key:generate`
+# generated from by running `bin/cli api-key:generate`.
 # 
 # Dependencies:
 #       dnf install jq
 #
 # Environment variables:
-#       echo "export URL_SHORTENER_ENDPOINT='<url-of-endpoint>'" >>~/.bash/private.bash
-#       echo "export URL_SHORTENER_API_KEY='<generated-api-key>'" >>~/.bash/private.bash
+#       export URL_SHORTENER_ENDPOINT="<url-of-endpoint>"
+#       export URL_SHORTENER_API_KEY="<generated-api-key>"
 # 
 # Usage:
 #     url-shorten <url>             Shortens the given URL, uses a randomized 4-letter slug
