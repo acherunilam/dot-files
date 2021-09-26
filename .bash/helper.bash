@@ -163,9 +163,12 @@ msync() {
 #       export PASTEBIN_AUTH_BASIC="user:pass"
 # shellcheck disable=SC2086
 pb() {
-    local pb_url content response short_url
+    local content response short_url
     local curl_auth_arg=""
-    pb_url="${PASTEBIN_URL:-https://hastebin.com/}"
+    if [[ -z "$PASTEBIN_URL" ]] ; then
+        echo "pb: please set the environment variable \$PASTEBIN_URL" >&2
+        return 1
+    fi
     if [[ -p /dev/stdin ]] ; then
         content="$(cat)"
     elif [[ "$OSTYPE" == "darwin"* ]] ; then
@@ -174,8 +177,8 @@ pb() {
         return 2
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
-    response="$(echo "$content" | curl -sS -XPOST $curl_auth_arg --data-binary @- "$pb_url/documents")"
-    short_url="$pb_url/$(echo "$response" | cut -d'"' -f4)"
+    response="$(echo "$content" | curl -sS -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL/documents")"
+    short_url="$PASTEBIN_URL/$(echo "$response" | cut -d'"' -f4)"
     echo "$short_url"
     echo -n "$short_url" | pbcopy
 }
@@ -241,6 +244,10 @@ ppb() {
 #     push -h bar           Sends the message 'bar' with high priority
 push() {
     local priority=0
+    if [[ -z "$PUSHOVER_USER" ]] || [[ -z "$PUSHOVER_TOKEN" ]]; then
+        echo "push: please set both the environment variables \$PUSHOVER_USER and \$PUSHOVER_TOKEN" >&2
+        return 1
+    fi
     [[ "$1" == "-h" ]] || [[ "$1" == "--high" ]] && priority=1 && shift
     local message="$*"
     if [[ -z "$message" ]] ; then
@@ -270,13 +277,18 @@ push() {
 #     url-shorten <url> <slug>      Shortens the given URL using the given slug. If slug
 #                                       already exists, then it overwrites it
 url-shorten() {
-    local url result short_url custom_slug
+    local result short_url custom_slug
     local url="$1"
+    if [[ -z "$URL_SHORTENER_ENDPOINT" ]] || [[ -z "$URL_SHORTENER_API_KEY" ]]; then
+        echo "url-shorten: please set both the environment variables \$URL_SHORTENER_ENDPOINT \
+            and \$URL_SHORTENER_API_KEY" >&2
+        return 1
+    fi
     if [[ -z $url ]] ; then
-        echo "Please pass the URL as the first argument" >&2
+        echo "url-shorten: please pass the URL as the first argument" >&2
         return 2
     elif [[ ! $url =~ ^https?://[^\ ]+$ ]] ; then
-        echo "'$url' is not a valid URL" >&2
+        echo "url-shorten: '$url' is not a valid URL" >&2
         return 2
     fi
     [[ -n "$2" ]] && custom_slug=", \"customSlug\": \"$2\""
@@ -286,14 +298,14 @@ url-shorten() {
             -H "Content-Type: application/json" \
             -d "{\"longUrl\": \"$url\"$custom_slug}"
     )"
-    if [[ "$(jq '.type' <<< "$result")" == "\"INVALID_SLUG\"" ]] ; then
+    if [[ "$(command jq '.type' <<< "$result")" == "\"INVALID_SLUG\"" ]] ; then
        curl -sS -X PATCH "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls/$2" \
             -H "X-Api-Key: $URL_SHORTENER_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"longUrl\": \"$url\"}" && \
             result="{\"shortUrl\": \"$URL_SHORTENER_ENDPOINT/$2\"}"
     fi
-    short_url="$(jq '.shortUrl' <<< "$result" | sed -E 's/"//g')"
+    short_url="$(command jq '.shortUrl' <<< "$result" | sed -E 's/"//g')"
     echo "$short_url"
     echo -n "$short_url" | pbcopy
 }
