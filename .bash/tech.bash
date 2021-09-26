@@ -68,8 +68,8 @@ asn() {
 # Dependencies:
 #       dnf install util-linux
 iata() {
-    CRON_SCHEDULE="0 5 * * *"  # every day 5 AM
-    DB_PATH="$HOME/.local/share/iata/airports.dat"
+    local CRON_SCHEDULE="0 5 * * *"  # every day 5 AM
+    local DB_PATH="$HOME/.local/share/iata/airports.dat"
 
     download_iata_db() {
         command curl -sS "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat" --create-dirs -o "$DB_PATH"
