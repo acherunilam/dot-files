@@ -64,7 +64,7 @@ PS1+='\[\033[0m\]\[\033[1;32m\]@\h'     # hostname
 PS1+='\[\033[0m\]:\[\033[1;34m\]\w'     # working directory
 PS1+='\[\033[1;33m\]$git_state'         # git branch
 PS1+='\[\033[0m\]'${SENTINEL_CHAR}' '
-PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+PS4='+ $EPOCHREALTIME\011(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 # Set the MySQL prompt.
 export MYSQL_PS1="\u@\h [\d]> "
 
