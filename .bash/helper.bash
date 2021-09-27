@@ -209,10 +209,11 @@ pb() {
 }
 
 
-# Copies data from STDIN to the clipboard. For Linux, both iTerm and Tmux are supported.
-# For the former, you'll have to enable "Preferences > General > Selection > Applications
-# in terminal may access clipboard". It works using OCS 52, an Xterm-specific escape
-# sequence used to copy printed text into the clipboard.
+# Copies data from STDIN to the clipboard. It removes trailing newlines.
+#
+# Both iTerm and Tmux are supported. For the former, you'll have to enable "Preferences >
+# General > Selection > Applications in terminal may access clipboard". It works using
+# OCS 52, an Xterm-specific escape sequence used to copy printed text into the clipboard.
 #
 # Usage:
 #       echo "text message" | pbcopy
@@ -227,7 +228,7 @@ pbcopy() {
         echo "${FUNCNAME[0]}: missing input, please pass the text" >&2
         return 2
     fi
-    output="$(printf '\033]52;c;%s\a' "$(command base64 -w0 <<< "$content")")"
+    output="$(printf '\033]52;c;%s\a' "$(echo -n "$content" | command base64 -w0)")"
     [[ -n "$TMUX" ]] && output="$(printf '\033Ptmux;\033%s\033\\' "$output")"
     printf "%s" "$output"
 }
