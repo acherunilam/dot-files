@@ -45,7 +45,7 @@ fi
 # Load Git repository-related info for the Bash prompt.
 if type -t __git_ps1 >/dev/null ; then
     export GIT_PS1_SHOWDIRTYSTATE=true
-    PROMPT_COMMAND+='git_state=$(__git_ps1 "<%s>"); '
+    PROMPT_COMMAND+='; git_state=$(__git_ps1 "<%s>")'
 fi
 # Set the Bash prompt.
 USERNAME_COLOR='\[\033[1;34m\]'         # blue
