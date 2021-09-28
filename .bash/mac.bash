@@ -28,13 +28,13 @@ alias slp='pmset sleepnow'                                                  # go
 # cd into the directory that is currently open in Finder.
 cdf() {
     local target
-    target=$(
+    target="$(
         osascript -e "tell application \"Finder\" to if (count of Finder \
             windows) > 0 then get POSIX path of (target of front Finder \
             window as text)" 2>/dev/null
-    )
+    )"
     if [[ -n $target ]] ; then
-        cd "$target" || exit 1
+        cd "$target" || return 1
     else
         echo "${FUNCNAME[0]}: no Finder window found" >&2
         return 2
@@ -81,7 +81,7 @@ clear-history() {
     # Clear Fasd paths containing any of the specified paths.
     if [[ -n "$CLEAR_HISTORY_FASD_PATH" ]] ; then
         echo -e "${CLEAR_HISTORY_FASD_PATH//:/\\n}" | while read -r p ; do
-            sed -i "/${p//\//\\/}/d" "${_FASD_DATA:-$HOME/.fasd}"
+            command sed -i "/${p//\//\\/}/d" "${_FASD_DATA:-$HOME/.fasd}"
         done || echo "${FUNCNAME[0]}: unable to clear Fasd paths" >&2
     fi
 }
@@ -94,11 +94,11 @@ clear-history() {
 #     unmount -e            Unmount the HDDs
 eject() {
     local volume volumes disk_type label device devices
-    volumes=$(diskutil list | grep "/dev/disk")
+    volumes=$(command diskutil list | command grep "/dev/disk")
     [[ "$1" == "-e" ]] && disk_type='external' || disk_type='image'
     while read -r volume ; do
         if command grep -q $disk_type <<< "$volume" ; then
-            label=$(awk '{print $1}' <<< "$volume")
+            label=$(command awk '{print $1}' <<< "$volume")
             devices+=" $label"
         fi
     done <<< "$volumes"
