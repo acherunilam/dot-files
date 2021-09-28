@@ -172,12 +172,7 @@ ipp() {
 
 # Like mv, but with a progress bar.
 msync() {
-    rsync --remove-source-files "$@"
-    local exit_code=$?
-    if [[ $exit_code -eq 0 ]] && [[ -d "$1" ]] ; then
-        command find "$1" -type d -empty -delete
-    fi
-    return $exit_code
+    rsync --remove-source-files "$@" && [[ -d "$1" ]] && command find "$1" -type d -empty -delete
 }
 
 
