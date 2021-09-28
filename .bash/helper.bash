@@ -48,24 +48,30 @@ alias watch='watch --color '
 # Simplified awk.
 #
 # Usage:
-#       aw 1-3          Prints the first 3 columns
-#       aw 2 5          Prints the 2nd and 5th columns
-#       aw 1-3,7        Prints the first 3 columns, followed by the 7th
+#       aw 1-3              Prints the first 3 columns
+#       aw 1-3,7            Prints the first 3 columns, followed by the 7th
+#       aw 1-3,7 -F":"      Same as above, but passes the -F":" option to awk
+#
+# shellcheck disable=SC2086
 aw() {
-    local ranges start end
+    local ranges start end arg
     local columns=""
-    IFS=', ' read -ra ranges <<< "$*"
-    for range in "${ranges[@]}" ; do
-        IFS='-' read -r start end <<< "$range"
-        if [[ $start =~ ^[0-9]+$ ]] && [[ $end =~ ^[0-9]*$ ]] ; then
-            columns+="$(command seq -s ',' -f '$%g' "$start" "${end:-$start}")"
-        else
-            echo "${FUNCNAME[0]}: invalid input" >&2
-            return 2
-        fi
+    local opts=""
+    for arg in "$@" ; do
+        [[ "${arg::1}" != [0-9] ]] && opts+=" $arg" && continue
+        IFS=',' read -ra ranges <<< "$arg"
+        for range in "${ranges[@]}" ; do
+            IFS='-' read -r start end <<< "$range"
+            if [[ $start =~ ^[0-9]+$ ]] && [[ $end =~ ^[0-9]*$ ]] ; then
+                columns+="$(command seq -s ',' -f '$%g' "$start" "${end:-$start}")"
+            else
+                echo "${FUNCNAME[0]}: invalid input" >&2
+                return 2
+            fi
+        done
     done
     # The BSD seq's output will have a trailing comma which we need to remove.
-    command awk '{print '"${columns%,}"'}'
+    command awk $opts '{print '"${columns%,}"'}'
 }
 
 
@@ -84,6 +90,7 @@ aw() {
 #
 # Usage:
 #       download [<file>...]
+#
 # shellcheck disable=SC1003,SC2086
 download() {
     local file files file_count failed message
@@ -182,6 +189,7 @@ msync() {
 # Environment variables:
 #       export PASTEBIN_URL="<url-of-pastebin>"
 #       export PASTEBIN_AUTH_BASIC="user:pass"
+#
 # shellcheck disable=SC2086
 pb() {
     local content response short_url
@@ -213,6 +221,7 @@ pb() {
 #
 # Usage:
 #       echo "text message" | pbcopy
+#
 # shellcheck disable=SC1003
 pbcopy() {
     if [[ "$OSTYPE" == "darwin"* ]] ; then
@@ -231,6 +240,7 @@ pbcopy() {
 
 
 # Show the public IP.
+#
 # shellcheck disable=SC2086
 pipp() {
     local DIG_OPTS="+short +timeout=1 +retry=1 myip.opendns.com @resolver1.opendns.com"
