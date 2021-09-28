@@ -67,6 +67,8 @@ asn() {
 #
 # Dependencies:
 #       dnf install util-linux
+#
+# shellcheck disable=SC2016
 iata() {
     local CRON_SCHEDULE="0 5 * * *"  # every day 5 AM
     local DB_PATH="$HOME/.local/share/iata/airports.dat"
@@ -128,7 +130,6 @@ Options:
     fi
 
     [[ ! -f "$DB_PATH" ]] && download_iata_db
-    # shellcheck disable=SC2016
     if [[ $verbose -eq 0 ]] ; then
         columns='$3", "$4'
     else
