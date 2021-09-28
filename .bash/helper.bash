@@ -149,13 +149,13 @@ extract() {
 
 # Find file by name.
 ff() {
-    find -L . -type f -iname '*'"$*"'*' -ls 2>/dev/null
+    command find -L . -type f -iname '*'"$*"'*' -ls 2>/dev/null
 }
 
 
 # Search the command line history and show the matches.
 his() {
-    grep "$*" "$HISTFILE" | less +G
+    command grep "$*" "$HISTFILE" | command less +G
 }
 
 # List all network interfaces and their IPs.
@@ -163,7 +163,8 @@ ipp() {
     local interfaces ips
     interfaces="$(command ifconfig | command awk '!/^\s+/ && !/^$/ {gsub(/:$/, "", $1); print $1}')"
     for i in $interfaces ; do
-        ips="$(ifconfig "$i" 2>/dev/null | command awk '/inet/ && !/inet (127|169.254)/ && !/inet6 (::1|fe80::)/ {print "\t"$2}')"
+        ips="$(command ifconfig "$i" 2>/dev/null | \
+            command awk '/inet/ && !/inet (127|169.254)/ && !/inet6 (::1|fe80::)/ {print "\t"$2}')"
         [[ -n "$ips" ]] && echo -e "${i}${ips}"
     done
 }
@@ -195,15 +196,15 @@ pb() {
         return 1
     fi
     if [[ -p /dev/stdin ]] ; then
-        content="$(cat)"
+        content="$(command cat)"
     elif [[ "$OSTYPE" == "darwin"* ]] ; then
         content="$(pbpaste)"
     else
         return 2
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
-    response="$(echo "$content" | curl -sS -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL/documents")"
-    short_url="$PASTEBIN_URL/$(echo "$response" | cut -d'"' -f4)"
+    response="$(command curl -sS -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL/documents" <<< "$content")"
+    short_url="$PASTEBIN_URL/$(command cut -d'"' -f4 <<< "$response")"
     echo "$short_url"
     echo -n "$short_url" | pbcopy
 }
@@ -247,13 +248,13 @@ pipp() {
 ppb() {
     local content short_url
     if [[ -p /dev/stdin ]] ; then
-        content="$(cat)"
+        content="$(command cat)"
     elif [[ "$OSTYPE" == "darwin"* ]] ; then
         content="$(pbpaste)"
     else
         return 2
     fi
-    short_url="$(echo "$content" | curl -sS -F 'sprunge=<-' http://sprunge.us)"
+    short_url="$(command curl -sS -F 'sprunge=<-' http://sprunge.us <<< "$content")"
     echo "$short_url"
     echo -n "$short_url" | pbcopy
 }
@@ -281,7 +282,7 @@ push() {
         echo "${FUNCNAME[0]}: please pass a message" >&2
         return 2
     fi
-    curl -sS --form-string "user=$PUSHOVER_USER" \
+    command curl -sS --form-string "user=$PUSHOVER_USER" \
         --form-string "token=$PUSHOVER_TOKEN" \
         --form-string "priority=$priority" \
         --form-string "message=$message" \
@@ -320,19 +321,19 @@ url-shorten() {
     fi
     [[ -n "$2" ]] && custom_slug=", \"customSlug\": \"$2\""
     result="$(
-        curl -sS -X POST "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls" \
+        command curl -sS -X POST "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls" \
             -H "X-Api-Key: $URL_SHORTENER_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"longUrl\": \"$url\"$custom_slug}"
     )"
     if [[ "$(command jq '.type' <<< "$result")" == "\"INVALID_SLUG\"" ]] ; then
-       curl -sS -X PATCH "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls/$2" \
+       command curl -sS -X PATCH "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls/$2" \
             -H "X-Api-Key: $URL_SHORTENER_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"longUrl\": \"$url\"}" && \
             result="{\"shortUrl\": \"$URL_SHORTENER_ENDPOINT/$2\"}"
     fi
-    short_url="$(command jq '.shortUrl' <<< "$result" | sed -E 's/"//g')"
+    short_url="$(command jq '.shortUrl' <<< "$result" | command sed -E 's/"//g')"
     echo "$short_url"
     echo -n "$short_url" | pbcopy
 }
