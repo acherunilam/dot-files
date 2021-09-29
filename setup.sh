@@ -140,7 +140,8 @@ fi
 
 if [[ $INSTALL_VIM == 1 ]]; then
     check_if_installed "curl"
-    command curl --silent -fLo "$TARGET_DIR/.vim/autoload/plug.vim" --create-dirs "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+    command curl -sS --connect-timeout 2 --max-time 5 -fLo "$TARGET_DIR/.vim/autoload/plug.vim" \
+        --create-dirs "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
     check_if_installed "vim"
     command vim +PlugInstall +qall
 fi
