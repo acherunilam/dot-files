@@ -211,10 +211,12 @@ pb() {
         return 1
     fi
     if [[ -p /dev/stdin ]] ; then
-        content="$(command cat)"
+        content="$(</dev/stdin)"
     elif [[ "$OSTYPE" == "darwin"* ]] ; then
         content="$(pbpaste)"
-    else
+    fi
+    if [[ -z "$content" ]] ; then
+        echo "${FUNCNAME[0]}: please pass the text to upload via STDIN" >&2
         return 2
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
@@ -265,10 +267,12 @@ pipp() {
 ppb() {
     local content short_url
     if [[ -p /dev/stdin ]] ; then
-        content="$(command cat)"
+        content="$(</dev/stdin)"
     elif [[ "$OSTYPE" == "darwin"* ]] ; then
         content="$(pbpaste)"
-    else
+    fi
+    if [[ -z "$content" ]] ; then
+        echo "${FUNCNAME[0]}: please pass the text to upload via STDIN" >&2
         return 2
     fi
     short_url="$(command curl -sS -F 'sprunge=<-' http://sprunge.us <<< "$content")"
