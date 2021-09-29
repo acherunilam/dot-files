@@ -81,6 +81,7 @@ aw() {
 #
 # Dependencies:
 #       dnf install aria2
+#       notify()
 #
 # Environment variables:
 #       export DOWNLOAD_ARIA_OPTIONS='(
@@ -109,7 +110,7 @@ download() {
         command aria2c $opts$extra_opts "$file" || ((failed+=1))
     done
     [[ $failed -eq 0 ]] && message="download: success" || message="download: $failed/$file_count failed"
-    printf '\033]9;%s\033\\' "$message"
+    notify "$message"
     return $failed
 }
 
@@ -183,6 +184,19 @@ msync() {
 }
 
 
+# Sends a notification via the terminal.
+#
+# Both iTerm and Tmux are supported. It works using OCS 9, an Xterm-specific escape
+# sequence used send terminal notifications.
+#
+# shellcheck disable=SC1003
+notify() {
+    output="$(printf '\e]9;%s\a' "${*:-'Attention'}")"
+    [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
+    printf "%s" "$output"
+}
+
+
 # Upload contents to Haste, an open-source Node.js pastebin. If no input is passed,
 # then the contents of the clipboard will be used.
 #
@@ -233,8 +247,8 @@ pbcopy() {
         echo "${FUNCNAME[0]}: missing input, please pass the text" >&2
         return 2
     fi
-    output="$(printf '\033]52;c;%s\a' "$(echo -n "$content" | command base64 -w0)")"
-    [[ -n "$TMUX" ]] && output="$(printf '\033Ptmux;\033%s\033\\' "$output")"
+    output="$(printf '\e]52;c;%s\a' "$(echo -n "$content" | command base64 -w0)")"
+    [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
     printf "%s" "$output"
 }
 
