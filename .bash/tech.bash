@@ -74,7 +74,8 @@ iata() {
     local DB_PATH="$HOME/.local/share/iata/airports.dat"
 
     download_iata_db() {
-        command curl -sS "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat" --create-dirs -o "$DB_PATH"
+        command curl -sS --connect-timeout 2 --max-time 5 \
+            "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat" --create-dirs -o "$DB_PATH"
     }
 
     help() {

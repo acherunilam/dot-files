@@ -95,7 +95,7 @@ aw() {
 # shellcheck disable=SC1003,SC2086
 download() {
     local file files file_count failed message
-    local opts="--follow-torrent=false -x8 --continue=true"
+    local opts="--connect-timeout=2 --follow-torrent=false -x8 --continue=true"
     files="$*"
     [[ -z "$files" ]] && files="$(pbpaste)"
     [[ -z "$files" ]] && return 1
@@ -220,7 +220,10 @@ pb() {
         return 2
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
-    response="$(command curl -sS -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL/documents" <<< "$content")"
+    response="$(
+        command curl -sS --connect-timeout 2 --max-time 5 \
+            -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL/documents" <<< "$content"
+    )"
     short_url="$PASTEBIN_URL/$(command cut -d'"' -f4 <<< "$response")"
     echo "$short_url"
     echo -n "$short_url" | pbcopy
@@ -275,7 +278,9 @@ ppb() {
         echo "${FUNCNAME[0]}: please pass the text to upload via STDIN" >&2
         return 2
     fi
-    short_url="$(command curl -sS -F 'sprunge=<-' http://sprunge.us <<< "$content")"
+    short_url="$(
+        command curl -sS --connect-timeout 2 --max-time 5 -F 'sprunge=<-' http://sprunge.us <<< "$content"
+    )"
     echo "$short_url"
     echo -n "$short_url" | pbcopy
 }
@@ -303,7 +308,8 @@ push() {
         echo "${FUNCNAME[0]}: please pass a message" >&2
         return 2
     fi
-    command curl -sS --form-string "user=$PUSHOVER_USER" \
+    command curl -sS --connect-timeout 2 --max-time 5 \
+        --form-string "user=$PUSHOVER_USER" \
         --form-string "token=$PUSHOVER_TOKEN" \
         --form-string "priority=$priority" \
         --form-string "message=$message" \
@@ -342,13 +348,15 @@ url-shorten() {
     fi
     [[ -n "$2" ]] && custom_slug=", \"customSlug\": \"$2\""
     result="$(
-        command curl -sS -X POST "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls" \
+        command curl -sS --connect-timeout 2 --max-time 5 \
+            -X POST "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls" \
             -H "X-Api-Key: $URL_SHORTENER_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"longUrl\": \"$url\"$custom_slug}"
     )"
     if [[ "$(command jq '.type' <<< "$result")" == "\"INVALID_SLUG\"" ]] ; then
-       command curl -sS -X PATCH "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls/$2" \
+        command curl -sS --connect-timeout 2 --max-time 5 \
+            -X PATCH "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls/$2" \
             -H "X-Api-Key: $URL_SHORTENER_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"longUrl\": \"$url\"}" && \
