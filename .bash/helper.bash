@@ -131,10 +131,8 @@ extract() {
             *.gz)       gunzip "$1"             ;;
             *.jar)      7z x "$1"               ;;
             *.iso)      7z x "$1" -o"${1%.*}"   ;;
-            *.lzma)     unlzma "$!"             ;;
-            *.r0)       unrar x "$1"            ;;
-            *.r00)      unrar x "$1"            ;;
-            *.r000)     unrar x "$1"            ;;
+            *.lzma)     unlzma "$1"             ;;
+            *.r+(0))    unrar x "$1"            ;;
             *.rar)      unrar x "$1"            ;;
             *.rpm)      tar xzf "$1"            ;;
             *.tar)      tar xf "$1"             ;;
@@ -146,7 +144,7 @@ extract() {
             *.Z)        uncompress "$1"         ;;
             *)
                 echo "${FUNCNAME[0]}: '$1' cannot be extracted" >&2
-                return 2                          ;;
+                return 2                        ;;
         esac
     else
         echo "${FUNCNAME[0]}: '$1' is not a file" >&2
