@@ -9,6 +9,7 @@ PROMPT_COMMAND="${PROMPT_COMMAND%%;*}; history -a"  # history buffer to be flush
 shopt -s autocd                                     # auto "cd" when entering just a path
 shopt -s cdspell                                    # this will correct minor spelling errors in a cd command
 shopt -s checkjobs                                  # defer the exit if any of the background jobs are running
+shopt -s checkhash                                  # immediately pick up renamed executables
 shopt -s checkwinsize                               # fix line wrap on window resize
 shopt -s cmdhist                                    # force multi-line commands to be stored in the history as a single line
 shopt -s direxpand                                  # replaces directory names with the results of word expansion
@@ -18,7 +19,9 @@ shopt -s expand_aliases                             # expand aliases in scripts
 shopt -s extglob                                    # enhances pattern matching features
 shopt -s globstar                                   # expand "**" to match files in subdirectories as well
 shopt -s histappend                                 # append to history rather than overwrite (avoid history loss)
+shopt -s histreedit                                 # make fixing failed history substitution easier
 shopt -s hostcomplete                               # tab-completion of hostnames after @
+shopt -s huponexit                                  # send SIGHUP to all background jobs before exiting
 shopt -s nocaseglob                                 # let file name expansions be case insensitive
 
 # Load Fzf settings.
