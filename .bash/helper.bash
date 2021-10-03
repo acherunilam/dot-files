@@ -132,7 +132,7 @@ extract() {
             *.jar)      7z x "$1"               ;;
             *.iso)      7z x "$1" -o"${1%.*}"   ;;
             *.lzma)     unlzma "$1"             ;;
-            *.r+(0))    unrar x "$1"            ;;
+            *.r0|*.r00) unrar x "$1"            ;;
             *.rar)      unrar x "$1"            ;;
             *.rpm)      tar xzf "$1"            ;;
             *.tar)      tar xf "$1"             ;;
