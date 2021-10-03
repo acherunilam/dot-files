@@ -195,8 +195,8 @@ notify() {
 }
 
 
-# Upload contents to Haste, an open-source Node.js pastebin. If no input is passed,
-# then the contents of the clipboard will be used.
+# Upload contents to @mkaczanowski's Pastebin, an open-source Rust pastebin. If no input is
+# passed, then the contents of the clipboard will be used.
 #
 # Environment variables:
 #       export PASTEBIN_URL="<url-of-pastebin>"
@@ -221,12 +221,11 @@ pb() {
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
     response="$(
-        command curl -sS --connect-timeout 2 --max-time 5 \
-            -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL/documents" <<< "$content"
+        command curl -q -sS --connect-timeout 2 --max-time 5 \
+            -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL" <<<"$content"
     )"
-    short_url="$PASTEBIN_URL/$(command cut -d'"' -f4 <<< "$response")"
-    echo "$short_url"
-    echo -n "$short_url" | pbcopy
+    echo "$response"
+    echo -n "$response" | pbcopy
 }
 
 
@@ -292,7 +291,7 @@ ppb() {
 # Environment variables:
 #       export PUSHOVER_USER="<user>"
 #       export PUSHOVER_TOKEN="<token>"
-# 
+#
 # Usage:
 #     push foo              Sends the message 'foo'
 #     push -h bar           Sends the message 'bar' with high priority
@@ -319,14 +318,14 @@ push() {
 
 # Shorten the given URL using Shlink, an open-source URL Shortener. The API key can be
 # generated from by running `bin/cli api-key:generate`.
-# 
+#
 # Dependencies:
 #       dnf install jq
 #
 # Environment variables:
 #       export URL_SHORTENER_ENDPOINT="<url-of-endpoint>"
 #       export URL_SHORTENER_API_KEY="<generated-api-key>"
-# 
+#
 # Usage:
 #     url-shorten <url>             Shortens the given URL, uses a randomized 4-letter slug
 #     url-shorten <url> <slug>      Shortens the given URL using the given slug. If slug
