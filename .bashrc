@@ -30,7 +30,7 @@ for p in "${path_list[@]}" ; do
     [[ ":$PATH:" != *":$p:"* ]] && PATH="$p:${PATH}"
 done
 # Load all the Bash configs.
-for file in "$HOME"/.bash/*.bash ; do
+for file in "$HOME"/.bash/*.sh ; do
     source "$file"
 done
 
