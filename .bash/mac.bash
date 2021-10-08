@@ -22,6 +22,7 @@ alias lck='pmset displaysleepnow'                                           # sw
 alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
+alias tac='gtac'                                                            # load GNU tac
 
 
 # cd into the directory that is currently open in Finder.
