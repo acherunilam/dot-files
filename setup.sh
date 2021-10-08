@@ -100,7 +100,7 @@ done
 cd "$(dirname "$0")" || exit 1
 command git submodule update --init --recursive
 SOURCE=""
-EXCLUDE_FILES="--exclude=fzf.bindings.bash --exclude=fzf.completion.bash"
+EXCLUDE_FILES="--exclude=fzf.bindings.sh --exclude=fzf.completion.sh"
 [[ $SKIP_EXISTING == 1 ]] && OVERWRITE_SETTINGS="--ignore-existing" || OVERWRITE_SETTINGS="--backup --suffix=.bak"
 if [[ $INSTALL_ALL == 1 ]] ; then
     INSTALL_BASH=1
@@ -115,7 +115,7 @@ if [[ $INSTALL_ALL == 1 ]] ; then
     INSTALL_TMUX=1
     INSTALL_VIM=1
 fi
-[[ $INSTALL_BASH == 1 ]] && SOURCE+=" ./.bashrc ./.bash_profile ./.bash/*.bash"
+[[ $INSTALL_BASH == 1 ]] && SOURCE+=" ./.bashrc ./.bash_profile ./.bash/*.sh"
 [[ $INSTALL_EDITLINE == 1 ]] && SOURCE+=" ./.editrc"
 [[ $INSTALL_FASD == 1 ]] && SOURCE+=" ./.fasdrc"
 [[ $INSTALL_FZF == 1 ]] && EXCLUDE_FILES=""
@@ -126,7 +126,7 @@ fi
 [[ $INSTALL_SSH == 1 ]] && SOURCE+=" ./.ssh"
 [[ $INSTALL_TMUX == 1 ]] && SOURCE+=" ./.tmux.conf"
 [[ $INSTALL_VIM == 1 ]] && SOURCE+=" ./.vimrc"
-[[ "$OSTYPE" != "darwin"* ]] && EXCLUDE_FILES+=" --exclude=mac.bash"
+[[ "$OSTYPE" != "darwin"* ]] && EXCLUDE_FILES+=" --exclude=mac.sh"
 check_if_installed "rsync"
 command rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
 
