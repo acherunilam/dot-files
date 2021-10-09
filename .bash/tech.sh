@@ -1,4 +1,4 @@
-# shellcheck disable=SC2181
+# shellcheck shell=bash
 
 
 # Geolocates the IP.
@@ -71,13 +71,13 @@ asn() {
 # Dependencies:
 #       dnf install util-linux
 #
-# shellcheck disable=SC2016
+# shellcheck disable=SC2016,SC2181
 iata() {
     local CRON_SCHEDULE="0 5 * * *"  # every day 5 AM
     local DB_PATH="$HOME/.local/share/iata/airports.dat"
 
     download_iata_db() {
-        command curl -sS --connect-timeout 2 --max-time 5 \
+        command curl -qsS --connect-timeout 2 --max-time 5 \
             "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat" --create-dirs -o "$DB_PATH"
     }
 

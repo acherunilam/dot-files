@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # shellcheck disable=SC1012,SC2046,SC2048,SC2086,SC2155,SC2128,SC2206,SC2207
 
 

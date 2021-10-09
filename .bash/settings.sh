@@ -1,3 +1,6 @@
+# shellcheck shell=bash
+
+
 # Configure command history.
 HISTCONTROL=ignoreboth                              # don't store commands if they start with a space, or if they are duplicates
 HISTFILE="$HOME/.bash_history"                      # store the history of commands that were executed over here
