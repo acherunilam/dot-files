@@ -1,3 +1,7 @@
+# shellcheck shell=bash
+# shellcheck disable=SC2181
+
+
 # Move up the directory.
 alias ..='cd ..'
 alias ..2='cd ../..'
@@ -202,10 +206,9 @@ notify() {
 #       export PASTEBIN_URL="<url-of-pastebin>"
 #       export PASTEBIN_AUTH_BASIC="user:pass"
 #
-# shellcheck disable=SC2086
+# shellcheck disable=SC2086,SC2181
 pb() {
-    local content response short_url
-    local curl_auth_arg=""
+    local content curl_auth_arg response
     if [[ -z "$PASTEBIN_URL" ]] ; then
         echo "${FUNCNAME[0]}: please set the environment variable \$PASTEBIN_URL" >&2
         return 1
@@ -221,9 +224,13 @@ pb() {
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
     response="$(
-        command curl -q -sS --connect-timeout 2 --max-time 5 \
-            -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL" <<<"$content"
+        command curl -qsS --connect-timeout 2 --max-time 5 \
+            -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL" <<< "$content"
     )"
+    if [[ $? -ne 0 ]] ; then
+        echo "${FUNCNAME[0]}: unable to connect to $PASTEBIN_URL" >&2
+        return 1
+    fi
     echo "$response"
     echo -n "$response" | pbcopy
 }
@@ -267,7 +274,8 @@ pipp() {
 # Upload contents to Sprunge, a public pastebin. If no input is passed, then the
 # contents of the clipboard will be used.
 ppb() {
-    local content short_url
+    local content response
+    local SPRUNGE_URL="http://sprunge.us"
     if [[ -p /dev/stdin ]] ; then
         content="$(</dev/stdin)"
     elif [[ "$OSTYPE" == "darwin"* ]] ; then
@@ -277,11 +285,15 @@ ppb() {
         echo "${FUNCNAME[0]}: please pass the text to upload via STDIN" >&2
         return 2
     fi
-    short_url="$(
-        command curl -sS --connect-timeout 2 --max-time 5 -F 'sprunge=<-' http://sprunge.us <<< "$content"
+    response="$(
+        command curl -qsS --connect-timeout 2 --max-time 5 -F 'sprunge=<-' $SPRUNGE_URL <<< "$content"
     )"
-    echo "$short_url"
-    echo -n "$short_url" | pbcopy
+    if [[ $? -ne 0 ]] ; then
+        echo "${FUNCNAME[0]}: unable to connect to $SPRUNGE_URL" >&2
+        return 1
+    fi
+    echo "$response"
+    echo -n "$response" | pbcopy
 }
 
 
@@ -307,7 +319,7 @@ push() {
         echo "${FUNCNAME[0]}: please pass a message" >&2
         return 2
     fi
-    command curl -sS --connect-timeout 2 --max-time 5 \
+    command curl -qsS --connect-timeout 2 --max-time 5 \
         --form-string "user=$PUSHOVER_USER" \
         --form-string "token=$PUSHOVER_TOKEN" \
         --form-string "priority=$priority" \
@@ -319,49 +331,50 @@ push() {
 # Shorten the given URL using Shlink, an open-source URL Shortener. The API key can be
 # generated from by running `bin/cli api-key:generate`.
 #
-# Dependencies:
-#       dnf install jq
-#
 # Environment variables:
-#       export URL_SHORTENER_ENDPOINT="<url-of-endpoint>"
 #       export URL_SHORTENER_API_KEY="<generated-api-key>"
+#       export URL_SHORTENER_URL="<url-of-endpoint>"
 #
 # Usage:
 #     url-shorten <url>             Shortens the given URL, uses a randomized 4-letter slug
 #     url-shorten <url> <slug>      Shortens the given URL using the given slug. If slug
 #                                       already exists, then it overwrites it
 url-shorten() {
-    local result short_url custom_slug
+    local custom_slug response result
     local url="$1"
-    if [[ -z "$URL_SHORTENER_ENDPOINT" ]] || [[ -z "$URL_SHORTENER_API_KEY" ]]; then
-        echo "${FUNCNAME[0]}: please set both the environment variables \$URL_SHORTENER_ENDPOINT \
+    if [[ -z "$URL_SHORTENER_URL" ]] || [[ -z "$URL_SHORTENER_API_KEY" ]]; then
+        echo "${FUNCNAME[0]}: please set both the environment variables \$URL_SHORTENER_URL \
             and \$URL_SHORTENER_API_KEY" >&2
         return 1
     fi
     if [[ -z $url ]] ; then
         echo "${FUNCNAME[0]}: please pass the URL as the first argument" >&2
         return 2
-    elif [[ ! $url =~ ^https?://[^\ ]+$ ]] ; then
+    elif [[ ! $url =~ ^https?://[^\.]+\..+$ ]] ; then
         echo "${FUNCNAME[0]}: '$url' is not a valid URL" >&2
         return 2
     fi
     [[ -n "$2" ]] && custom_slug=", \"customSlug\": \"$2\""
-    result="$(
-        command curl -sS --connect-timeout 2 --max-time 5 \
-            -X POST "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls" \
+    response="$(
+        command curl -qsS --connect-timeout 2 --max-time 5 \
+            -X POST "$URL_SHORTENER_URL/rest/v2/short-urls" \
             -H "X-Api-Key: $URL_SHORTENER_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"longUrl\": \"$url\"$custom_slug}"
     )"
-    if [[ "$(command jq '.type' <<< "$result")" == "\"INVALID_SLUG\"" ]] ; then
-        command curl -sS --connect-timeout 2 --max-time 5 \
-            -X PATCH "$URL_SHORTENER_ENDPOINT/rest/v2/short-urls/$2" \
+    if [[ $? -ne 0 ]] ; then
+        echo "${FUNCNAME[0]}: unable to connect to $URL_SHORTENER_URL" >&2
+        return 1
+    fi
+    if command grep -q '"type":"INVALID_SLUG"' <<< "$response" ; then
+        command curl -qsS --connect-timeout 2 --max-time 5 \
+            -X PATCH "$URL_SHORTENER_URL/rest/v2/short-urls/$2" \
             -H "X-Api-Key: $URL_SHORTENER_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"longUrl\": \"$url\"}" && \
-            result="{\"shortUrl\": \"$URL_SHORTENER_ENDPOINT/$2\"}"
+            response="{\"shortUrl\": \"$URL_SHORTENER_URL/$2\"}"
     fi
-    short_url="$(command jq '.shortUrl' <<< "$result" | command sed -E 's/"//g')"
-    echo "$short_url"
-    echo -n "$short_url" | pbcopy
+    result="$(echo "$response" | command tr ',' '\n' | command sed -En 's/.*"shortUrl":"(.*)"/\1/p')"
+    echo "$result"
+    echo -n "$result" | pbcopy
 }
