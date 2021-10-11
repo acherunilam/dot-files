@@ -28,7 +28,7 @@ export PYTHONSTARTUP="$HOME/.pythonrc"
 if [[ "$OSTYPE" == "linux"* ]] ; then
     export PATH="$HOME/miniconda3/bin:$PATH"
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    export PATH="/opt/miniconda3/bin:$PATH"
+    export PATH="$(command brew --caskroom)/miniconda/base/bin:$PATH"
 fi
 export PATH="$HOME/.local/bin:$PATH"
 
