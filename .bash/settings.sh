@@ -26,14 +26,14 @@ shopt -s histreedit                                 # make fixing failed history
 shopt -s hostcomplete                               # tab-completion of hostnames after @
 shopt -s huponexit                                  # send SIGHUP to all background jobs before exiting
 shopt -s nocaseglob                                 # let file name expansions be case insensitive
+shopt -s nullglob                                   # file name patterns expand to NULL if there's no match
 
 # Load Fzf settings.
 #
 # Dependencies:
-#       dnf install fzf
+#       dnf install fd-find fzf
 export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git"
 export FZF_DEFAULT_OPTS="--bind 'ctrl-a:select-all'"
-
 
 # Load Ripgrep settings.
 #
