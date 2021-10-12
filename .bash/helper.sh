@@ -55,6 +55,9 @@ alias watch='watch --color '
 #       aw 1-3,7            Prints the first 3 columns, followed by the 7th
 #       aw 1-3,7 -F":"      Same as above, but passes the -F":" option to awk
 #
+# Dependencies:
+#       error()
+#
 # shellcheck disable=SC2086
 aw() {
     local ranges start end arg
@@ -68,8 +71,7 @@ aw() {
             if [[ $start =~ ^[0-9]+$ ]] && [[ $end =~ ^[0-9]*$ ]] ; then
                 columns+="$(command seq -s ',' -f '$%g' "$start" "${end:-$start}")"
             else
-                echo "${FUNCNAME[0]}: invalid input" >&2
-                return 2
+                error "invalid input" 2 ; return
             fi
         done
     done
@@ -122,6 +124,7 @@ download() {
 #
 # Dependencies:
 #       dnf install binutils cabextract p7zip p7zip-plugins unrar xz
+#       error()
 extract() {
     if [[ -f "$1" ]] ; then
         case "$1" in
@@ -146,12 +149,11 @@ extract() {
             *.zip)      7z x "$1"               ;;
             *.Z)        uncompress "$1"         ;;
             *)
-                echo "${FUNCNAME[0]}: '$1' cannot be extracted" >&2
-                return 2                        ;;
+                error "'$1' cannot be extracted" 2 ; return
+                                                ;;
         esac
     else
-        echo "${FUNCNAME[0]}: '$1' is not a file" >&2
-        return 2
+        error "'$1' is not a file" 2 ; return
     fi
 }
 
@@ -205,12 +207,15 @@ notify() {
 #       export PASTEBIN_URL="<url-of-pastebin>"
 #       export PASTEBIN_AUTH_BASIC="user:pass"
 #
+# Dependencies:
+#       error()
+#
 # shellcheck disable=SC2086,SC2181
 pb() {
     local content curl_auth_arg response
     if [[ -z "$PASTEBIN_URL" ]] ; then
-        echo "${FUNCNAME[0]}: please set the environment variable \$PASTEBIN_URL" >&2
-        return 1
+        error "please set the environment variable \$PASTEBIN_URL"
+        return
     fi
     if [[ -p /dev/stdin ]] ; then
         content="$(</dev/stdin)"
@@ -218,8 +223,8 @@ pb() {
         content="$(pbpaste)"
     fi
     if [[ -z "$content" ]] ; then
-        echo "${FUNCNAME[0]}: please pass the text to upload via STDIN" >&2
-        return 2
+        error "please pass the text to upload via STDIN" 2
+        return
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
     response="$(
@@ -227,8 +232,12 @@ pb() {
             -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL" <<< "$content"
     )"
     if [[ $? -ne 0 ]] ; then
-        echo "${FUNCNAME[0]}: unable to connect to $PASTEBIN_URL" >&2
-        return 1
+        error "unable to connect to $PASTEBIN_URL"
+        return
+    fi
+    if [[ -z "$response" ]] ; then
+        error "unknown error, missing output"
+        return
     fi
     echo "$response"
     echo -n "$response" | pbcopy
@@ -244,6 +253,9 @@ pb() {
 # Usage:
 #       echo "text message" | pbcopy
 #
+# Dependencies:
+#       error()
+#
 # shellcheck disable=SC1003
 pbcopy() {
     if [[ "$OSTYPE" == "darwin"* ]] ; then
@@ -252,8 +264,7 @@ pbcopy() {
     fi
     content="$(</dev/stdin)"
     if [[ -z "$content" ]] ; then
-        echo "${FUNCNAME[0]}: missing input, please pass the text" >&2
-        return 2
+        error "missing input, please pass the text" 2 ; return
     fi
     output="$(printf '\e]52;c;%s\a' "$(echo -n "$content" | command base64 -w0)")"
     [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
@@ -273,6 +284,9 @@ pipp() {
 # Upload contents to Sprunge, a public pastebin. If no input is passed, then the
 # contents of the clipboard will be used.
 #
+# Dependencies:
+#       error()
+#
 # shellcheck disable=SC2181
 ppb() {
     local content response
@@ -283,49 +297,104 @@ ppb() {
         content="$(pbpaste)"
     fi
     if [[ -z "$content" ]] ; then
-        echo "${FUNCNAME[0]}: please pass the text to upload via STDIN" >&2
-        return 2
+        error "please pass the text to upload via STDIN" 2
+        return
     fi
     response="$(
         command curl -qsS --connect-timeout 2 --max-time 5 -F 'sprunge=<-' $SPRUNGE_URL <<< "$content"
     )"
     if [[ $? -ne 0 ]] ; then
-        echo "${FUNCNAME[0]}: unable to connect to $SPRUNGE_URL" >&2
-        return 1
+        error "unable to connect to $SPRUNGE_URL"
+        return
+    fi
+    if [[ -z "$response" ]] ; then
+        error "unknown error, missing output"
+        return
     fi
     echo "$response"
     echo -n "$response" | pbcopy
 }
 
 
-# Send push notifications to your mobile device via the service Pushover.
-# The token can be fetched from over here (https://pushover.net/apps/build).
+# Sends a push notification using Pushover (https://pushover.net/). The user and token can
+# be obtained by registering your app over here (https://pushover.net/apps/build).
 #
 # Environment variables:
 #       export PUSHOVER_USER="<user>"
 #       export PUSHOVER_TOKEN="<token>"
 #
 # Usage:
-#     push foo              Sends the message 'foo'
-#     push -h bar           Sends the message 'bar' with high priority
+#       push foo              Sends the message 'foo'
+#       push -p bar           Sends the message 'bar' with high priority
+#
+# Dependencies:
+#       error()
+#
+# shellcheck disable=SC2155,SC2181,SC2199
 push() {
+    help() {
+        echo "Usage: ${FUNCNAME[1]} [options] <message>
+Sends a push notification using Pushover (https://pushover.net/). The user and token can
+be obtained by registering your app over here (https://pushover.net/apps/build).
+
+Environment variables:
+  export PUSHOVER_USER=\"<user>\"
+  export PUSHOVER_TOKEN=\"<token>\"
+
+Options:
+  -h    Print this help message.
+  -p    Send the message with high priority."
+    }
+
+    local columns OPTIND
     local priority=0
-    if [[ -z "$PUSHOVER_USER" ]] || [[ -z "$PUSHOVER_TOKEN" ]]; then
-        echo "${FUNCNAME[0]}: please set both the environment variables \$PUSHOVER_USER and \$PUSHOVER_TOKEN" >&2
-        return 1
+    while getopts ":phv" arg ; do
+        case $arg in
+            p)  # priority
+                priority=1
+                ;;
+            h)  # help
+                help && return
+                ;;
+            *)
+                help >&2 && return 2
+                ;;
+        esac
+    done
+    shift $((OPTIND-1))
+    if [[ -z "$PUSHOVER_USER" ]] || [[ -z "$PUSHOVER_TOKEN" ]] ; then
+        error "missing environment variables, please set both PUSHOVER_USER and PUSHOVER_TOKEN"
+        return
     fi
-    [[ "$1" == "-h" ]] || [[ "$1" == "--high" ]] && priority=1 && shift
+    [[ "$1" == "-p" ]] && priority=1 && shift
+    [[ "${@: -1}" == "-p" ]] && priority=1 && set -- "${@:1:$(($#-1))}"
     local message="$*"
     if [[ -z "$message" ]] ; then
-        echo "${FUNCNAME[0]}: please pass a message" >&2
-        return 2
+        error "missing input, please pass a message" 2
+        return
     fi
-    command curl -qsS --connect-timeout 2 --max-time 5 \
-        --form-string "user=$PUSHOVER_USER" \
-        --form-string "token=$PUSHOVER_TOKEN" \
-        --form-string "priority=$priority" \
-        --form-string "message=$message" \
-        "https://api.pushover.net/1/messages.json" 1>/dev/null
+    local response="$(
+        command curl -qsS --connect-timeout 2 --max-time 5 \
+            --form-string "user=$PUSHOVER_USER" \
+            --form-string "token=$PUSHOVER_TOKEN" \
+            --form-string "priority=$priority" \
+            --form-string "message=$message" \
+            "https://api.pushover.net/1/messages.json"
+    )"
+    if [[ $? -ne 0 ]] ; then
+        error "unable to connect to pushover.net"
+        return
+    fi
+    if command grep -q '"user":"invalid"' <<< "$response" ; then
+        error "invalid user, please check the environment variable PUSHOVER_USER"
+        return
+    elif command grep -q '"token":"invalid"' <<< "$response" ; then
+        error "invalid token, please check the environment variable PUSHOVER_TOKEN"
+        return
+    elif ! command grep -q '"status":1' <<< "$response" ; then
+        error "unknown error: $response"
+        return
+    fi
 }
 
 
@@ -337,25 +406,25 @@ push() {
 #       export URL_SHORTENER_URL="<url-of-endpoint>"
 #
 # Usage:
-#     url-shorten <url>             Shortens the given URL, uses a randomized 4-letter slug
-#     url-shorten <url> <slug>      Shortens the given URL using the given slug. If slug
+#       url-shorten <url>             Shortens the given URL, uses a randomized 4-letter slug
+#       url-shorten <url> <slug>      Shortens the given URL using the given slug. If slug
 #                                       already exists, then it overwrites it
 #
-# shellcheck disable=SC2181
+# Dependencies:
+#       error()
+#
+# shellcheck disable=SC2015,SC2181
 url-shorten() {
     local custom_slug response result
     local url="$1"
-    if [[ -z "$URL_SHORTENER_URL" ]] || [[ -z "$URL_SHORTENER_API_KEY" ]]; then
-        echo "${FUNCNAME[0]}: please set both the environment variables \$URL_SHORTENER_URL \
-            and \$URL_SHORTENER_API_KEY" >&2
-        return 1
+    if [[ -z "$URL_SHORTENER_URL" ]] || [[ -z "$URL_SHORTENER_API_KEY" ]] ; then
+        error "please set both the environment variables \$URL_SHORTENER_URL and \$URL_SHORTENER_API_KEY"
+        return
     fi
     if [[ -z $url ]] ; then
-        echo "${FUNCNAME[0]}: please pass the URL as the first argument" >&2
-        return 2
+        error "please pass the URL as the first argument" 2
     elif [[ ! $url =~ ^https?://[^\.]+\..+$ ]] ; then
-        echo "${FUNCNAME[0]}: '$url' is not a valid URL" >&2
-        return 2
+        error "'$url' is not a valid URL" 2
     fi
     [[ -n "$2" ]] && custom_slug=", \"customSlug\": \"$2\""
     response="$(
@@ -366,18 +435,23 @@ url-shorten() {
             -d "{\"longUrl\": \"$url\"$custom_slug}"
     )"
     if [[ $? -ne 0 ]] ; then
-        echo "${FUNCNAME[0]}: unable to connect to $URL_SHORTENER_URL" >&2
-        return 1
+        error "unable to connect to $URL_SHORTENER_URL"
+        return
     fi
     if command grep -q '"type":"INVALID_SLUG"' <<< "$response" ; then
         command curl -qsS --connect-timeout 2 --max-time 5 \
             -X PATCH "$URL_SHORTENER_URL/rest/v2/short-urls/$2" \
             -H "X-Api-Key: $URL_SHORTENER_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\"longUrl\": \"$url\"}" && \
-            response="{\"shortUrl\": \"$URL_SHORTENER_URL/$2\"}"
+            -d "{\"longUrl\": \"$url\"}" \
+            && response="{\"shortUrl\": \"$URL_SHORTENER_URL/$2\"}" \
+            || { error "unable to connect to $URL_SHORTENER_URL" ; return ;}
     fi
     result="$(echo "$response" | command tr ',' '\n' | command sed -En 's/.*"shortUrl":"(.*)"/\1/p')"
+    if [[ -z "$result" ]] ; then
+        error "unknown error, missing output"
+        return
+    fi
     echo "$result"
     echo -n "$result" | pbcopy
 }

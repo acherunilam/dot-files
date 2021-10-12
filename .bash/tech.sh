@@ -18,6 +18,7 @@ alias geo='geoiplookup'
 #
 # Dependencies:
 #       dnf install coreutils
+#       error()
 asn() {
     local V4_CYMRU_NS="origin.asn.cymru.com"
     local V6_CYMRU_NS="origin6.asn.cymru.com"
@@ -54,8 +55,7 @@ asn() {
         output="$(query_cymru "AS$prefix.$AS_CYMRU_NS")"
         echo "$output"
     else
-        echo "${FUNCNAME[0]}: invalid input, please pass an IP or ASN" >&2
-        return 2
+        error "invalid input, please pass an IP or ASN" 2 ; return
     fi
 }
 
@@ -70,6 +70,7 @@ asn() {
 #
 # Dependencies:
 #       dnf install util-linux
+#       error()
 #
 # shellcheck disable=SC2015,SC2016,SC2199
 iata() {
@@ -81,14 +82,8 @@ iata() {
             "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat" --create-dirs -o "$DB_PATH"
     }
 
-    error() {
-        [[ $2 -eq 0 ]] && stdout_or_err=1 || stdout_or_err=2
-        echo "${FUNCNAME[1]}: $1" >&$stdout_or_err
-        return "${2:-1}"
-    }
-
     help() {
-    echo "Usage: ${FUNCNAME[0]} [options] <iata_code>
+        echo "Usage: ${FUNCNAME[1]} [options] <iata_code>
 Prints the details for the given IATA airport code.
 
 Options:
@@ -100,17 +95,17 @@ Options:
 
     local columns OPTIND
     local verbose=0
-    while getopts ":ishv" arg; do
+    while getopts ":ishv" arg ; do
         case $arg in
             i)  # install
                 echo -e "$(command crontab -l)\n\n# Update IATA DB.\n$CRON_SCHEDULE bash -ic 'iata -s'" | command crontab - \
                     && error "installed cron tab" 0 \
-                    || error "installation failed" 1
+                    || error "installation failed"
+                return
                 ;;
             s)  # sync
-                download_iata_db \
-                    && error "synced IATA DB" 0 \
-                    || error "sync failed" 1
+                download_iata_db && error "synced IATA DB" 0 || error "sync failed"
+                return
                 ;;
             h)  # help
                 help && return
@@ -127,9 +122,9 @@ Options:
     # Allow '-v' to be passed after the input.
     [[ "${@: -1}" == "-v" ]] && verbose=1 && set -- "${@:1:$(($#-1))}"
     if [[ $# -eq 0 ]] ; then
-        error "please pass the airport code" 2
+        error "please pass the airport code" 2 ; return
     elif [[ $# -gt 1 ]] ; then
-        error "invalid input, do not pass more than one airport code" 2
+        error "invalid input, do not pass more than one airport code" 2 ; return
     fi
 
     [[ ! -f "$DB_PATH" ]] && download_iata_db

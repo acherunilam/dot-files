@@ -27,6 +27,8 @@ alias tac='gtac'                                                            # lo
 
 
 # cd into the directory that is currently open in Finder.
+# Dependencies:
+#       error()
 cdf() {
     local target
     target="$(
@@ -37,8 +39,7 @@ cdf() {
     if [[ -n $target ]] ; then
         cd "$target" || return 1
     else
-        echo "${FUNCNAME[0]}: no Finder window found" >&2
-        return 2
+        error "no Finder window found" 2 ; return
     fi
 }
 
@@ -48,28 +49,33 @@ cdf() {
 # Environment variables:
 #       export CLEAR_HISTORY_BASH_KEYWORDS="<keyword1:keyword2>"
 #       export CLEAR_HISTORY_FASD_PATH="<path1:path2>"
+#
+# Dependencies:
+#       error()
+#
+# shellcheck disable=SC2015
 clear-history() {
     # Clear recent files.
     osascript -e "tell application \"System Events\" to click menu item \"Clear Menu\" of menu \
         of menu item \"Recent Items\" of menu of menu bar item \"Apple\" of menu bar of process \
-        \"Finder\"" 1>/dev/null || echo "${FUNCNAME[0]}: unable to clear recent files" >&2
+        \"Finder\"" 1>/dev/null || error "unable to clear recent files"
     # Clear recent folders.
     osascript -e "tell application \"System Events\" to click menu item \
         \"Clear Menu\" of menu of menu item \"Recent Folders\" of menu of \
         menu bar item \"Go\" of menu bar of process \"Finder\"" \
-        1>/dev/null || echo "${FUNCNAME[0]}: unable to clear recent folders" >&2
+        1>/dev/null || error "unable to clear recent folders"
     # Clear 'Go to' Folder.
     defaults delete com.apple.finder GoToField &>/dev/null
     defaults delete com.apple.finder GoToFieldHistory &>/dev/null
-    killall Finder || echo "${FUNCNAME[0]}: unable to clear Go to Folder" >&2
+    killall Finder || error "unable to clear Go to Folder"
     # Clear VLC's recent files.
-    osascript -e "tell application \"VLC\" to activate" 1>/dev/null && \
-        osascript -e "tell application \"Finder\" to set visible of process \"VLC\" to \
-            false" 1>/dev/null && \
-        osascript -e "tell application \"System Events\" to click menu item \"Clear Menu\" \
-            of menu of menu item \"Open Recent\" of menu of menu bar item \"File\" of menu \
-            bar 1 of process \"VLC\"" 1>/dev/null && \
-        killall VLC || echo "${FUNCNAME[0]}: unable to clear recent VLC files" >&2
+    osascript -e "tell application \"VLC\" to activate" 1>/dev/null \
+        && osascript -e "tell application \"Finder\" to set visible of process \"VLC\" to \
+            false" 1>/dev/null \
+        && osascript -e "tell application \"System Events\" to click menu item \"Clear Menu\" \
+            of menu of menu item \"Open Recent\" of menu of menu bar item \"File\" of menu bar \
+            1 of process \"VLC\"" 1>/dev/null \
+        && killall VLC || error "unable to clear recent VLC files"
     # Clear Bash history lines containing any of the specified keywords.
     if [[ -n "$CLEAR_HISTORY_BASH_KEYWORDS" ]] ; then
         local hist_file="${HISTFILE:-$HOME/.bash_history}"
@@ -77,13 +83,13 @@ clear-history() {
         echo -e "${CLEAR_HISTORY_BASH_KEYWORDS//:/\\n}" | while read -r k ; do
             command tail -r "$hist_file" | command sed "/${k//\//\\/}/,+1d" | command tail -r \
                 >"$tmp_file" && command cp -f "$tmp_file" "$hist_file"
-        done || echo "${FUNCNAME[0]}: unable to clear Bash history keywords" >&2
+        done || error "unable to clear Bash history keywords"
     fi
     # Clear Fasd paths containing any of the specified paths.
     if [[ -n "$CLEAR_HISTORY_FASD_PATH" ]] ; then
         echo -e "${CLEAR_HISTORY_FASD_PATH//:/\\n}" | while read -r p ; do
             command sed -i "/${p//\//\\/}/d" "${_FASD_DATA:-$HOME/.fasd}"
-        done || echo "${FUNCNAME[0]}: unable to clear Fasd paths" >&2
+        done || error "unable to clear Fasd paths"
     fi
 }
 
@@ -91,8 +97,8 @@ clear-history() {
 # Unmount all DMGs or external HDDs.
 #
 # Usage:
-#     unmount               Unmount the DMGs
-#     unmount -e            Unmount the HDDs
+#       unmount               Unmount the DMGs
+#       unmount -e            Unmount the HDDs
 eject() {
     local volume volumes disk_type label device devices
     volumes=$(command diskutil list | command grep "/dev/disk")
