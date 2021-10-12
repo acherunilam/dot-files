@@ -1,5 +1,4 @@
 # shellcheck shell=bash
-# shellcheck disable=SC2181
 
 
 # Move up the directory.
@@ -273,6 +272,8 @@ pipp() {
 
 # Upload contents to Sprunge, a public pastebin. If no input is passed, then the
 # contents of the clipboard will be used.
+#
+# shellcheck disable=SC2181
 ppb() {
     local content response
     local SPRUNGE_URL="http://sprunge.us"
@@ -339,6 +340,8 @@ push() {
 #     url-shorten <url>             Shortens the given URL, uses a randomized 4-letter slug
 #     url-shorten <url> <slug>      Shortens the given URL using the given slug. If slug
 #                                       already exists, then it overwrites it
+#
+# shellcheck disable=SC2181
 url-shorten() {
     local custom_slug response result
     local url="$1"

@@ -64,14 +64,14 @@ asn() {
 #
 # Usage:
 #       iata sea        # Case insensitive search
-#       iata -v sea     # Print verbose details of the airport
+#       iata sea -v     # Print verbose details of the airport
 #       iata -i         # Install a cron job to periodically update the IATA DB
 #       iata -s         # Sync the local IATA DB to the latest version
 #
 # Dependencies:
 #       dnf install util-linux
 #
-# shellcheck disable=SC2016,SC2181
+# shellcheck disable=SC2015,SC2016,SC2199
 iata() {
     local CRON_SCHEDULE="0 5 * * *"  # every day 5 AM
     local DB_PATH="$HOME/.local/share/iata/airports.dat"
@@ -79,6 +79,12 @@ iata() {
     download_iata_db() {
         command curl -qsS --connect-timeout 2 --max-time 5 \
             "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat" --create-dirs -o "$DB_PATH"
+    }
+
+    error() {
+        [[ $2 -eq 0 ]] && stdout_or_err=1 || stdout_or_err=2
+        echo "${FUNCNAME[1]}: $1" >&$stdout_or_err
+        return "${2:-1}"
     }
 
     help() {
@@ -97,24 +103,14 @@ Options:
     while getopts ":ishv" arg; do
         case $arg in
             i)  # install
-                echo -e "$(command crontab -l)\n\n# Update IATA DB.\n$CRON_SCHEDULE bash -ic 'iata -s'" | command crontab -
-                if [[ $? -eq 0 ]] ; then
-                    echo "${FUNCNAME[0]}: installed cron tab"
-                    return
-                else
-                    echo "${FUNCNAME[0]}: installation failed" >&2
-                    return 1
-                fi
+                echo -e "$(command crontab -l)\n\n# Update IATA DB.\n$CRON_SCHEDULE bash -ic 'iata -s'" | command crontab - \
+                    && error "installed cron tab" 0 \
+                    || error "installation failed" 1
                 ;;
             s)  # sync
-                download_iata_db
-                if [[ $? -eq 0 ]] ; then
-                    echo "${FUNCNAME[0]}: synced IATA DB"
-                    return
-                else
-                    echo "${FUNCNAME[0]}: sync failed" >&2
-                    return 1
-                fi
+                download_iata_db \
+                    && error "synced IATA DB" 0 \
+                    || error "sync failed" 1
                 ;;
             h)  # help
                 help && return
@@ -128,9 +124,12 @@ Options:
         esac
     done
     shift $((OPTIND-1))
+    # Allow '-v' to be passed after the input.
+    [[ "${@: -1}" == "-v" ]] && verbose=1 && set -- "${@:1:$(($#-1))}"
     if [[ $# -eq 0 ]] ; then
-        echo "${FUNCNAME[0]}: missing input, please pass the airport code" >&2
-        return 2
+        error "please pass the airport code" 2
+    elif [[ $# -gt 1 ]] ; then
+        error "invalid input, do not pass more than one airport code" 2
     fi
 
     [[ ! -f "$DB_PATH" ]] && download_iata_db
