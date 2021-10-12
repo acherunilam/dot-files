@@ -31,7 +31,7 @@ for p in "${path_list[@]}" ; do
 done
 # Load all the Bash configs.
 for file in "$HOME"/.bash/*.sh ; do
-    source "$file"
+    [[ -f "$file" ]] && source "$file"
 done
 
 
