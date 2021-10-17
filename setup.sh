@@ -131,17 +131,17 @@ check_if_installed "rsync"
 command rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
 
 
-if [[ $INSTALL_SSH == 1 ]]; then
-    command chmod 700 "$TARGET_DIR"
-    command chmod 700 "$TARGET_DIR/.ssh"
-    command chmod 644 "$TARGET_DIR/.ssh/config"
-fi
-
-
 if [[ $INSTALL_VIM == 1 ]]; then
     check_if_installed "curl"
     command curl -sS --connect-timeout 2 --max-time 5 -fLo "$TARGET_DIR/.vim/autoload/plug.vim" \
         --create-dirs "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
     check_if_installed "vim"
     command vim +PlugInstall +qall
+fi
+
+
+if [[ $INSTALL_SSH == 1 ]]; then
+    command chmod 700 "$TARGET_DIR"
+    command chmod 700 "$TARGET_DIR/.ssh"
+    command chmod 644 "$TARGET_DIR/.ssh/config"
 fi
