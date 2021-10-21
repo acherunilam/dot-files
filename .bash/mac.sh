@@ -1,5 +1,16 @@
 # shellcheck shell=bash
-# shellcheck disable=SC2155
+# shellcheck disable=SC1091,SC2155
+
+
+# Enable Bash completion.
+BREW_PREFIX="$(command brew --prefix 2>/dev/null)"
+[[ -f "$BREW_PREFIX/share/bash-completion/bash_completion" ]] \
+    && source "$BREW_PREFIX/share/bash-completion/bash_completion"
+# Disable reporting analytics for Homebrew.
+export HOMEBREW_NO_ANALYTICS=1
+# Enable color support for ls.
+export CLICOLOR=1
+export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
 
 # Load GNU binaries instead of the BSD variants.
@@ -11,11 +22,10 @@ export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/util-linux/bin:$PATH"
 export PATH="/usr/local/share/john/:$PATH"
-export HOMEBREW_NO_ANALYTICS=1
 
 
 # Dependencies:
-#       brew install brightness coreutils terminal-notifier
+#       brew install brightness coreutils
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
 alias head='ghead'                                                          # `head -n0` should work

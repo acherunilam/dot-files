@@ -2,22 +2,9 @@
 # shellcheck disable=SC2155
 
 
-# Golang
-export GOPATH="$HOME/go"
-if [[ "$OSTYPE" == "linux"* ]] ; then
-    export PATH="$PATH:/usr/local/go/bin"
-elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    export PATH="$PATH:$BREW_PREFIX/opt/go/libexec/bin"
-fi
-export PATH="$PATH:$GOPATH/bin"
-
-
 # Java
 if [[ "$OSTYPE" == "linux"* ]] ; then
-    export JAVA_HOME=$(
-        command find "/usr/lib/jvm" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | \
-            command sort -nr -t'-' -k2 | command head -n1
-    )
+    export JAVA_HOME="$(command readlink -f "$(hash -t java)" | command sed 's/bin\/java$//g')"
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
     export JAVA_HOME=$(/usr/libexec/java_home)
 fi
@@ -30,7 +17,6 @@ if [[ "$OSTYPE" == "linux"* ]] ; then
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
     export PATH="$(command brew --caskroom)/miniconda/base/bin:$PATH"
 fi
-export PATH="$HOME/.local/bin:$PATH"
 
 
 # Rust
