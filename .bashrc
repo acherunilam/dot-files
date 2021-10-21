@@ -7,14 +7,8 @@
 
 
 # Enable Bash completion.
-if [[ "$OSTYPE" == "linux"* ]] ; then
-    [[ -f /usr/share/bash-completion/bash_completion ]] \
-        && source /usr/share/bash-completion/bash_completion
-elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    BREW_PREFIX="$(brew --prefix)"
-    [[ -f "$BREW_PREFIX/share/bash-completion/bash_completion" ]] \
-        && source "$BREW_PREFIX/share/bash-completion/bash_completion"
-fi
+[[ -f "/usr/share/bash-completion/bash_completion" ]] \
+    && source "/usr/share/bash-completion/bash_completion"
 # Add the following locations to $PATH if not already present.
 path_list=(
     "/bin"
@@ -34,13 +28,8 @@ for file in "$HOME"/.bash/*.sh ; do
 done
 
 
-# Enable color support for the commonly used binaries.
-if [[ "$OSTYPE" == "linux"* ]] ; then
-    [[ -r ~/.dircolors ]] && eval "$(command dircolors -b ~/.dircolors)" || eval "$(command dircolors -b)"
-elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    export CLICOLOR=1
-    export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
-fi
+# Enable color support for ls.
+[[ -r ~/.dircolors ]] && eval "$(command dircolors -b ~/.dircolors)" || eval "$(command dircolors -b)"
 # Load Git repository-related info for the Bash prompt.
 if type -t __git_ps1 >/dev/null ; then
     export GIT_PS1_SHOWDIRTYSTATE=true
