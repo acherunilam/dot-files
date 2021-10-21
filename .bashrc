@@ -8,13 +8,12 @@
 
 # Enable Bash completion.
 if [[ "$OSTYPE" == "linux"* ]] ; then
-    [[ -f /etc/bash_completion ]] && source /etc/bash_completion
-    [[ -f /usr/share/bash-completion/bash_completion ]] && \
-        source /usr/share/bash-completion/bash_completion
+    [[ -f /usr/share/bash-completion/bash_completion ]] \
+        && source /usr/share/bash-completion/bash_completion
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
     BREW_PREFIX="$(brew --prefix)"
-    [[ -f "$BREW_PREFIX/share/bash-completion/bash_completion" ]] && \
-        source "$BREW_PREFIX/share/bash-completion/bash_completion"
+    [[ -f "$BREW_PREFIX/share/bash-completion/bash_completion" ]] \
+        && source "$BREW_PREFIX/share/bash-completion/bash_completion"
 fi
 # Add the following locations to $PATH if not already present.
 path_list=(
