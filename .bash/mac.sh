@@ -21,7 +21,6 @@ export MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/util-linux/bin:$PATH"
-export PATH="/usr/local/share/john/:$PATH"
 
 
 # Dependencies:
@@ -37,6 +36,7 @@ alias tac='gtac'                                                            # lo
 
 
 # cd into the directory that is currently open in Finder.
+#
 # Dependencies:
 #       error()
 cdf() {

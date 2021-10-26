@@ -29,14 +29,14 @@ shopt -s huponexit                                  # send SIGHUP to all backgro
 shopt -s nocaseglob                                 # let file name expansions be case insensitive
 shopt -s nullglob                                   # file name patterns expand to NULL if there's no match
 
-# Load ACME client settings to renew Let's Encrypt certs.
+# Load ACME client settings (https://github.com/acmesh-official/acme.sh).
 #
 # Dependencies:
 #       curl https://get.acme.sh | sh -s email=my@example.com
 [[ -f "$HOME/.acme.sh/acme.sh.env" ]] && source "$HOME/.acme.sh/acme.sh.env"
 
-# Load Fzf settings for CLI fuzzy finding. The auto-complete is automatically
-# loaded on Linux.
+# Load Fzf settings (https://github.com/junegunn/fzf). The auto-complete is
+# automatically loaded on Linux.
 #
 # Dependencies:
 #       dnf install fd-find fzf
@@ -51,8 +51,8 @@ _fzf_compgen_path() { fd --hidden --follow --exclude ".git" --exclude ".hg" . "$
 export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git"
 export FZF_DEFAULT_OPTS="--bind 'ctrl-a:select-all'"
 
-# Load Git settings. The prompt is missing on Linux and the auto-complete
-# is broken on macOS, fix it.
+# Load Git settings (https://github.com/git/git). The prompt is missing on
+# Linux and the auto-complete is broken on macOS, fix it.
 #
 # Dependencies:
 #       dnf install git
@@ -62,7 +62,7 @@ elif [[ "$OSTYPE" == "darwin"* ]] ; then
     source "$BREW_PREFIX/etc/bash_completion.d/git-completion.bash"
 fi
 
-# Load Ripgrep settings.
+# Load Ripgrep settings (https://github.com/BurntSushi/ripgrep).
 #
 # Dependencies:
 #       dnf install ripgrep
