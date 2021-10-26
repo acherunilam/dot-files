@@ -4,7 +4,7 @@
 
 # Java
 if [[ "$OSTYPE" == "linux"* ]] ; then
-    export JAVA_HOME="$(command readlink -f "$(hash -t java)" | command sed 's/bin\/java$//g')"
+    export JAVA_HOME="$(command readlink -f "$(type -P java)" | command sed 's/bin\/java$//g')"
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
     export JAVA_HOME=$(/usr/libexec/java_home)
 fi
