@@ -29,7 +29,7 @@ done
 
 
 # Enable color support for ls.
-[[ -r ~/.dircolors ]] && eval "$(command dircolors -b ~/.dircolors)" || eval "$(command dircolors -b)"
+[[ -r ~/.dircolors ]] && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
 # Load Git repository-related info for the Bash prompt.
 if type -t __git_ps1 >/dev/null ; then
     export GIT_PS1_SHOWDIRTYSTATE=true

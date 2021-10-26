@@ -26,6 +26,7 @@ export PATH="/usr/local/opt/util-linux/bin:$PATH"
 # Dependencies:
 #       brew install brightness coreutils
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
+alias dircolors='gdircolors'                                                # load GNU coreutils' color scheme
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
 alias head='ghead'                                                          # `head -n0` should work
 alias lck='pmset displaysleepnow'                                           # switch off display
