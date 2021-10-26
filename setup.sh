@@ -19,7 +19,6 @@ existing dot files will be taken prior to copying this over.
 --bash              install the bash dot files
 --editline          install the editline config file
 --fasd              install the fasd config file
---fzf               install the fzf bash hooks
 --git               install the git config file
 --help              print this help
 --readline          install the readline config file
@@ -58,9 +57,6 @@ for arg in "$@"; do
     --fasd)
         INSTALL_FASD=1
         ;;
-    --fzf)
-        INSTALL_FZF=1
-        ;;
     --git)
         INSTALL_GIT=1
         ;;
@@ -98,15 +94,13 @@ done
 
 
 cd "$(dirname "$0")" || exit 1
-command git submodule update --init --recursive
 SOURCE=""
-EXCLUDE_FILES="--exclude=fzf.bindings.sh --exclude=fzf.completion.sh"
+EXCLUDE_FILES=""
 [[ $SKIP_EXISTING == 1 ]] && OVERWRITE_SETTINGS="--ignore-existing" || OVERWRITE_SETTINGS="--backup --suffix=.bak"
 if [[ $INSTALL_ALL == 1 ]] ; then
     INSTALL_BASH=1
     INSTALL_EDITLINE=1
     INSTALL_FASD=1
-    INSTALL_FZF=1
     INSTALL_GIT=1
     INSTALL_READLINE=1
     INSTALL_RIPGREP=1
@@ -118,7 +112,6 @@ fi
 [[ $INSTALL_BASH == 1 ]] && SOURCE+=" ./.bashrc ./.bash_profile ./.bash/*.sh"
 [[ $INSTALL_EDITLINE == 1 ]] && SOURCE+=" ./.editrc"
 [[ $INSTALL_FASD == 1 ]] && SOURCE+=" ./.fasdrc"
-[[ $INSTALL_FZF == 1 ]] && EXCLUDE_FILES=""
 [[ $INSTALL_GIT == 1 ]] && SOURCE+=" ./.gitconfig"
 [[ $INSTALL_READLINE == 1 ]] && SOURCE+=" ./.inputrc"
 [[ $INSTALL_RIPGREP == 1 ]] && SOURCE+=" ./.ripgreprc"

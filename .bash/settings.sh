@@ -1,4 +1,5 @@
 # shellcheck shell=bash
+# shellcheck disable=SC1091
 
 
 # Configure command history.
@@ -28,16 +29,39 @@ shopt -s huponexit                                  # send SIGHUP to all backgro
 shopt -s nocaseglob                                 # let file name expansions be case insensitive
 shopt -s nullglob                                   # file name patterns expand to NULL if there's no match
 
-# Load Fzf settings.
+# Load ACME client settings to renew Let's Encrypt certs.
+#
+# Dependencies:
+#       curl https://get.acme.sh | sh -s email=my@example.com
+[[ -f "$HOME/.acme.sh/acme.sh.env" ]] && source "$HOME/.acme.sh/acme.sh.env"
+
+# Load Fzf settings for CLI fuzzy finding. The auto-complete is automatically
+# loaded on Linux.
 #
 # Dependencies:
 #       dnf install fd-find fzf
+if [[ "$OSTYPE" == "linux"* ]] ; then
+    source "/usr/share/fzf/shell/key-bindings.bash"
+elif [[ "$OSTYPE" == "darwin"* ]] ; then
+    source "$BREW_PREFIX/opt/fzf/shell/completion.bash"
+    source "$BREW_PREFIX/opt/fzf/shell/key-bindings.bash"
+fi
 export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git"
 export FZF_DEFAULT_OPTS="--bind 'ctrl-a:select-all'"
+
+# Load Git settings. The prompt is missing on Linux and the auto-complete
+# is broken on macOS, fix it.
+#
+# Dependencies:
+#       dnf install git
+if [[ "$OSTYPE" == "linux"* ]] ; then
+    source "/usr/share/git-core/contrib/completion/git-prompt.sh"
+elif [[ "$OSTYPE" == "darwin"* ]] ; then
+    source "$BREW_PREFIX/etc/bash_completion.d/git-completion.bash"
+fi
 
 # Load Ripgrep settings.
 #
 # Dependencies:
-#
 #       dnf install ripgrep
 export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"

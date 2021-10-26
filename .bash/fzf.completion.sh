@@ -1,1 +1,0 @@
-fzf/shell/completion.bash
