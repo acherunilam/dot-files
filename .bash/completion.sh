@@ -2,7 +2,7 @@
 # shellcheck disable=SC2207
 
 
-# Autocomplete for `git ru`, which updates remote from HTTPS to SSH.
+# Auto-complete for `git ru`, which updates remote from HTTPS to SSH.
 _git_ru() {
     local cur pos REMOTES
     cur=${COMP_WORDS[COMP_CWORD]}
