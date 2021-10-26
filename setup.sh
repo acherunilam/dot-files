@@ -6,10 +6,10 @@
 #
 # Dependencies:
 #       sudo dnf install -y curl rsync vim
-#       sudo curl -sS https://raw.githubusercontent.com/clvv/fasd/master/fasd -o /usr/local/bin/fasd
 
 
 BASENAME=$(basename "$0")
+CURL_OPTS="-sS --connect-timeout 2 --max-time 5 -fL"
 TARGET_DIR="$HOME"
 USAGE="Usage: $BASENAME [OPTIONS]
 A wrapper script to install the dot files present in this repo. Backups for
@@ -123,17 +123,22 @@ fi
 check_if_installed "rsync"
 command rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
 
-
-if [[ $INSTALL_VIM == 1 ]]; then
+if [[ "$OSTYPE" != "darwin"* ]] && [[ $INSTALL_FASD == 1 ]] ; then
     check_if_installed "curl"
-    command curl -sS --connect-timeout 2 --max-time 5 -fLo "$TARGET_DIR/.vim/autoload/plug.vim" \
-        --create-dirs "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+    command curl $CURL_OPTS -o "$HOME/bin/fasd" --create-dirs "https://raw.githubusercontent.com/clvv/fasd/master/fasd" \
+        && command chmod 755 "$HOME/bin/fasd"
+fi
+
+if [[ $INSTALL_VIM == 1 ]] ; then
+    check_if_installed "curl"
+    command curl $CURL_OPTS -o "$TARGET_DIR/.vim/autoload/plug.vim" --create-dirs \
+        "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
     check_if_installed "vim"
     command vim +PlugInstall +qall
 fi
 
 
-if [[ $INSTALL_SSH == 1 ]]; then
+if [[ $INSTALL_SSH == 1 ]] ; then
     command chmod 700 "$TARGET_DIR"
     command chmod 700 "$TARGET_DIR/.ssh"
     command chmod 644 "$TARGET_DIR/.ssh/config"
