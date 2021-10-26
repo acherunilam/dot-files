@@ -2,8 +2,9 @@
 # shellcheck disable=SC2086,SC2155
 
 
-# Load 'The Fuck' program.
-# Depencies:
+# Load 'The Fuck' utility (https://github.com/nvbn/thefuck).
+#
+# Dependencies:
 #       dnf install thefuck
 fuck () {
     TF_PYTHONIOENCODING=$PYTHONIOENCODING;
