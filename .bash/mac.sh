@@ -4,8 +4,7 @@
 
 # Enable Bash completion.
 BREW_PREFIX="$(command brew --prefix 2>/dev/null)"
-[[ -f "$BREW_PREFIX/share/bash-completion/bash_completion" ]] \
-    && source "$BREW_PREFIX/share/bash-completion/bash_completion"
+include "$BREW_PREFIX/share/bash-completion/bash_completion"
 # Disable reporting analytics for Homebrew.
 export HOMEBREW_NO_ANALYTICS=1
 # Enable color support for ls.

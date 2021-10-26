@@ -33,7 +33,7 @@ shopt -s nullglob                                   # file name patterns expand 
 #
 # Dependencies:
 #       curl https://get.acme.sh | sh -s email=my@example.com
-[[ -f "$HOME/.acme.sh/acme.sh.env" ]] && source "$HOME/.acme.sh/acme.sh.env"
+include "$HOME/.acme.sh/acme.sh.env"
 
 # Load Fzf settings (https://github.com/junegunn/fzf). The auto-complete is
 # automatically loaded on Linux.
@@ -41,10 +41,10 @@ shopt -s nullglob                                   # file name patterns expand 
 # Dependencies:
 #       dnf install fd-find fzf
 if [[ "$OSTYPE" == "linux"* ]] ; then
-    source "/usr/share/fzf/shell/key-bindings.bash"
+    include "/usr/share/fzf/shell/key-bindings.bash"
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    source "$BREW_PREFIX/opt/fzf/shell/completion.bash"
-    source "$BREW_PREFIX/opt/fzf/shell/key-bindings.bash"
+    include "$BREW_PREFIX/opt/fzf/shell/completion.bash"
+    include "$BREW_PREFIX/opt/fzf/shell/key-bindings.bash"
 fi
 _fzf_compgen_dir() { fd --type d --hidden --follow --exclude ".git" --exclude ".hg" . "$1" ; }
 _fzf_compgen_path() { fd --hidden --follow --exclude ".git" --exclude ".hg" . "$1" ; }
@@ -57,9 +57,9 @@ export FZF_DEFAULT_OPTS="--bind 'ctrl-a:select-all'"
 # Dependencies:
 #       dnf install git
 if [[ "$OSTYPE" == "linux"* ]] ; then
-    source "/usr/share/git-core/contrib/completion/git-prompt.sh"
+    include "/usr/share/git-core/contrib/completion/git-prompt.sh"
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    source "$BREW_PREFIX/etc/bash_completion.d/git-completion.bash"
+    include "$BREW_PREFIX/etc/bash_completion.d/git-completion.bash"
 fi
 
 # Load Ripgrep settings (https://github.com/BurntSushi/ripgrep).
