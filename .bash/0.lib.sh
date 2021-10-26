@@ -1,4 +1,5 @@
 # shellcheck shell=bash
+# shellcheck disable=SC1090
 
 
 # Prints the given error message. Unless specified otherwise, it returns a
@@ -10,4 +11,13 @@ error() {
     [[ $2 -eq 0 ]] && stdout_or_err=1 || stdout_or_err=2
     echo -e "${FUNCNAME[1]}: $1" >&$stdout_or_err
     return "${2:-1}"
+}
+
+
+# Source a file only if it exists.
+#
+# Usage:
+#       include <file_path>
+include() {
+    [[ -f "$1" ]] && source "$1"
 }
