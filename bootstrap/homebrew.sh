@@ -20,7 +20,7 @@ aria2
 bash
 bash-completion@2
 bind
-bluetoothconnector
+blueutil
 brew-cask-completion
 brightness
 cabextract
