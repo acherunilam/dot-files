@@ -1,5 +1,5 @@
-# dot-files
-Dot-files for Bash, Git, Vim, etc.
+# Dot Files
+My collection of dot files for Bash, Git, Vim, etc.
 
 ## Setup
 ```bash
