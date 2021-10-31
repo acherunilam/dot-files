@@ -61,11 +61,11 @@ innoextract
 iperf3
 john-jumbo
 jq
-lastpass-cli
 launchctl-completion
 lesspipe
 mas
 media-info
+miller
 mkvtoolnix
 mpv
 mtr
@@ -131,6 +131,8 @@ brew install $apps
 # Install GUI apps.
 casks="$(command sed '/^#/d' <<< "
 010-editor
+1password
+1password-cli
 alfred
 android-platform-tools
 appcleaner
