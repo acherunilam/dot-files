@@ -6,11 +6,14 @@
 # code of 1.
 #
 # Usage:
-#       error <message> <return_code>
+#       error <message> <return_code> ; return
 error() {
-    [[ $2 -eq 0 ]] && stdout_or_err=1 || stdout_or_err=2
-    echo -e "${FUNCNAME[1]}: $1" >&$stdout_or_err
-    return "${2:-1}"
+    local message="$1"
+    local exit_code=${2:-1}
+    local stdout_or_err
+    [[ $exit_code -eq 0 ]] && stdout_or_err=1 || stdout_or_err=2
+    echo -e "${FUNCNAME[1]}: $message" >&$stdout_or_err
+    return "$exit_code"
 }
 
 
