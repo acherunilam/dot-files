@@ -35,6 +35,17 @@ alias slp='pmset sleepnow'                                                  # go
 alias tac='gtac'                                                            # load GNU tac
 
 
+# Used to shutdown/reboot immediately.
+#
+# Usage:
+#     bye               Shutdown asap
+#     bye -r            Restart asap
+bye() {
+    local mode="${1:--h}"
+    [[ $# -le 1 ]] && sudo shutdown "$mode" now || return 1
+}
+
+
 # cd into the directory that is currently open in Finder.
 #
 # Dependencies:
@@ -51,6 +62,16 @@ cdf() {
     else
         error "no Finder window found" 2 ; return
     fi
+}
+
+
+# Delete all small (>10M) downloaded files.
+clean() {
+    local cmd
+    cmd="command find $HOME/Downloads/ -maxdepth 1 -type f -size -10M \
+        ! -name '.DS_Store' ! -name '*.crdownload' ! -name '*.aria2'"
+    [[ "$1" != "-n" ]] && cmd+=" -exec rm -v {} +"
+    eval "$cmd" | command sed -E "s/^${HOME//\//\\/}\/Downloads\///g"
 }
 
 
@@ -122,6 +143,48 @@ eject() {
     for device in $devices ; do
         command diskutil eject "$device"
     done
+}
+
+
+# Move the downloaded files matching the given regex into current directory.
+mdownload() {
+    local cmd is_dry_run
+    [[ "$1" == "-n" ]] && shift && is_dry_run=1
+    cmd="command find $HOME/Downloads/ -maxdepth 1 -type f -iname '*'$*'*' \
+        ! -name '.DS_Store' ! -name '*.crdownload' ! -name '*.aria2'"
+    [[ -z "$is_dry_run" ]] && cmd+=' -exec mv -v {} . \;'
+    eval "$cmd"
+}
+
+
+# Generate OTP using the TOTP secret stored in Keychain. You can add it to the Keychain
+# by running `security add-generic-password -a $LOGNAME -s <key> -w <otp_secret>`.
+#
+# Dependencies:
+#       brew install oath-toolkit
+#
+# Environment variables:
+#       export OTP_KEYS=("facebook" "google" "twitter")
+otp() {
+    local key="$1"
+    if [[ -z $OTP_KEYS ]] ; then
+        error "please set the environment variable \$OTP_KEYS"
+        return
+    fi
+    if ! [[ "$key" =~ ^($(command sed 's/\ /|/g' <<< "${OTP_KEYS[@]}"))$ ]] ; then
+        error "key has to be one of: ${OTP_KEYS[*]}" 2
+        return
+    fi
+    local secret="$(
+        command security find-generic-password -a "$LOGNAME" -s "$key" -w 2>/dev/null
+    )"
+    if [[ -z "$secret" ]] ; then
+        error "'$key' is missing from the Keychain"
+        return
+    fi
+    result=$(command oathtool --totp -b "$secret")
+    echo "$result"
+    echo -n "$result" | pbcopy
 }
 
 

@@ -1,15 +1,22 @@
 # shellcheck shell=bash
-# shellcheck disable=SC2207
+# shellcheck disable=SC2207,SC2155
 
 
 # Auto-complete for `git ru`, which updates remote from HTTPS to SSH.
 _git_ru() {
-    local cur pos REMOTES
-    cur=${COMP_WORDS[COMP_CWORD]}
-    pos=${COMP_CWORD}
-    REMOTES=$(git remote show)
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local pos=${COMP_CWORD}
+    local remotes="$(git remote show)"
     COMPREPLY=()
-    if [[ pos -eq 2 ]] ; then
-        COMPREPLY=( $(compgen -W "$REMOTES" "$cur") )
-    fi
+    [[ pos -eq 2 ]] && COMPREPLY=( $(compgen -W "$remotes" "$cur") )
 }
+
+
+# Auto-complete for otp(), a macOS-specific helper for generating TOTPs.
+_otp() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local pos=${COMP_CWORD}
+  COMPREPLY=()
+  [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${OTP_KEYS[*]}" "$cur") )
+}
+complete -F _otp otp
