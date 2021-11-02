@@ -168,19 +168,16 @@ mdownload() {
 otp() {
     local key="$1"
     if [[ -z $OTP_KEYS ]] ; then
-        error "please set the environment variable \$OTP_KEYS"
-        return
+        error "please set the environment variable \$OTP_KEYS" ; return
     fi
     if ! [[ "$key" =~ ^($(command sed 's/\ /|/g' <<< "${OTP_KEYS[@]}"))$ ]] ; then
-        error "key has to be one of: ${OTP_KEYS[*]}" 2
-        return
+        error "key has to be one of: ${OTP_KEYS[*]}" 2 ; return
     fi
     local secret="$(
         command security find-generic-password -a "$LOGNAME" -s "$key" -w 2>/dev/null
     )"
     if [[ -z "$secret" ]] ; then
-        error "'$key' is missing from the Keychain"
-        return
+        error "'$key' is missing from the Keychain" ; return
     fi
     result=$(command oathtool --totp -b "$secret")
     echo "$result"

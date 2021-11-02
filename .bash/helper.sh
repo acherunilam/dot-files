@@ -214,8 +214,7 @@ notify() {
 pb() {
     local content curl_auth_arg response
     if [[ -z "$PASTEBIN_URL" ]] ; then
-        error "please set the environment variable \$PASTEBIN_URL"
-        return
+        error "please set the environment variable \$PASTEBIN_URL" ; return
     fi
     if [[ -p /dev/stdin ]] ; then
         content="$(</dev/stdin)"
@@ -223,8 +222,7 @@ pb() {
         content="$(pbpaste)"
     fi
     if [[ -z "$content" ]] ; then
-        error "please pass the text to upload via STDIN" 2
-        return
+        error "please pass the text to upload via STDIN" 2 ; return
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
     response="$(
@@ -232,12 +230,10 @@ pb() {
             -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL" <<< "$content"
     )"
     if [[ $? -ne 0 ]] ; then
-        error "unable to connect to $PASTEBIN_URL"
-        return
+        error "unable to connect to $PASTEBIN_URL" ; return
     fi
     if [[ -z "$response" ]] ; then
-        error "unknown error, missing output"
-        return
+        error "unknown error, missing output" ; return
     fi
     echo "$response"
     echo -n "$response" | pbcopy
@@ -297,19 +293,16 @@ ppb() {
         content="$(pbpaste)"
     fi
     if [[ -z "$content" ]] ; then
-        error "please pass the text to upload via STDIN" 2
-        return
+        error "please pass the text to upload via STDIN" 2 ; return
     fi
     response="$(
         command curl -qsS --connect-timeout 2 --max-time 5 -F 'sprunge=<-' $SPRUNGE_URL <<< "$content"
     )"
     if [[ $? -ne 0 ]] ; then
-        error "unable to connect to $SPRUNGE_URL"
-        return
+        error "unable to connect to $SPRUNGE_URL" ; return
     fi
     if [[ -z "$response" ]] ; then
-        error "unknown error, missing output"
-        return
+        error "unknown error, missing output" ; return
     fi
     echo "$response"
     echo -n "$response" | pbcopy
@@ -363,15 +356,13 @@ Options:
     done
     shift $((OPTIND-1))
     if [[ -z "$PUSHOVER_USER" ]] || [[ -z "$PUSHOVER_TOKEN" ]] ; then
-        error "missing environment variables, please set both PUSHOVER_USER and PUSHOVER_TOKEN"
-        return
+        error "missing environment variables, please set both PUSHOVER_USER and PUSHOVER_TOKEN" ; return
     fi
     [[ "$1" == "-p" ]] && priority=1 && shift
     [[ "${@: -1}" == "-p" ]] && priority=1 && set -- "${@:1:$(($#-1))}"
     local message="$*"
     if [[ -z "$message" ]] ; then
-        error "missing input, please pass a message" 2
-        return
+        error "missing input, please pass a message" 2 ; return
     fi
     local response="$(
         command curl -qsS --connect-timeout 2 --max-time 5 \
@@ -382,18 +373,14 @@ Options:
             "https://api.pushover.net/1/messages.json"
     )"
     if [[ $? -ne 0 ]] ; then
-        error "unable to connect to pushover.net"
-        return
+        error "unable to connect to pushover.net" ; return
     fi
     if command grep -q '"user":"invalid"' <<< "$response" ; then
-        error "invalid user, please check the environment variable PUSHOVER_USER"
-        return
+        error "invalid user, please check the environment variable PUSHOVER_USER" ; return
     elif command grep -q '"token":"invalid"' <<< "$response" ; then
-        error "invalid token, please check the environment variable PUSHOVER_TOKEN"
-        return
+        error "invalid token, please check the environment variable PUSHOVER_TOKEN" ; return
     elif ! command grep -q '"status":1' <<< "$response" ; then
-        error "unknown error: $response"
-        return
+        error "unknown error: $response" ; return
     fi
 }
 
@@ -418,8 +405,7 @@ url-shorten() {
     local custom_slug response result
     local url="$1"
     if [[ -z "$URL_SHORTENER_URL" ]] || [[ -z "$URL_SHORTENER_API_KEY" ]] ; then
-        error "please set both the environment variables \$URL_SHORTENER_URL and \$URL_SHORTENER_API_KEY"
-        return
+        error "please set both the environment variables \$URL_SHORTENER_URL and \$URL_SHORTENER_API_KEY" ; return
     fi
     if [[ -z $url ]] ; then
         error "please pass the URL as the first argument" 2
@@ -435,8 +421,7 @@ url-shorten() {
             -d "{\"longUrl\": \"$url\"$custom_slug}"
     )"
     if [[ $? -ne 0 ]] ; then
-        error "unable to connect to $URL_SHORTENER_URL"
-        return
+        error "unable to connect to $URL_SHORTENER_URL" ; return
     fi
     if command grep -q '"type":"INVALID_SLUG"' <<< "$response" ; then
         command curl -qsS --connect-timeout 2 --max-time 5 \
@@ -449,8 +434,7 @@ url-shorten() {
     fi
     result="$(echo "$response" | command tr ',' '\n' | command sed -En 's/.*"shortUrl":"(.*)"/\1/p')"
     if [[ -z "$result" ]] ; then
-        error "unknown error, missing output"
-        return
+        error "unknown error, missing output" ; return
     fi
     echo "$result"
     echo -n "$result" | pbcopy
