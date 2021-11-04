@@ -52,14 +52,12 @@ export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git"
 export FZF_DEFAULT_OPTS="--bind 'ctrl-a:select-all'"
 
 # Load Git settings (https://github.com/git/git). The prompt is missing on
-# Linux and the auto-complete is broken on macOS, fix it.
+# Linux.
 #
 # Dependencies:
 #       dnf install git
 if [[ "$OSTYPE" == "linux"* ]] ; then
     include "/usr/share/git-core/contrib/completion/git-prompt.sh"
-elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    include "$BREW_PREFIX/etc/bash_completion.d/git-completion.bash"
 fi
 
 # Load Ripgrep settings (https://github.com/BurntSushi/ripgrep).
