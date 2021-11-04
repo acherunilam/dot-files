@@ -1,4 +1,4 @@
-# shellcheck disable=SC1090,SC1091,SC2015,SC2148,SC2154
+# shellcheck disable=SC1090,SC1091,SC2148,SC2154
 
 
 # This file is read and executed only when Bash is invoked as an interactive
@@ -6,9 +6,6 @@
 [[ $- != *i* ]] && return
 
 
-# Enable Bash completion.
-[[ -f "/usr/share/bash-completion/bash_completion" ]] \
-    && source "/usr/share/bash-completion/bash_completion"
 # Add the following locations to $PATH if not already present.
 path_list=(
     "/bin"
@@ -28,8 +25,6 @@ for file in "$HOME"/.bash/*.sh ; do
 done
 
 
-# Enable color support for ls.
-[[ -r ~/.dircolors ]] && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
 # Load Git repository-related info for the Bash prompt.
 if type -t __git_ps1 >/dev/null ; then
     export GIT_PS1_SHOWDIRTYSTATE=true
@@ -55,18 +50,3 @@ PS1+='\[\033[0m\]'${SENTINEL_CHAR}' '
 PS4='+ $EPOCHREALTIME\011(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 # Set the MySQL prompt.
 export MYSQL_PS1="\u@\h [\d]> "
-
-
-# When over SSH, attach to Tmux right away.
-[[ -n $SSH_CONNECTION ]] && [[ -z $TMUX ]] && [[ -z $DONT_TMUX_ATTACH ]] && tmux attach &>/dev/null
-
-
-# Load custom key bindings for the shell.
-export INPUTRC="$HOME/.inputrc"
-# Set default text editor.
-export EDITOR="vim"
-# Make `less` more friendly for non-text input files.
-export LESSOPEN="|lesspipe.sh %s"
-# Enable color support for `less`. Also, search within is case insensitive
-# unless the pattern contains uppercase letters.
-export LESS="-Ri"

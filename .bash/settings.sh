@@ -1,5 +1,17 @@
 # shellcheck shell=bash
-# shellcheck disable=SC1091
+
+
+# Load custom key bindings for the shell.
+export INPUTRC="$HOME/.inputrc"
+# Set default text editor.
+export EDITOR="vim"
+# Make `less` more friendly for non-text input files.
+export LESSOPEN="|lesspipe.sh %s"
+# Enable color support for `less`. Also, search within is case insensitive
+# unless the pattern contains uppercase letters.
+export LESS="-Ri"
+# Enable color support for `ls`.
+eval "$(dircolors -b)"
 
 
 # Configure command history.
@@ -8,6 +20,7 @@ HISTFILE="$HOME/.bash_history"                      # store the history of comma
 HISTSIZE='INFINITE'                                 # number of lines that are allowed in the history file at the start/end of a session
 HISTTIMEFORMAT="%d/%m/%y %T "                       # timestamp format to associate each command with
 PROMPT_COMMAND="${PROMPT_COMMAND%%;*}; history -a"  # history buffer to be flushed after every command
+
 
 # Shell options.
 shopt -s autocd                                     # auto "cd" when entering just a path
@@ -29,11 +42,13 @@ shopt -s huponexit                                  # send SIGHUP to all backgro
 shopt -s nocaseglob                                 # let file name expansions be case insensitive
 shopt -s nullglob                                   # file name patterns expand to NULL if there's no match
 
+
 # Load ACME client settings (https://github.com/acmesh-official/acme.sh).
 #
 # Dependencies:
 #       curl https://get.acme.sh | sh -s email=my@example.com
 include "$HOME/.acme.sh/acme.sh.env"
+
 
 # Load Fzf settings (https://github.com/junegunn/fzf). The auto-complete is
 # automatically loaded on Linux.
@@ -51,6 +66,7 @@ _fzf_compgen_path() { fd --hidden --follow --exclude ".git" --exclude ".hg" . "$
 export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git"
 export FZF_DEFAULT_OPTS="--bind 'ctrl-a:select-all'"
 
+
 # Load Git settings (https://github.com/git/git). The prompt is missing on
 # Linux.
 #
@@ -60,8 +76,16 @@ if [[ "$OSTYPE" == "linux"* ]] ; then
     include "/usr/share/git-core/contrib/completion/git-prompt.sh"
 fi
 
+
 # Load Ripgrep settings (https://github.com/BurntSushi/ripgrep).
 #
 # Dependencies:
 #       dnf install ripgrep
 export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
+
+
+# When over SSH, attach to Tmux (https://github.com/tmux/tmux) right away.
+#
+# Dependencies:
+#       dnf install tmux
+[[ -n $SSH_CONNECTION ]] && [[ -z $TMUX ]] && [[ -z $DONT_TMUX_ATTACH ]] && tmux attach &>/dev/null
