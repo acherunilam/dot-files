@@ -109,7 +109,6 @@ torsocks
 trash
 tree
 tvnamer
-unrar
 util-linux
 vapoursynth
 vim
@@ -172,6 +171,7 @@ obs-virtualcam
 playonmac
 qlvideo
 rapidweaver
+rar
 rectangle
 signal
 spotify
