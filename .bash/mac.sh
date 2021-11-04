@@ -51,8 +51,7 @@ bye() {
 # Dependencies:
 #       error()
 cdf() {
-    local target
-    target="$(
+    local target="$(
         osascript -e "tell application \"Finder\" to if (count of Finder \
             windows) > 0 then get POSIX path of (target of front Finder \
             window as text)" 2>/dev/null
@@ -67,8 +66,7 @@ cdf() {
 
 # Delete all small (>10M) downloaded files.
 clean() {
-    local cmd
-    cmd="command find $HOME/Downloads/ -maxdepth 1 -type f -size -10M \
+    local cmd="command find $HOME/Downloads/ -maxdepth 1 -type f -size -10M \
         ! -name '.DS_Store' ! -name '*.crdownload' ! -name '*.aria2'"
     [[ "$1" != "-n" ]] && cmd+=" -exec rm -v {} +"
     eval "$cmd" | command sed -E "s/^${HOME//\//\\/}\/Downloads\///g"

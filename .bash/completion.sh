@@ -1,5 +1,10 @@
 # shellcheck shell=bash
-# shellcheck disable=SC2207,SC2155
+# shellcheck disable=SC1091,SC2207,SC2155
+
+
+# Enable Bash completion.
+[[ -f "/usr/share/bash-completion/bash_completion" ]] \
+    && source "/usr/share/bash-completion/bash_completion"
 
 
 # Auto-complete for `git ru`, which updates remote from HTTPS to SSH.
