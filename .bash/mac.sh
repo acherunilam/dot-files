@@ -183,6 +183,54 @@ otp() {
 }
 
 
+# Create/read/update/delete key-value pairs in the macOS Keychain.
+#
+# Usage:
+#       pass get <key>
+#       pass set <key> <value>
+#       pass del <key>
+#
+# Dependencies:
+#       error()
+pass() {
+    help() {
+        echo "Usage: ${FUNCNAME[1]} get <key>
+       ${FUNCNAME[1]} set <key> <value>
+       ${FUNCNAME[1]} del <key>
+       ${FUNCNAME[1]} help
+
+Create/read/update/delete key-value pairs in the macOS Keychain."
+    }
+
+    local op="$1"
+    local key="$2"
+    if [[ "$op" =~ ^(get|set|del)$ ]] && [[ -z "$key" ]] ; then
+        error "please specify the key" 2 ; return
+    fi
+    local cmd='command security'
+    local cmd_opts="-a \"$LOGNAME\" -s \"$key\""
+    case $op in
+        get)
+            eval "$cmd find-generic-password $cmd_opts -w 2>/dev/null"
+            ;;
+        set)
+            if [[ -z "${3+foo}" ]] ; then
+                error "please specify the value" 2 ; return
+            fi
+            eval "$cmd add-generic-password $cmd_opts -Uw $3"
+            ;;
+        del)
+            eval "$cmd delete-generic-password $cmd_opts &>/dev/null"
+            ;;
+        help)
+            help && return
+            ;;
+        *)
+            help >&2 && return 2
+            ;;
+    esac
+}
+
 # Remove extended attributes for a file downloaded from the internet.
 whitelist() {
     sudo command xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"

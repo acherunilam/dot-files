@@ -25,3 +25,13 @@ _otp() {
   [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${OTP_KEYS[*]}" "$cur") )
 }
 complete -F _otp otp
+
+
+# Auto-complete for pass(), a Keychain-backed key-value CRUD helper.
+_pass() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local pos=${COMP_CWORD}
+  COMPREPLY=()
+  [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "get set del help" "$cur") )
+}
+complete -F _pass pass
