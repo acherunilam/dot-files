@@ -43,13 +43,6 @@ shopt -s nocaseglob                                 # let file name expansions b
 shopt -s nullglob                                   # file name patterns expand to NULL if there's no match
 
 
-# Load ACME client settings (https://github.com/acmesh-official/acme.sh).
-#
-# Dependencies:
-#       curl https://get.acme.sh | sh -s email=my@example.com
-include "$HOME/.acme.sh/acme.sh.env"
-
-
 # Load Fzf settings (https://github.com/junegunn/fzf). The auto-complete is
 # automatically loaded on Linux.
 #
