@@ -22,6 +22,7 @@ alias la='ls -A'                                                               #
 alias ld='ls -d */ 2>/dev/null'                                                # list only directories
 alias lh='ls -d .??* 2>/dev/null'                                              # list only hidden files
 alias ll='ls -alFh'                                                            # list all files with their details
+alias p='pbcopy'                                                               # copy contents to clipboard
 alias x='extract'                                                              # extract the contents of an archive
 # Run with elevated privileges.
 alias mtr='sudo mtr'

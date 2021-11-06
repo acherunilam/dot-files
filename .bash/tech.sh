@@ -1,6 +1,20 @@
 # shellcheck shell=bash
 
 
+# Load ACME client settings (https://github.com/acmesh-official/acme.sh).
+#
+# Dependencies:
+#       curl https://get.acme.sh | sh -s email=my@example.com
+include "$HOME/.acme.sh/acme.sh.env"
+
+
+# Load BCC tools (https://github.com/iovisor/bcc/).
+#
+# Dependencies:
+#       dnf install bcc-tools
+export PATH="/usr/share/bcc/tools:$PATH"
+
+
 # Geolocates the IP.
 #
 # Dependencies:
