@@ -189,6 +189,7 @@ whatsapp
 wifi-explorer
 wireshark
 xee
+yacreader
 zenmap
 zoomus
 ")"
