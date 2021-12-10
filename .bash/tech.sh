@@ -29,6 +29,7 @@ alias geo='geoiplookup'
 #       asn 2a03:2880:f10c::
 #       asn 32934
 #       asn AS15169
+#       asn ASN55836
 #
 # Dependencies:
 #       dnf install coreutils
@@ -43,31 +44,37 @@ asn() {
     }
 
     append_asn_and_print() {
-        [[ -z "$1" ]] && return 1
-        asn=$(echo "$1" | command awk '{print $1}')
-        output="$(query_cymru "AS$asn.$AS_CYMRU_NS" | command awk -F'|' '{print $5}')"
-        echo "$1 |$output"
+        local output="$(query_cymru "$1.$2")"
+        [[ -z "$output" ]] && exit 1
+        echo "$output" | while read ip_info ; do
+            local asn=$(command awk '{print $1}' <<< "$ip_info")
+            local asn_info="$(query_cymru "AS$asn.$AS_CYMRU_NS" | command awk -F'|' '{print $5}')"
+            echo "$ip_info |$asn_info"
+        done | command sort
     }
 
     local prefix output hextets exploded_ip
     local input="$1"
     # IPv4
     if [[ $input =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] ; then
-        prefix="$(echo "$input" | command tr '.' '\n' | command tac | paste -sd'.')"
-        output="$(query_cymru "$prefix.$V4_CYMRU_NS" | command head -n1)"
-        append_asn_and_print "$output"
+        prefix="$(echo "$input" | command tr '.' '\n' | tac | paste -sd'.')"
+        append_asn_and_print "$prefix" "$V4_CYMRU_NS"
     # IPv6
     elif [[ ${input,,} == *:* ]] ; then
         hextets=$(echo "$input" | command sed 's/::/:/g;s/:/\n/g;/^$/d' | command wc -l)
-        exploded_ip="$(echo "$input" | command sed -E "s/::/:$(yes "0:" | head -n $((8 - hextets)) | paste -sd '')/g;s/^://g;s/:$//g")"
-        prefix="$(echo "$exploded_ip" | command tr ':' '\n' | while read -r line ; do printf "%04x\n" "0x$line" 2>/dev/null ; done | command tac | command rev | command sed -E 's/./&\./g' | paste -sd '' | command sed -E 's/\.$//g')"
-        output="$(query_cymru "$prefix.$V6_CYMRU_NS" | command head -n1)"
-        append_asn_and_print "$output"
+        exploded_ip="$(
+            echo "$input" | command sed -E "s/::/:$(command yes "0:" | command head -n $((8 - hextets)) | paste -sd '')/g;s/^://g;s/:$//g"
+        )"
+        prefix="$(
+            echo "$exploded_ip" | command tr ':' '\n' | while read -r line ; do printf "%04x\n" "0x$line" 2>/dev/null ; done \
+                | tac | command rev | command sed -E 's/./&\./g' | paste -sd '' | command sed -E 's/\.$//g'
+        )"
+        append_asn_and_print "$prefix" "$V6_CYMRU_NS"
     # ASN
-    elif [[ ${input^^} =~ ^[0-9]+$|^AS[0-9]+$ ]] ; then
-        prefix="$(echo "$input" | command sed -E 's/AS//g')"
+    elif [[ ${input^^} =~ ^[0-9]+$|^ASN?[0-9]+$ ]] ; then
+        prefix="$(echo "${input^^}" | command sed -E 's/^ASN?//g')"
         output="$(query_cymru "AS$prefix.$AS_CYMRU_NS")"
-        echo "$output"
+        [[ -n "$output" ]] && echo "$output"
     else
         error "invalid input, please pass an IP or ASN" 2 ; return
     fi
