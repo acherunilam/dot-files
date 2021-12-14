@@ -20,19 +20,20 @@ export MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/util-linux/bin:$PATH"
+alias base64='gbase64'                                                      # `base64 -w0` should work
+alias dircolors='gdircolors'                                                # we need GNU coreutils' color scheme
+alias paste='gpaste'                                                        # `paste -sd' '` should work
+alias tac='gtac'                                                            # BSD doesn't have tac
 
 
 # Dependencies:
 #       brew install brightness coreutils
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
-alias dircolors='gdircolors'                                                # load GNU coreutils' color scheme
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
 alias head='ghead'                                                          # `head -n0` should work
 alias lck='pmset displaysleepnow'                                           # switch off display
-alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
-alias tac='gtac'                                                            # load GNU tac
 
 
 # Used to shutdown/reboot immediately.
