@@ -98,7 +98,6 @@ speedtest-cli
 subliminal
 supervisor
 switchaudio-osx
-tcptraceroute
 telnet
 terminal-notifier
 tesseract
