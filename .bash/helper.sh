@@ -25,10 +25,8 @@ alias ll='ls -alFh'                                                            #
 alias p='pbcopy'                                                               # copy contents to clipboard
 alias x='extract'                                                              # extract the contents of an archive
 # Run with elevated privileges.
-alias mtr='sudo mtr'
 alias pls='sudo $(history -p \!\!)'                                            # re-execute last command with elevated privileges
 alias sudo='sudo '                                                             # required to enable auto-completion if alias is prefixed with sudo
-alias service='sudo service'
 # Inspect the system.
 if [[ "$OSTYPE" == "linux"* ]] ; then
     alias osv='cat /etc/system-release'                                        # print the Linux distribution
