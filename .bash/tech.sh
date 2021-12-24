@@ -44,14 +44,12 @@ asn() {
     }
 
     append_asn_and_print() {
-        local output asn asn_info
-        output="$(query_cymru "$1.$2")"
-        [[ -z "$output" ]] && return 1
-        echo "$output" | while read -r ip_info ; do
-            asn=$(command awk '{print $1}' <<< "$ip_info")
-            asn_info="$(query_cymru "AS$asn.$AS_CYMRU_NS" | command awk -F'|' '{print $5}')"
-            echo "$ip_info |$asn_info"
-        done | command sort
+        local asn asn_info ip_info
+        ip_info="$(query_cymru "$1.$2" | command sort | command head -n1)"
+        [[ -z "$ip_info" ]] && return 1
+        asn=$(command awk '{print $1}' <<< "$ip_info")
+        asn_info="$(query_cymru "AS$asn.$AS_CYMRU_NS" | command awk -F'|' '{print $5}')"
+        echo "$ip_info |$asn_info"
     }
 
     local prefix output hextets exploded_ip
