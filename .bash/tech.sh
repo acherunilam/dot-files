@@ -45,7 +45,7 @@ asn() {
 
     append_asn_and_print() {
         local output="$(query_cymru "$1.$2")"
-        [[ -z "$output" ]] && exit 1
+        [[ -z "$output" ]] && return 1
         echo "$output" | while read ip_info ; do
             local asn=$(command awk '{print $1}' <<< "$ip_info")
             local asn_info="$(query_cymru "AS$asn.$AS_CYMRU_NS" | command awk -F'|' '{print $5}')"
