@@ -5,6 +5,7 @@
 packages="$(command sed '/^#/d' <<< "
 ffsubsync
 IMDbPY
+ripe.atlas.tools
 xkcdpass
 ")"
 
