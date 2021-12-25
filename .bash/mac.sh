@@ -4,6 +4,9 @@
 
 # Enable Bash completion.
 BREW_PREFIX="$(command brew --prefix 2>/dev/null)"
+for file in "$BREW_PREFIX"/bash_completion.d/* ; do
+    include "$file"
+done
 include "$BREW_PREFIX/share/bash-completion/bash_completion"
 # Disable reporting analytics for Homebrew.
 export HOMEBREW_NO_ANALYTICS=1
