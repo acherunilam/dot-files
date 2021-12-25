@@ -101,6 +101,7 @@ sponge
 subliminal
 supervisor
 switchaudio-osx
+tcpdump
 telnet
 terminal-notifier
 tesseract
