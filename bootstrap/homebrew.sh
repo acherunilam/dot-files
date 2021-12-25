@@ -6,7 +6,7 @@
 taps="$(command sed '/^#/d' <<< "
 caffix/amass
 denji/nginx
-domt4/autoupdate
+homebrew/autoupdate
 eddieantonio/eddieantonio
 ")"
 brew tap $taps
@@ -117,7 +117,6 @@ wget
 whois
 wifi-password
 winetricks
-wireshark
 xz
 youtube-dl
 zsh
