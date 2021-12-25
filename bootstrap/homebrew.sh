@@ -80,6 +80,7 @@ open-completion
 opus-tools
 p7zip
 pandoc
+parallel
 pip-completion
 poppler
 pv
@@ -92,9 +93,11 @@ rustup-init
 screen
 shellcheck
 shfmt
+sipcalc
 socat
 sox
 speedtest-cli
+sponge
 subliminal
 supervisor
 switchaudio-osx
