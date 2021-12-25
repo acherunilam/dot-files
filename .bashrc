@@ -25,11 +25,9 @@ for file in "$HOME"/.bash/*.sh ; do
 done
 
 
-# Load Git repository-related info for the Bash prompt.
-if type -t __git_ps1 >/dev/null ; then
-    export GIT_PS1_SHOWDIRTYSTATE=true
-    PROMPT_COMMAND+='; git_state=$(__git_ps1 "<%s>")'
-fi
+# Load Git/Mercurial repository-related info for the Bash prompt.
+export GIT_PS1_SHOWDIRTYSTATE=true HG_PS1_SHOWDIRTYSTATE=true
+PROMPT_COMMAND+='; repo_state="$(__git_ps1 "<%s>" 2>/dev/null)$(__hg_ps1 "<%s>" 2>/dev/null)"'
 # Set the Bash prompt.
 USERNAME_COLOR='\[\033[1;34m\]'         # blue
 SENTINEL_CHAR='$'
@@ -45,7 +43,7 @@ PS1=${CONTAINER}
 PS1+=${USERNAME_COLOR}'\u'              # user
 PS1+='\[\033[0m\]\[\033[1;32m\]@\h'     # hostname
 PS1+='\[\033[0m\]:\[\033[1;34m\]\w'     # working directory
-PS1+='\[\033[1;33m\]$git_state'         # git branch
+PS1+='\[\033[1;33m\]$repo_state'        # git/hg branch
 PS1+='\[\033[0m\]'${SENTINEL_CHAR}' '
 PS4='+ $EPOCHREALTIME\011(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 # Set the MySQL prompt.
