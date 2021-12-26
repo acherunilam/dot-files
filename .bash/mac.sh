@@ -3,7 +3,9 @@
 
 
 [[ "$OSTYPE" != "darwin"* ]] && return
-BREW_PREFIX="$(command brew --prefix 2>/dev/null)"
+# Hardcoding the value to speed up startup time.
+# BREW_PREFIX="$(command brew --prefix 2>/dev/null)"
+BREW_PREFIX="/usr/local"
 for file in "$BREW_PREFIX"/bash_completion.d/* ; do
     include "$file"
 done
@@ -23,8 +25,7 @@ export MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/util-linux/bin:$PATH"
-alias base64='gbase64'                                                      # `base64 -w0` should work
-alias dircolors='gdircolors'                                                # we need GNU coreutils' color scheme
+alias base64='gbase64'                                                      # `base64 -w0` should work                                           # we need GNU coreutils' color scheme
 alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias tac='gtac'                                                            # BSD doesn't have tac
 
