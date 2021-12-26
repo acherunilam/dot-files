@@ -2,7 +2,7 @@
 # shellcheck disable=SC1091,SC2139,SC2155
 
 
-# Enable Bash completion.
+[[ "$OSTYPE" != "darwin"* ]] && return
 BREW_PREFIX="$(command brew --prefix 2>/dev/null)"
 for file in "$BREW_PREFIX"/bash_completion.d/* ; do
     include "$file"
@@ -10,9 +10,7 @@ done
 include "$BREW_PREFIX/share/bash-completion/bash_completion"
 
 
-# Disable reporting analytics for Homebrew.
 export HOMEBREW_NO_ANALYTICS=1
-# Enable color support for ls.
 export CLICOLOR=1
 export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
@@ -32,7 +30,7 @@ alias tac='gtac'                                                            # BS
 
 
 # Dependencies:
-#       brew install brightness coreutils
+#       brew install brightness coreutils mtr
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
 alias head='ghead'                                                          # `head -n0` should work
