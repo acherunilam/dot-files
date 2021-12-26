@@ -163,10 +163,12 @@ mdownload() {
 
 
 # Generate OTP using the TOTP secret stored in Keychain. You can add it to the Keychain
-# by running `security add-generic-password -a $LOGNAME -s <key> -w <otp_secret>`.
+# by using the pass() helper method.
 #
 # Dependencies:
 #       brew install oath-toolkit
+#       error()
+#       pass()
 #
 # Environment variables:
 #       export OTP_KEYS=("facebook" "google" "twitter")
