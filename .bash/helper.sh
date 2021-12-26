@@ -14,7 +14,6 @@ alias mv='mv -v'
 alias rm='rm -v'
 # Shorten frequently used commands.
 alias dni='sudo dnf install -qy'
-alias dns='dnf search -qC'
 alias dnu='sudo dnf remove -qy'
 alias ga='git add -A'
 alias gd='git diff'
@@ -72,14 +71,33 @@ aw() {
     command awk $opts '{print '"${columns%,}"'}'
 }
 
+# Which RPM contains the given keyword in its name.
+#
+# Dependencies:
+#       error()
+dns() {
+    local pkg="$1"
+    if [[ $# -eq 0 ]] ; then
+        error "please pass the keyword" 2 ; return
+    elif [[ $# -gt 1 ]] ; then
+        error "invalid input, do not pass more than one keyword" 2 ; return
+    fi
+    command dnf search -qC "$pkg" | command grep "$pkg.* :" | command grep --color=always "$pkg"
+}
 
-# Which RPM provides the given file.
+# Which RPM provides the given file. It assumes that the provided filename is
+# either a library or a binary,
 #
 # Dependencies:
 #       error()
 dnp() {
     local file="$1"
     local file_type
+    if [[ $# -eq 0 ]] ; then
+        error "please pass the filename" 2 ; return
+    elif [[ $# -gt 1 ]] ; then
+        error "invalid input, do not pass more than one filename" 2 ; return
+    fi
     if [[ "$file" =~ .*\.(a|la|so([0-9\.])+?)$ ]] ; then
         file_type="lib"
     else
