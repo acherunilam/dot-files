@@ -10,8 +10,6 @@ export LESSOPEN="|lesspipe.sh %s"
 # Enable color support for `less`. Also, search within is case insensitive
 # unless the pattern contains uppercase letters.
 export LESS="-Ri"
-# Enable color support for `ls`.
-eval "$(dircolors -b)"
 
 
 # Configure command history.
