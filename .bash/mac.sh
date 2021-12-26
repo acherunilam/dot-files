@@ -13,7 +13,7 @@ include "$BREW_PREFIX/share/bash-completion/bash_completion"
 export HOMEBREW_NO_ANALYTICS=1
 export CLICOLOR=1
 # Preview the colors here (https://geoff.greer.fm/lscolors/).
-export LSCOLORS=exfxcxdxbxegedabagacad
+export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
 
 # Load GNU binaries instead of the BSD variants.
