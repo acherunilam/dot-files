@@ -3,9 +3,7 @@
 
 
 [[ "$OSTYPE" != "darwin"* ]] && return
-# Hardcoding the value to speed up startup time.
-# BREW_PREFIX="$(command brew --prefix 2>/dev/null)"
-BREW_PREFIX="/usr/local"
+BREW_PREFIX="${BREW_PREFIX:-/usr/local}"
 for file in "$BREW_PREFIX"/bash_completion.d/* ; do
     include "$file"
 done
