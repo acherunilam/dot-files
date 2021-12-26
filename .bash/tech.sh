@@ -170,3 +170,46 @@ Options:
     # I need exit code 1 if there's no match.
     command awk -F',' '$5 == "\"'"${1^^}"'\"" { gsub(/"/, ""); print '"${columns,,}"'}' "$DB_PATH" | command column -t -s"|" -o":" | command grep .
 }
+
+
+# Identifies the bottleneck in the shell startup time by profiling your dot
+# files. If the dot file isn't specified, it defaults to ~/.bashrc.
+#
+# Usage:
+#       profile [<dot_file>]
+#
+# Dependencies:
+#       error()
+#
+# shellcheck disable=SC2155
+profile() {
+    if [[ $# -gt 1 ]] ; then
+        error "do not specify more than one dot file" 2 ; return
+    fi
+    local CONTEXT_LINES=2
+    local dot_file="${1:-"$HOME/.bashrc"}"
+    local script_file="$(command mktemp)"
+    cat <<EOF >"$script_file"
+OUT_FILE="\$(command mktemp)"
+TMP_FILE="\$(command mktemp)"
+
+exec 2>/dev/null
+exec 3>"\$OUT_FILE"
+export BASH_XTRACEFD=3
+set -x
+PS4='+ \$EPOCHREALTIME\011(\${BASH_SOURCE}:\${LINENO}): \${FUNCNAME[0]:+\${FUNCNAME[0]}(): }'
+source "$dot_file"
+set +x
+
+command grep -E '\++\ 1640' "\$OUT_FILE" | command awk '{print \$2}' >"\$TMP_FILE"
+timestamp="\$(command python -c "
+a = open('\$TMP_FILE').read().split();
+x = [float(a[i+1]) - float(a[i]) for i in range(len(a)-1)];
+print(a[x.index(max(x))])
+")"
+command grep -E "\++\ \$timestamp.*" "\$OUT_FILE" -B$CONTEXT_LINES -A$CONTEXT_LINES --color=always
+command command rm "\$OUT_FILE" "\$TMP_FILE"
+EOF
+    command bash -il "$script_file"
+    command rm "$script_file"
+}
