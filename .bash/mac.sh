@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# shellcheck disable=SC1091,SC2155
+# shellcheck disable=SC1091,SC2139,SC2155
 
 
 # Enable Bash completion.
@@ -8,6 +8,8 @@ for file in "$BREW_PREFIX"/bash_completion.d/* ; do
     include "$file"
 done
 include "$BREW_PREFIX/share/bash-completion/bash_completion"
+
+
 # Disable reporting analytics for Homebrew.
 export HOMEBREW_NO_ANALYTICS=1
 # Enable color support for ls.
@@ -35,7 +37,9 @@ alias dark='brightness 0 2>/dev/null'                                       # se
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
 alias head='ghead'                                                          # `head -n0` should work
 alias lck='pmset displaysleepnow'                                           # switch off display
+alias osv='sw_vers'                                                         # output Mac system version
 alias mtr="sudo $BREW_PREFIX/sbin/mtr"                                      # bug fix (https://github.com/traviscross/mtr/issues/204)
+alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"'         # show all ports listening for connections
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
 

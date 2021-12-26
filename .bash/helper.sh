@@ -13,6 +13,9 @@ alias dig='dig +short'
 alias mv='mv -v'
 alias rm='rm -v'
 # Shorten frequently used commands.
+alias dni='sudo dnf install -qy'
+alias dns='dnf search -qC'
+alias dnu='sudo dnf remove -qy'
 alias ga='git add -A' && __git_complete ga _git_add 2>/dev/null
 alias gd='git diff' && __git_complete gd _git_diff 2>/dev/null
 alias gl='git lg' && __git_complete gl _git_log 2>/dev/null
@@ -24,27 +27,18 @@ alias lh='ls -d .??* 2>/dev/null'                                              #
 alias ll='ls -alFh'                                                            # list all files with their details
 alias p='pbcopy'                                                               # copy contents to clipboard
 alias x='extract'                                                              # extract the contents of an archive
-# Run with elevated privileges.
-alias pls='sudo $(history -p \!\!)'                                            # re-execute last command with elevated privileges
-alias sudo='sudo '                                                             # required to enable auto-completion if alias is prefixed with sudo
 # Inspect the system.
-if [[ "$OSTYPE" == "linux"* ]] ; then
-    alias osv='cat /etc/system-release'                                        # print the Linux distribution
-    alias port='sudo ss -tulpn'                                                # show all listening ports
-elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    alias osv='sw_vers'                                                        # output Mac system version
-    alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"'        # show all ports listening for connections
-fi
+alias osv='cat /etc/system-release'                                            # print the Linux distribution
+alias port='sudo ss -tulpn'                                                    # show all listening ports
 # Run with specific settings.
 alias mkdir='mkdir -p'                                                         # create parent directory if it doesn't exist
+alias pls='sudo $(history -p \!\!)'                                            # re-execute last command with elevated privileges
 alias rsync='rsync -avzhPLK --partial-dir=.rsync-partial'                      # enable compression and partial synchronization
-alias xargs='xargs -rd\\n '                                                    # set default delimiter to newline instead of whitespace
+alias xargs='xargs -rd\\n'                                                     # set default delimiter to newline instead of whitespace
 # Colorize output.
-if [[ "$OSTYPE" == "linux"* ]] ; then
-    alias ls='ls --color=auto'
-fi
-alias grep='grep --color=auto '
-alias watch='watch --color '
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias watch='watch --color'
 
 
 # Simplified awk.
@@ -76,6 +70,22 @@ aw() {
     done
     # The BSD seq's output will have a trailing comma which we need to remove.
     command awk $opts '{print '"${columns%,}"'}'
+}
+
+
+# Which RPM provides the given file.
+#
+# Dependencies:
+#       error()
+dnp() {
+    local file="$1"
+    local file_type
+    if [[ "$file" =~ .*\.(a|la|so([0-9\.])+?)$ ]] ; then
+        file_type="lib"
+    else
+        file_type="bin"
+    fi
+    command dnf provides -qC "*/$file_type*/$file" | command grep -E --color=always "/.*$file_type.*/$file|"
 }
 
 
