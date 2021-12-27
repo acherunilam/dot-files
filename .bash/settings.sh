@@ -17,7 +17,8 @@ HISTCONTROL=ignoreboth                              # don't store commands if th
 HISTFILE="$HOME/.bash_history"                      # store the history of commands that were executed over here
 HISTSIZE='INFINITE'                                 # number of lines that are allowed in the history file at the start/end of a session
 HISTTIMEFORMAT="%d/%m/%y %T "                       # timestamp format to associate each command with
-PROMPT_COMMAND="${PROMPT_COMMAND%%;*}; history -a"  # history buffer to be flushed after every command
+PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND%;};}"
+PROMPT_COMMAND+="history -a"                        # history buffer to be flushed after every command
 
 
 # Shell options.

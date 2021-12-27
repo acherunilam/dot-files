@@ -27,7 +27,8 @@ done
 
 # Load Git/Mercurial repository-related info for the Bash prompt.
 export GIT_PS1_SHOWDIRTYSTATE=true HG_PS1_SHOWDIRTYSTATE=true
-PROMPT_COMMAND+='; repo_state="$(__git_ps1 "<%s>" 2>/dev/null)$(__hg_ps1 "<%s>" 2>/dev/null)"'
+PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND%;};}"
+PROMPT_COMMAND+='repo_state="$(__git_ps1 "<%s>" 2>/dev/null)$(__hg_ps1 "<%s>" 2>/dev/null)"'
 # Set the Bash prompt.
 USERNAME_COLOR='\[\033[1;34m\]'         # blue
 SENTINEL_CHAR='$'
