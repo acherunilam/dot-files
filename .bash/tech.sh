@@ -202,7 +202,7 @@ source "$dot_file"
 set +x
 
 command grep -E '\++\ 1640' "\$OUT_FILE" | command awk '{print \$2}' >"\$TMP_FILE"
-timestamp="\$(command python -c "
+timestamp="\$(command python3 -c "
 a = open('\$TMP_FILE').read().split();
 x = [float(a[i+1]) - float(a[i]) for i in range(len(a)-1)];
 print(a[x.index(max(x))])
