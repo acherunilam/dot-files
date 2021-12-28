@@ -2,6 +2,10 @@
 # shellcheck disable=SC2155
 
 
+# Golang
+export PATH="$HOME/go/bin:$PATH"
+
+
 # Python
 export PYTHONSTARTUP="$HOME/.pythonrc"
 if [[ "$OSTYPE" == "linux"* ]] ; then
