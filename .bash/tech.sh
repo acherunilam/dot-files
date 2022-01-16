@@ -34,6 +34,8 @@ alias geo='geoiplookup'
 # Dependencies:
 #       dnf install coreutils
 #       error()
+#
+# shellcheck disable=SC2155
 asn() {
     local V4_CYMRU_NS="origin.asn.cymru.com"
     local V6_CYMRU_NS="origin6.asn.cymru.com"
@@ -53,13 +55,13 @@ asn() {
     }
 
     local prefix output hextets exploded_ip
-    local input="$1"
+    local input="$(echo "${1,,}" | command sed -E 's/\/[0-9]+$//g')"
     # IPv4
     if [[ $input =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] ; then
         prefix="$(echo "$input" | command tr '.' '\n' | tac | paste -sd'.')"
         append_asn_and_print "$prefix" "$V4_CYMRU_NS"
     # IPv6
-    elif [[ ${input,,} == *:* ]] ; then
+    elif [[ $input =~ :[0-9a-f:]+ ]] ; then
         hextets=$(echo "$input" | command sed 's/::/:/g;s/:/\n/g;/^$/d' | command wc -l)
         exploded_ip="$(
             echo "$input" | command sed -E "s/::/:$(command yes "0:" | command head -n $((8 - hextets)) | paste -sd '')/g;s/^://g;s/:$//g"
@@ -70,8 +72,8 @@ asn() {
         )"
         append_asn_and_print "$prefix" "$V6_CYMRU_NS"
     # ASN
-    elif [[ ${input^^} =~ ^[0-9]+$|^ASN?[0-9]+$ ]] ; then
-        prefix="$(echo "${input^^}" | command sed -E 's/^ASN?//g')"
+    elif [[ $input =~ ^(asn?)?[0-9]+$ ]] ; then
+        prefix="$(echo "$input" | command sed -E 's/^asn?//g')"
         output="$(query_cymru "AS$prefix.$AS_CYMRU_NS")"
         [[ -n "$output" ]] && echo "$output"
     else
