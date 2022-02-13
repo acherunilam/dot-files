@@ -172,7 +172,6 @@ obs
 obs-virtualcam
 playonmac
 qlvideo
-rapidweaver
 rar
 rectangle
 signal
@@ -184,8 +183,6 @@ textual
 the-unarchiver
 tuntap
 tuxera-ntfs
-ukelele
-viscosity
 vlc
 whatsapp
 wifi-explorer
