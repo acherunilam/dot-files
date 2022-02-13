@@ -7,6 +7,7 @@ ffsubsync
 IMDbPY
 ripe.atlas.tools
 xkcdpass
+yubikey-manager
 ")"
 
 pip3 install $packages
