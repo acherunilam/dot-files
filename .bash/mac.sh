@@ -240,6 +240,16 @@ Create/read/update/delete key-value pairs in the macOS Keychain."
     esac
 }
 
+
+# Paste the image on your clipboard to the current directory.
+pngpaste() {
+    osascript -e "
+        tell application \"System Events\" to write (the clipboard as «class PNGf») \
+        to (make new file at folder \"$PWD\" with properties {name:\"screenshot.png\"})
+    " 2>/dev/null
+}
+
+
 # Remove extended attributes for a file downloaded from the internet.
 whitelist() {
     sudo command xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
