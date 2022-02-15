@@ -242,10 +242,15 @@ Create/read/update/delete key-value pairs in the macOS Keychain."
 
 
 # Paste the image on your clipboard to the current directory.
+#
+# Usage:
+#       pngpaste [<filename>]
 pngpaste() {
+    local filename="${1:-screenshot.png}"
+    [[ $filename == *.png ]] || filename+=".png"
     osascript -e "
         tell application \"System Events\" to write (the clipboard as «class PNGf») \
-        to (make new file at folder \"$PWD\" with properties {name:\"screenshot.png\"})
+        to (make new file at folder \"$PWD\" with properties {name:\"$filename\"})
     " 2>/dev/null
 }
 
