@@ -192,4 +192,4 @@ yacreader
 zenmap
 zoomus
 ")"
-brew cask install $casks
+brew install --cask $casks
