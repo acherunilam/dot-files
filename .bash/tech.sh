@@ -82,13 +82,16 @@ asn() {
 }
 
 
-# Prints the details for the given IATA airport code.
+# Prints the details of the IATA airport code or country code.
 #
 # Usage:
-#       iata sea        # Case insensitive search
-#       iata sea -v     # Print verbose details of the airport
-#       iata -i         # Install a cron job to periodically update the IATA DB
-#       iata -s         # Sync the local IATA DB to the latest version
+#       iata sea            # Prints city and country of the airport
+#       iata sea -v         # Prints verbose details of the airport
+#       iata mumbai         # Searches for the airport by name
+#       iata IN             # Prints country name for the given ISO 3166 two-letter code
+#       iata germany -l     # Looks up country code by the country name
+#       iata -i             # Installs a cron job to periodically update the DB
+#       iata -s             # Syncs the local IATA DB to the latest version
 #
 # Dependencies:
 #       dnf install util-linux
@@ -97,40 +100,61 @@ asn() {
 # shellcheck disable=SC2015,SC2016,SC2199
 iata() {
     local CRON_SCHEDULE="0 5 * * *"  # every day 5 AM
-    local DB_PATH="$HOME/.local/share/iata/airports.dat"
+    local DB_PATH="$HOME/.local/share/iata"
+
+    airport_search() {
+        [[ -n "$2" ]] && opts="-i"
+        command grep $opts "$1" "$DB_PATH/airports.csv" \
+            | command awk -F, '{gsub("\"", ""); OFS=","; print $14, $11, $8, $9, $4, $5, $6, $17}' \
+            | command grep -v '^,'
+    }
+
+    country_code_to_name() {
+        command awk -F, '$2 == "\"'"$1"'\"" {gsub("\"", ""); print $3}' "$DB_PATH/countries.csv"
+    }
 
     download_iata_db() {
         command curl -qsS --connect-timeout 2 --max-time 5 \
-            "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat" --create-dirs -o "$DB_PATH"
+            "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/$1.csv" --create-dirs -o "$DB_PATH/$1.csv"
     }
 
     help() {
-        echo "Usage: ${FUNCNAME[1]} [options] <iata_code>
-Prints the details for the given IATA airport code.
+        echo "Usage: ${FUNCNAME[1]} [-v] <iata_code|country_code|city>
+       ${FUNCNAME[1]} -l <country>
+       ${FUNCNAME[1]} (-i | -s)
+Prints the details of the IATA airport code or country code.
 
 Options:
-  -h    Print this help message.
-  -i    Install a cron job to periodically update the IATA DB.
-  -s    Sync the local IATA DB to the latest version.
-  -v    Print verbose details of the airport."
+  -v    Print verbose details of the airport.
+  -l    Look up the ISO 3166 two-letter country code by country name.
+  -i    Install a cron job to periodically update the DB.
+  -s    Sync the local DB to the latest version.
+  -h    Print this help message."
     }
 
-    local columns OPTIND
+    local OPTIND info result country iata city continent country_code name latitude longitude wiki
     local verbose=0
-    while getopts ":ishv" arg ; do
+    local lookup=0
+    while getopts ":ishlv" arg; do
         case $arg in
             i)  # install
-                echo -e "$(command crontab -l)\n\n# Update IATA DB.\n$CRON_SCHEDULE bash -ic 'iata -s'" | command crontab - \
+                echo -e "$(command crontab -l)\n\n# Update IATA/country DB.\n$CRON_SCHEDULE $(command realpath "$0") -s" | command crontab - \
                     && error "installed cron tab" 0 \
                     || error "installation failed"
                 return
                 ;;
             s)  # sync
-                download_iata_db && error "synced IATA DB" 0 || error "sync failed"
+                download_iata_db "airports" \
+                    && download_iata_db "countries" \
+                    && error "synced DB" 0 \
+                    || error "sync failed"
                 return
                 ;;
             h)  # help
                 help && return
+                ;;
+            l)  # lookup
+                lookup=1
                 ;;
             v)  # verbose
                 verbose=1
@@ -141,36 +165,62 @@ Options:
         esac
     done
     shift $((OPTIND-1))
-    # Allow '-v' to be passed after the input.
-    [[ "${@: -1}" == "-v" ]] && verbose=1 && set -- "${@:1:$(($#-1))}"
+    # Allow arguments to be passed after the input.
+    while [[ "${@: -1}" =~ ^(-l|-v)$ ]] ; do
+        if [[ "${@: -1}" == "-l" ]] ; then
+            lookup=1
+        elif [[ "${@: -1}" == "-v" ]] ; then
+            verbose=1
+        fi
+        set -- "${@:1:$(($#-1))}"
+    done
+
     if [[ $# -eq 0 ]] ; then
-        error "please pass the airport code" 2 ; return
-    elif [[ $# -gt 1 ]] ; then
-        error "invalid input, do not pass more than one airport code" 2 ; return
+        error "missing input, please pass an airport code, country code, or city" 2
+        return
+    fi
+    [[ ! -f "$DB_PATH/airports.csv" ]] && download_iata_db "airports"
+    [[ ! -f "$DB_PATH/countries.csv" ]] && download_iata_db "countries"
+    local input="${*^^}"
+
+    if [[ $lookup -eq 1 ]] ; then  # lookup
+        result="$(command awk -F, 'toupper($3) ~ /'"$input"'/ {gsub("\"", ""); OFS="  "; print $2, $3}' "$DB_PATH/countries.csv" \
+            | command sort -k2
+        )"
+    else
+        if [[ ${#input} -eq 2 ]] ; then  # country code
+            result="$(country_code_to_name "$input")"
+        elif [[ ${#input} -eq 3 ]] ; then  # IATA code
+            info="$(airport_search "\"$input\"")"
+            IFS=, read -r iata city continent country_code name latitude longitude wiki <<< "$info"
+            country="$(country_code_to_name "$country_code")"
+            if [[ -n "$info" ]] ; then
+                if [[ $verbose -eq 0 ]] ; then
+                    result="$city, $country"
+                else
+                    result="$(echo "iata|$iata
+name|$name
+city|$city
+country|$country
+continent|$continent
+maps|https://www.google.com/maps/search/?api=1&query=$latitude%2C$longitude
+wiki|$wiki" \
+                        | command column -t -s"|"
+                    )"
+                fi
+            fi
+        else
+            result="$(airport_search "$input" "case_insensitive" \
+                | command cut -d, -f1,2,4,5 \
+                | command sed -E 's/(...),(.*),(..),(.*)/\1\|\4\|\2, \3/g' \
+                | command column -t -s"|" \
+                | command sort -k2
+            )"
+        fi
     fi
 
-    [[ ! -f "$DB_PATH" ]] && download_iata_db
-    if [[ $verbose -eq 0 ]] ; then
-        columns='$3", "$4'
-    else
-        columns="$(echo '
-"ID| "$1
-"Name| "$2
-"City| "$3
-"Country| "$4
-"IATA| "$5
-"ICAO| "$6
-"Latitude| "$7
-"Longitude| "$8
-"Altitude| "$9 " ft"
-"UTC offset| "$10
-"DST| "$11
-"Time zone| "$12
-"Map| https://www.google.com/maps/search/?api=1&query="$7"%2C"$8
-' | paste -sd '' | command sed -E 's/"([^\$% ])/"\\n\1/g;s/"\\n"/\\n/g')"
-    fi
     # I need exit code 1 if there's no match.
-    command awk -F',' '$5 == "\"'"${1^^}"'\"" { gsub(/"/, ""); print '"${columns,,}"'}' "$DB_PATH" | command column -t -s"|" -o":" | command grep .
+    echo "$result" | command grep .
 }
 
 
