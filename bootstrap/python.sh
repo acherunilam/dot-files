@@ -7,6 +7,7 @@ ffsubsync
 IMDbPY
 ripe.atlas.tools
 xkcdpass
+yq
 yubikey-manager
 ")"
 
