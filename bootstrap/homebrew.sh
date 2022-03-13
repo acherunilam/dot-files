@@ -125,7 +125,6 @@ wifi-password
 winetricks
 xz
 youtube-dl
-yubikey-agent
 yq
 zsh
 zsh-completions
@@ -193,6 +192,8 @@ wifi-explorer
 wireshark
 xee
 yacreader
+yubico-authenticator
+yubico-yubikey-manager
 zenmap
 zoomus
 ")"
