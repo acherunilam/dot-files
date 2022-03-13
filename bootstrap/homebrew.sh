@@ -91,6 +91,7 @@ restic
 ripgrep
 rustup-init
 screen
+secretive
 shellcheck
 shfmt
 sipcalc
@@ -123,6 +124,8 @@ wifi-password
 winetricks
 xz
 youtube-dl
+yubikey-agent
+yq
 zsh
 zsh-completions
 ")"
