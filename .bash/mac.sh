@@ -241,6 +241,22 @@ Create/read/update/delete key-value pairs in the macOS Keychain."
 }
 
 
+# Copy content as plaintext and HTML to the clipboard. Note that the plaintext
+# version will automatically have its HTML tags stripped.
+#
+# Usage:
+#       echo "this is <b>bold</b> text" | pbc
+pbc() {
+    local content="$(</dev/stdin)"
+    local plaintext="$(echo -n "$content" | command sed 's/<[^>]*>//g')"
+    local htmlbinary="$(echo -n "$content" | command xxd -p)"
+    command osascript -e "set the clipboard to { \
+        string:\"$plaintext\", \
+        «class HTML»:«data HTML${htmlbinary}» \
+    }"
+}
+
+
 # Paste the image on your clipboard to the current directory.
 #
 # Usage:

@@ -276,9 +276,6 @@ pb() {
 # Usage:
 #       echo "text message" | pbcopy
 #
-# Dependencies:
-#       error()
-#
 # shellcheck disable=SC1003
 pbcopy() {
     if [[ "$OSTYPE" == "darwin"* ]] ; then
@@ -286,9 +283,6 @@ pbcopy() {
         return
     fi
     content="$(</dev/stdin)"
-    if [[ -z "$content" ]] ; then
-        error "missing input, please pass the text" 2 ; return
-    fi
     output="$(printf '\e]52;c;%s\a' "$(echo -n "$content" | command base64 -w0)")"
     [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
     printf "%s" "$output"
