@@ -16,6 +16,11 @@ export CLICOLOR=1
 export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
 
+# Configure Secretive (https://github.com/maxgoedjen/secretive), a Secure Enclave-based SSH Agent.
+export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
+export PATH="$BREW_PREFIX/opt/openssh/bin:$PATH"
+
+
 # Load GNU binaries instead of the BSD variants.
 export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/findutils/libexec/gnuman:$MANPATH"
@@ -24,7 +29,7 @@ export MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/util-linux/bin:$PATH"
-alias base64='gbase64'                                                      # `base64 -w0` should work                                           # we need GNU coreutils' color scheme
+alias base64='gbase64'                                                      # `base64 -w0` should work
 alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias tac='gtac'                                                            # BSD doesn't have tac
 

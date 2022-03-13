@@ -77,6 +77,7 @@ nmap
 node
 oath-toolkit
 open-completion
+openssh
 opus-tools
 p7zip
 pandoc
