@@ -254,7 +254,7 @@ Create/read/update/delete key-value pairs in the macOS Keychain."
 pbc() {
     local content="$(</dev/stdin)"
     local plaintext="$(echo -n "$content" | command sed 's/<[^>]*>//g')"
-    local htmlbinary="$(echo -n "$content" | command xxd -p)"
+    local htmlbinary="$(echo -n "$content" | command xxd -p | command tr -d '\n')"
     command osascript -e "set the clipboard to { \
         string:\"$plaintext\", \
         «class HTML»:«data HTML${htmlbinary}» \
