@@ -21,7 +21,6 @@ bash
 bash-completion@2
 bind
 blueutil
-brew-cask-completion
 brightness
 cabextract
 cliclick
@@ -91,7 +90,6 @@ rename
 restic
 ripgrep
 rustup-init
-screen
 secretive
 shellcheck
 shfmt
@@ -184,7 +182,6 @@ sublime-text
 synthesia
 textual
 the-unarchiver
-tuntap
 tuxera-ntfs
 vlc
 whatsapp
