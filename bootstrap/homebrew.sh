@@ -69,6 +69,7 @@ mkvtoolnix
 mpv
 mtr
 ncdu
+netmask
 nethogs
 nginx-full --with-fancyindex-module --with-http2 --with-autols-module
 ngrep
@@ -93,7 +94,6 @@ rustup-init
 secretive
 shellcheck
 shfmt
-sipcalc
 socat
 sox
 speedtest-cli

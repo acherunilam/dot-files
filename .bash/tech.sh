@@ -25,17 +25,18 @@ alias geo='geoiplookup'
 # Prints the AS details for the given IP or ASN.
 #
 # Usage:
-#       asn 8.8.8.8
+#       asn 8.8.8.8                 # Print details of the ASN owning this IP
 #       asn 2a03:2880:f10c::
-#       asn 32934
+#       asn 32934                   # Print details of this ASN
 #       asn AS15169
 #       asn ASN55836
+#       asn AS54115 -p              # List all prefixes for this ASN
 #
 # Dependencies:
-#       dnf install coreutils
+#       dnf install coreutils jq netmask
 #       error()
 #
-# shellcheck disable=SC2155
+# shellcheck disable=SC2046,SC2155,SC2199
 asn() {
     local V4_CYMRU_NS="origin.asn.cymru.com"
     local V6_CYMRU_NS="origin6.asn.cymru.com"
@@ -54,7 +55,36 @@ asn() {
         echo "$ip_info |$asn_info"
     }
 
-    local prefix output hextets exploded_ip
+    help() {
+        echo "Usage: ${FUNCNAME[1]} <ip_address>
+       ${FUNCNAME[1]} [-p] <asn>
+Prints the AS details of an IP or ASN.
+
+Options:
+  -p    Print all prefixes belonging to the ASN.
+  -h    Print this help message."
+    }
+
+    local OPTIND prefix output hextets exploded_ip
+    local all_prefixes=0
+    while getopts ":ph" arg; do
+        case $arg in
+            p)  # prefixes
+                all_prefixes=1
+                ;;
+            h)  # help
+                help && return
+                ;;
+            *)
+                help >&2 && return 2
+                ;;
+        esac
+    done
+    shift $((OPTIND-1))
+    # Allow arguments to be passed after the input.
+    [[ "${@: -1}" == "-p" ]] \
+        && all_prefixes=1 \
+        && set -- "${@:1:$(($#-1))}"
     local input="$(echo "${1,,}" | command sed -E 's/\/[0-9]+$//g')"
     # IPv4
     if [[ $input =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] ; then
@@ -74,7 +104,19 @@ asn() {
     # ASN
     elif [[ $input =~ ^(asn?)?[0-9]+$ ]] ; then
         prefix="$(echo "$input" | command sed -E 's/^asn?//g')"
-        output="$(query_cymru "AS$prefix.$AS_CYMRU_NS")"
+        if [[ $all_prefixes -eq 1 ]] ; then
+            # Use RIPE's API (https://stat.ripe.net/docs/data_api) to fetch prefixes seen by at least 10 RIS peers over the last 2 weeks.
+            output="$(
+                command curl -qsS --connect-timeout 1 --max-time 5 "https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS$prefix" \
+                    | command jq -r '.data.prefixes[].prefix' \
+                    | command sort -n
+            )"
+            # Combine CIDRs if the `netmask` tool (https://github.com/tlby/netmask) is available.
+            command -v netmask 1>/dev/null \
+                && output="$(command netmask -c $(paste -sd' ' <<< "$output"))"
+        else
+            output="$(query_cymru "AS$prefix.$AS_CYMRU_NS")"
+        fi
         [[ -n "$output" ]] && echo "$output"
     else
         error "invalid input, please pass an IP or ASN" 2 ; return
