@@ -299,13 +299,13 @@ set -x
 $src_cmd
 set +x
 
-command grep -E '\++\ 1640' "\$OUT_FILE" | command awk '{print \$2}' >"\$TMP_FILE"
+command grep -E '^\++\ [0-9]+' "\$OUT_FILE" | command awk '{print \$2}' >"\$TMP_FILE"
 timestamp="\$(command python3 -c "
 a = open('\$TMP_FILE').read().split();
 x = [float(a[i+1]) - float(a[i]) for i in range(len(a)-1)];
 print(a[x.index(max(x))])
 ")"
-command grep -E "\++\ \$timestamp.*" "\$OUT_FILE" -B$CONTEXT_LINES -A$CONTEXT_LINES --color=always
+command grep -E "^\++\ \$timestamp.*" "\$OUT_FILE" -B$CONTEXT_LINES -A$CONTEXT_LINES --color=always
 command command rm "\$OUT_FILE" "\$TMP_FILE"
 EOF
     command bash --noprofile --norc -il "$script_file"
