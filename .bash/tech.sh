@@ -282,6 +282,8 @@ profile() {
         src_cmd="source /etc/profile ; source ~/.bashrc"
     elif [[ $# -gt 1 ]] ; then
         error "do not specify more than one dot file" 2 ; return
+    elif [[ ! -f "$1" ]] ; then
+        error "'$1' is not a sourceable file" 2 ; return
     else
         src_cmd="source $1"
     fi
