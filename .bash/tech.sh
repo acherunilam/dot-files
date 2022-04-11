@@ -278,6 +278,11 @@ wiki|$wiki" \
 # shellcheck disable=SC2155
 profile() {
     local src_cmd
+    if [[ -z "$BASH_VERSION" ]] ; then
+        error "your shell $SHELL is unsupported" ; return
+    elif [[ $(echo "$BASH_VERSION" | command cut -d'.' -f1-2 | command tr -d '.') -lt 42 ]] ; then
+        error "Bash version $BASH_VERSION is too old, cannot redirect trace output" ; return
+    fi
     if [[ $# -eq 0 ]] ; then
         src_cmd="source /etc/profile ; source ~/.bashrc"
     elif [[ $# -gt 1 ]] ; then
