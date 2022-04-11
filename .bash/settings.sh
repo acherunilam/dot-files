@@ -5,8 +5,6 @@
 export INPUTRC="$HOME/.inputrc"
 # Set default text editor.
 export EDITOR="vim"
-# Make `less` more friendly for non-text input files.
-export LESSOPEN="|lesspipe.sh %s"
 # Enable color support for `less`. Also, search within is case insensitive
 # unless the pattern contains uppercase letters.
 export LESS="-Ri"
