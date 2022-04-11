@@ -288,25 +288,25 @@ profile() {
     local CONTEXT_LINES=2
     local script_file="$(command mktemp)"
     cat <<EOF >"$script_file"
-OUT_FILE="\$(command mktemp)"
-TMP_FILE="\$(command mktemp)"
+TRACE_OUT="\$(command mktemp)"
 
 exec 2>/dev/null
-exec 3>"\$OUT_FILE"
+exec 3>"\$TRACE_OUT"
 export BASH_XTRACEFD=3
 PS4='+ \$EPOCHREALTIME\011(\${BASH_SOURCE}:\${LINENO}): \${FUNCNAME[0]:+\${FUNCNAME[0]}(): }'
 set -x
 $src_cmd
 set +x
 
-command grep -E '^\++\ [0-9]+' "\$OUT_FILE" | command awk '{print \$2}' >"\$TMP_FILE"
-timestamp="\$(command python3 -c "
-a = open('\$TMP_FILE').read().split();
-x = [float(a[i+1]) - float(a[i]) for i in range(len(a)-1)];
-print(a[x.index(max(x))])
-")"
-command grep -E "^\++\ \$timestamp.*" "\$OUT_FILE" -B$CONTEXT_LINES -A$CONTEXT_LINES --color=always
-command command rm "\$OUT_FILE" "\$TMP_FILE"
+timestamp="\$(
+    command grep -E '^\++\ [0-9]+' "\$TRACE_OUT" \
+        | command awk 'NR>1 {OFMT="%f"; print p, \$2-p} {p=\$2}' \
+        | command sort -k2 -nr \
+        | command head -n1 \
+        | command awk '{print \$1}'
+)"
+command grep -E "^\++\ \$timestamp.*" "\$TRACE_OUT" -B$CONTEXT_LINES -A$CONTEXT_LINES --color=always
+command command rm "\$TRACE_OUT"
 EOF
     command bash --noprofile --norc -il "$script_file"
     command rm "$script_file"
