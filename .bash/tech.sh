@@ -298,8 +298,8 @@ profile() {
 TRACE_OUT="\$(command mktemp)"
 
 exec 2>/dev/null
-exec 3>"\$TRACE_OUT"
-export BASH_XTRACEFD=3
+exec 7>"\$TRACE_OUT"
+export BASH_XTRACEFD=7
 PS4='+ \$EPOCHREALTIME\011(\${BASH_SOURCE}:\${LINENO}): \${FUNCNAME[0]:+\${FUNCNAME[0]}(): }'
 set -x
 $src_cmd
