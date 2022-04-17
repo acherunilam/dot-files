@@ -22,6 +22,7 @@ export PATH="$BREW_PREFIX/opt/openssh/bin:$PATH"
 
 
 # Load GNU binaries instead of the BSD variants.
+export PATH="/usr/local/opt/curl/bin:$PATH"
 export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/findutils/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
