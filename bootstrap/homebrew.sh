@@ -6,8 +6,8 @@
 taps="$(command sed '/^#/d' <<< "
 caffix/amass
 denji/nginx
-homebrew/autoupdate
 eddieantonio/eddieantonio
+homebrew/autoupdate
 ")"
 brew tap $taps
 
@@ -22,11 +22,13 @@ bash-completion@2
 bind
 blueutil
 brightness
+burp-suite
 cabextract
 cliclick
 cmake
 colordiff
 coreutils
+crunch
 curl
 dnsperf
 docker-completion
@@ -53,6 +55,7 @@ go
 handbrake
 hping
 htop
+hydra
 iftop
 imagemagick
 imgcat
@@ -61,7 +64,7 @@ iperf3
 john-jumbo
 jq
 launchctl-completion
-lesspipe
+lynis
 mas
 media-info
 miller
