@@ -3,6 +3,8 @@
 
 
 [[ "$OSTYPE" != "darwin"* ]] && return
+
+
 BREW_PREFIX="${BREW_PREFIX:-/usr/local}"
 for file in "$BREW_PREFIX"/bash_completion.d/* ; do
     include "$file"
@@ -10,10 +12,13 @@ done
 include "$BREW_PREFIX/share/bash-completion/bash_completion"
 
 
-export HOMEBREW_NO_ANALYTICS=1
-export CLICOLOR=1
 # Preview the colors here (https://geoff.greer.fm/lscolors/).
+export CLICOLOR=1
 export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+
+
+# Load Metasploit (https://github.com/rapid7/metasploit-framework) binaries.
+export PATH="/opt/metasploit-framework/bin:$PATH"
 
 
 # Configure Secretive (https://github.com/maxgoedjen/secretive), a Secure Enclave-based SSH Agent.
@@ -31,6 +36,7 @@ export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/util-linux/bin:$PATH"
 alias base64='gbase64'                                                      # `base64 -w0` should work
+alias head='ghead'                                                          # `head -n0` should work
 alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias tac='gtac'                                                            # BSD doesn't have tac
 
@@ -39,7 +45,6 @@ alias tac='gtac'                                                            # BS
 #       brew install brightness coreutils mtr
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
-alias head='ghead'                                                          # `head -n0` should work
 alias lck='pmset displaysleepnow'                                           # switch off display
 alias osv='sw_vers'                                                         # output Mac system version
 alias mtr="sudo $BREW_PREFIX/sbin/mtr"                                      # bug fix (https://github.com/traviscross/mtr/issues/204)
