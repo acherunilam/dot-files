@@ -170,7 +170,6 @@ little-snitch
 loopback
 meta
 metasploit
-miniconda
 notion
 obs
 obs-virtualcam
