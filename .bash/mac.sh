@@ -36,6 +36,7 @@ export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 export PATH="/usr/local/opt/util-linux/bin:$PATH"
 alias base64='gbase64'                                                      # `base64 -w0` should work
+alias date='gdate'                                                          # `date -I` should work
 alias head='ghead'                                                          # `head -n0` should work
 alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias tac='gtac'                                                            # BSD doesn't have tac
