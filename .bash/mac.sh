@@ -62,7 +62,7 @@ alias slp='pmset sleepnow'                                                  # go
 #     bye -r            Restart asap
 bye() {
     local mode="${1:--h}"
-    [[ $# -le 1 ]] && sudo shutdown "$mode" now || return 1
+    [[ $# -le 1 ]] && sudo command shutdown "$mode" now || return 1
 }
 
 
