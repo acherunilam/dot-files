@@ -82,7 +82,7 @@ dns() {
     elif [[ $# -gt 1 ]] ; then
         error "invalid input, do not pass more than one keyword" 2 ; return
     fi
-    command dnf search -qC "$pkg" | command grep "$pkg.* :" | command grep --color=always "$pkg"
+    command dnf search -qC "$pkg" | command grep -i "$pkg.* :" | command grep --color=always -i "$pkg"
 }
 
 # Which RPM provides the given file. It assumes that the provided filename is
