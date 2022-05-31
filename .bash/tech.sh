@@ -351,7 +351,7 @@ timestamp="\$(
         | command awk '{print \$1}'
 )"
 command grep -E "^\++\ \$timestamp.*" "\$TRACE_OUT" -B$CONTEXT_LINES -A$CONTEXT_LINES --color=always
-command command rm "\$TRACE_OUT"
+command rm "\$TRACE_OUT"
 EOF
     command bash --noprofile --norc -il "$script_file"
     command rm "$script_file"
