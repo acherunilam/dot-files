@@ -124,6 +124,28 @@ Options:
 }
 
 
+# Flushes the OS-level DNS cache.
+#
+# Dependencies:
+#       error()
+#
+# shellcheck disable=SC2155
+dns-flush() {
+    if [[ "$OSTYPE" == "darwin"* ]] ; then
+        sudo command killall -HUP mDNSResponder
+        sudo command killall mDNSResponderHelper
+        sudo command dscacheutil -flushcache
+        return
+    fi
+    local is_systemd_resolved="$(command systemctl is-active systemd-resolved 2>/dev/null)"
+    if [[ "$is_systemd_resolved" == "active" ]] ; then
+        sudo command systemd-resolve --flush-caches
+    else
+        error "error, only systemd-resolved is supported on Linux" ; return
+    fi
+}
+
+
 # Prints the details of the IATA airport code or country code.
 #
 # Usage:
