@@ -46,6 +46,7 @@ alias tac='gtac'                                                            # BS
 #       brew install brightness coreutils mtr
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
+alias iterm-tab-title="printf '\e]1;%s\a'"                                  # set iTerm's tab title (https://iterm2.com/documentation-escape-codes.html)
 alias lck='pmset displaysleepnow'                                           # switch off display
 alias osv='sw_vers'                                                         # output Mac system version
 alias mtr="sudo $BREW_PREFIX/sbin/mtr"                                      # bug fix (https://github.com/traviscross/mtr/issues/204)
