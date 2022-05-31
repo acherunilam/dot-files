@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2086
 
 
-# Set up third-party repositories.
+# Load third-party repositories.
 # 1Password
 sudo tee "/etc/yum.repos.d/1password.repo" >/dev/null <<EOF
 [1password]
@@ -30,79 +29,79 @@ done
 sudo dnf upgrade -y
 
 
-# Install GUI apps.
-gui_apps="$(command sed '/^#/d' <<< "
-1password
-akmod-nvidia
-gnome-tweaks
-google-chrome-stable
-kitty
-piper
-vlc
-wireshark
-xorg-x11-drv-nvidia-cuda
-")"
-sudo dnf install -y $gui_apps
-
-
 # Install CLI apps.
-cli_apps="$(command sed '/^#/d' <<< "
-aircrack-ng
-aria2
-bcc-tools
-calibre
-cargo
-cmake
-colordiff
-dnsperf
-et
-ettercap
-expect
-fd-find
-ffmpeg
-fzf
-GeoIP
-geoipupdate
-git-extras
-golang
-hping3
-htop
-hydra
-iftop
-ImageMagick
-iperf3
-libnotify
-lynis
-mediainfo
-miller
-moreutils
-mtr
-ncdu
-nethogs
-netmask
-ngrep
-nmap
-nodejs
-oathtool
-p7zip
-parallel
-poppler
-prename
-pv
-python3-pip
-qrencode
-ripgrep
-rust
-ShellCheck
-shfmt
-socat
-speedtest-cli
-telnet
-thefuck
-tor
-unrar
-vim
-wireguard-tools
-wireshark-cli
-")"
-sudo dnf install -y $cli_apps
+CLI_APPS=(
+    aircrack-ng
+    aria2
+    bcc-tools
+    calibre
+    cargo
+    cmake
+    colordiff
+    dnsperf
+    et
+    ettercap
+    expect
+    fd-find
+    ffmpeg
+    fzf
+    GeoIP
+    geoipupdate
+    git-extras
+    golang
+    hping3
+    htop
+    hydra
+    iftop
+    ImageMagick
+    iperf3
+    libnotify
+    lynis
+    mediainfo
+    miller
+    moreutils
+    mtr
+    ncdu
+    nethogs
+    netmask
+    ngrep
+    nmap
+    nodejs
+    oathtool
+    p7zip
+    parallel
+    poppler
+    prename
+    pv
+    python3-pip
+    qrencode
+    ripgrep
+    rust
+    ShellCheck
+    shfmt
+    socat
+    speedtest-cli
+    telnet
+    thefuck
+    tor
+    unrar
+    vim
+    wireguard-tools
+    wireshark-cli
+)
+sudo dnf install -y "${CLI_APPS[@]}"
+
+
+# Install GUI apps.
+GUI_APPS=(
+    1password
+    akmod-nvidia
+    gnome-tweaks
+    google-chrome-stable
+    kitty
+    piper
+    vlc
+    wireshark
+    xorg-x11-drv-nvidia-cuda
+)
+sudo dnf install -y "${GUI_APPS[@]}"
