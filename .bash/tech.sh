@@ -124,6 +124,21 @@ Options:
 }
 
 
+# Benchmark how long it takes for your curl query to finish.
+curl-time() {
+    command curl -qsS --location --fail "$@" \
+        --write-out "
+dns         %{time_namelookup}
+tcp         %{time_connect}
+tls         %{time_appconnect} (fail=%{ssl_verify_result})
+req sent    %{time_pretransfer} (%{size_request} bytes)
+redir       %{time_redirect} (%{num_redirects} redirs)
+first byte  %{time_starttransfer} (HTTP %{response_code})
+last byte   %{time_total} (%{num_connects} connect(s), rx: %{size_download} bytes / tx: %{size_upload} bytes)
+"
+}
+
+
 # Flushes the OS-level DNS cache.
 #
 # Dependencies:
