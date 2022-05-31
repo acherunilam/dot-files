@@ -4,11 +4,9 @@
 
 packages="$(command sed '/^#/d' <<< "
 ffsubsync
-IMDbPY
 ripe.atlas.tools
 xkcdpass
 yq
-yubikey-manager
 ")"
 
 pip3 install $packages

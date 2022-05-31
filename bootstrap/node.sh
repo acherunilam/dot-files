@@ -4,8 +4,6 @@
 
 packages="$(command sed '/^#/d' <<< "
 fast-cli
-ffmpeg-progressbar-cli
-tplink-lightbulb
 ")"
 
 npm install --global $packages
