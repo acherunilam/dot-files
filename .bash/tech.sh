@@ -18,6 +18,7 @@ export PATH="/usr/share/bcc/tools:$PATH"
 # Dependencies:
 #       dnf install GeoIP GeoIP-GeoLite-data-extra tor
 alias geo='geoiplookup'                                                                     # Geolocates the IP.
+alias scl='sudo systemctl'                                                                  # Systemd inspection.
 alias tor-curl='curl -qsS --location --proxy socks5://localhost:9050'                       # Curl through Tor.
 alias tor-cycle='sudo killall -HUP tor'                                                     # Change the Tor exit node.
 alias tor-ip='curl-time --proxy socks5://localhost:9050 "https://checkip.amazonaws.com"'    # Check the outbound IP for your Tor setup.

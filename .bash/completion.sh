@@ -3,11 +3,10 @@
 
 
 # Enable Bash completion.
-[[ -f "/usr/share/bash-completion/bash_completion" ]] \
-    && source "/usr/share/bash-completion/bash_completion"
+include "/usr/share/bash-completion/bash_completion"
 
 
-# Auto-complete for `git ru`, which updates remote from HTTPS to SSH.
+# Update Git repository's remote from HTTPS to SSH.
 _git_ru() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local pos=${COMP_CWORD}
@@ -17,7 +16,7 @@ _git_ru() {
 }
 
 
-# Auto-complete for otp(), a macOS-specific helper for generating TOTPs.
+# macOS-specific helper for generating TOTPs.
 _otp() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local pos=${COMP_CWORD}
@@ -27,7 +26,7 @@ _otp() {
 complete -F _otp otp
 
 
-# Auto-complete for pass(), a Keychain-backed key-value CRUD helper.
+# macOS Keychain-backed key-value CRUD helper.
 _pass() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local pos=${COMP_CWORD}
@@ -35,3 +34,8 @@ _pass() {
   [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "get set del help" "$cur") )
 }
 complete -F _pass pass
+
+
+# Systemd inspection.
+include "/usr/share/bash-completion/completions/systemctl"
+complete -F _systemctl scl
