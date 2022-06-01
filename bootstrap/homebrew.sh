@@ -5,7 +5,6 @@
 TAPS=(
     caffix/amass
     denji/nginx
-    eddieantonio/eddieantonio
     homebrew/autoupdate
 )
 brew tap "${TAPS[@]}"
@@ -57,7 +56,6 @@ CLI_APPS=(
     hydra
     iftop
     imagemagick
-    imgcat
     innoextract
     iperf3
     john-jumbo
