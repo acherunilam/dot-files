@@ -24,10 +24,10 @@ CLI_APPS=(
     cabextract
     cliclick
     cmake
-    colordiff
     coreutils
     crunch
     curl
+    diffutils
     dnsperf
     docker-completion
     docker-compose-completion

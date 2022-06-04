@@ -35,6 +35,7 @@ alias pls='sudo $(history -p \!\!)'                                            #
 alias rsync='rsync -avzhPLK --partial-dir=.rsync-partial'                      # enable compression and partial synchronization
 alias xargs='xargs -rd\\n'                                                     # set default delimiter to newline instead of whitespace
 # Colorize output.
+alias diff='diff --color'
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias watch='watch --color'
