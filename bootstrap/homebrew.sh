@@ -6,6 +6,7 @@ TAPS=(
     caffix/amass
     denji/nginx
     homebrew/autoupdate
+    homebrew/cask-drivers
 )
 brew tap "${TAPS[@]}"
 
@@ -144,6 +145,7 @@ GUI_APPS=(
     bit-slicer
     bricklink-studio
     calibre
+    charles
     chrome-remote-desktop-host
     chromedriver
     contexts
@@ -177,7 +179,6 @@ GUI_APPS=(
     signal
     spotify
     steam
-    sublime-text
     synthesia
     textual
     the-unarchiver
