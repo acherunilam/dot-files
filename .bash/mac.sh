@@ -15,6 +15,7 @@ include "$BREW_PREFIX/share/bash-completion/bash_completion"
 # Preview the colors here (https://geoff.greer.fm/lscolors/).
 export CLICOLOR=1
 export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+export TERMINFO_DIRS="$TERMINFO_DIRS:$HOME/.local/share/terminfo"
 
 
 # Load Metasploit (https://github.com/rapid7/metasploit-framework) binaries.
