@@ -47,7 +47,6 @@ alias tac='gtac'                                                            # BS
 #       brew install brightness coreutils mtr
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
-alias iterm-tab-title="printf '\e]1;%s\a'"                                  # set iTerm's tab title (https://iterm2.com/documentation-escape-codes.html)
 alias lck='pmset displaysleepnow'                                           # switch off display
 alias osv='sw_vers'                                                         # output Mac system version
 alias mtr="sudo $BREW_PREFIX/sbin/mtr"                                      # bug fix (https://github.com/traviscross/mtr/issues/204)
@@ -165,6 +164,20 @@ eject() {
 }
 
 
+# Set iTerm's tab title.
+#
+# It works using OCS 9, an Xterm-specific escape sequence used send terminal notifications.
+# (https://iterm2.com/documentation-escape-codes.html).
+#
+# shellcheck disable=SC1003
+iterm-title() {
+    local output
+    output="$(printf '\e]1;%s\a' "$*")"
+    [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
+    printf "%s" "$output"
+}
+
+
 # Move the downloaded files matching the given regex into current directory.
 mdownload() {
     local cmd is_dry_run
@@ -173,6 +186,20 @@ mdownload() {
         ! -name '.DS_Store' ! -name '*.crdownload' ! -name '*.aria2'"
     [[ -z "$is_dry_run" ]] && cmd+=' -exec mv -v {} . \;'
     eval "$cmd"
+}
+
+
+# Sends a notification via the terminal.
+#
+# It works using OCS 9, an Xterm-specific escape sequence used send terminal notifications.
+# (https://iterm2.com/documentation-escape-codes.html).
+#
+# shellcheck disable=SC1003
+notify() {
+    local output
+    output="$(printf '\e]9;%s\a' "${*:-'Attention'}")"
+    [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
+    printf "%s" "$output"
 }
 
 
