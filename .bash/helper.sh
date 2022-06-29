@@ -217,7 +217,7 @@ msync() {
 
 # Sends a notification via the terminal.
 #
-# It works using OCS 9, an Xterm-specific escape sequence used send terminal notifications.
+# It works using OSC 9, an Xterm-specific escape sequence used send terminal notifications.
 # (https://iterm2.com/documentation-escape-codes.html).
 #
 # shellcheck disable=SC1003
@@ -273,7 +273,7 @@ pb() {
 #
 # Both iTerm and Tmux are supported. For the former, you'll have to enable "Preferences >
 # General > Selection > Applications in terminal may access clipboard". It works using
-# OCS 52, an Xterm-specific escape sequence used to copy printed text into the clipboard.
+# OSC 52, an Xterm-specific escape sequence used to copy printed text into the clipboard.
 #
 # Usage:
 #       echo "text message" | pbcopy

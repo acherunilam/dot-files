@@ -166,7 +166,7 @@ eject() {
 
 # Set iTerm's tab title.
 #
-# It works using OCS 9, an Xterm-specific escape sequence used send terminal notifications.
+# It works using OSC 9, an Xterm-specific escape sequence used send terminal notifications.
 # (https://iterm2.com/documentation-escape-codes.html).
 #
 # shellcheck disable=SC1003
