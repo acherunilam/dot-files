@@ -215,6 +215,20 @@ msync() {
 }
 
 
+# Sends a notification via the terminal.
+#
+# It works using OCS 9, an Xterm-specific escape sequence used send terminal notifications.
+# (https://iterm2.com/documentation-escape-codes.html).
+#
+# shellcheck disable=SC1003
+notify() {
+    local output
+    output="$(printf '\e]9;%s\a' "${*:-'Attention'}")"
+    [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
+    printf "%s" "$output"
+}
+
+
 # Upload contents to @mkaczanowski's Pastebin, an open-source Rust pastebin. If no input is
 # passed, then the contents of the clipboard will be used.
 #

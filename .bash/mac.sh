@@ -189,20 +189,6 @@ mdownload() {
 }
 
 
-# Sends a notification via the terminal.
-#
-# It works using OCS 9, an Xterm-specific escape sequence used send terminal notifications.
-# (https://iterm2.com/documentation-escape-codes.html).
-#
-# shellcheck disable=SC1003
-notify() {
-    local output
-    output="$(printf '\e]9;%s\a' "${*:-'Attention'}")"
-    [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
-    printf "%s" "$output"
-}
-
-
 # Generate OTP using the TOTP secret stored in Keychain. You can add it to the Keychain
 # by using the pass() helper method.
 #
