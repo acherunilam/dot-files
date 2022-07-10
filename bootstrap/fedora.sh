@@ -12,6 +12,20 @@ gpgcheck=1
 repo_gpgcheck=1
 gpgkey=https://downloads.1password.com/linux/keys/1password.asc
 EOF
+# Docker
+sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/docker-ce.repo"
+sudo rpm --import "https://download.docker.com/linux/fedora/gpg"
+# Google Cloud CLI
+sudo tee -a /etc/yum.repos.d/google-cloud-sdk.repo << EOF
+[google-cloud-cli]
+name=Google Cloud CLI
+baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el8-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=0
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
 # Google Chrome
 sudo tee "/etc/yum.repos.d/google-chrome.repo" >/dev/null <<EOF
 [google-chrome]
@@ -26,6 +40,7 @@ EOF
 for repo in free nonfree ; do
     sudo dnf install -y "https://mirrors.rpmfusion.org/$repo/fedora/rpmfusion-$repo-release-$(rpm -E %fedora).noarch.rpm"
 done
+# Update all installed packages.
 sudo dnf upgrade -y
 
 
@@ -34,11 +49,16 @@ CLI_APPS=(
     aircrack-ng
     aria2
     bcc-tools
+    bind-utils
     calibre
     cargo
     cmake
     colordiff
+    containerd.io
     dnsperf
+    docker-ce
+    docker-ce-cli
+    docker-compose-plugin
     et
     ettercap
     expect
@@ -48,10 +68,13 @@ CLI_APPS=(
     GeoIP
     GeoIP-GeoLite-data-extra
     geoipupdate
+    git
     git-extras
     golang
+    google-cloud-cli
     hping3
     htop
+    httpd-tools
     hydra
     iftop
     ImageMagick
@@ -70,10 +93,12 @@ CLI_APPS=(
     nodejs
     oathtool
     p7zip
+    p7zip-plugins
     parallel
     poppler
     prename
     pv
+    python3-devel
     python3-pip
     qrencode
     ripgrep
@@ -84,6 +109,7 @@ CLI_APPS=(
     speedtest-cli
     telnet
     thefuck
+    tmux
     tor
     unrar
     vim
@@ -106,3 +132,17 @@ GUI_APPS=(
     xorg-x11-drv-nvidia-cuda
 )
 sudo dnf install -y "${GUI_APPS[@]}"
+
+
+# Configure services.
+# Auto-start on booting up.
+SERVICES=(
+    containerd
+    docker
+    et
+    tor
+    wg-quick@wg0
+)
+sudo systemctl enable --now "${SERVICES[@]}"
+# Interact with Docker daemon without sudo.
+sudo usermod -aG docker "$USER"
