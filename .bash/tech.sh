@@ -272,7 +272,9 @@ Options:
         if [[ ${#input} -eq 2 ]] ; then  # country code
             result="$(country_code_to_name "$input")"
         elif [[ ${#input} -eq 3 ]] ; then  # IATA code
-            info="$(airport_search "\"$input\"")"
+            info="$(airport_search "\"$input\"" \
+                | command grep "^$input,"
+            )"
             IFS=, read -r iata city continent country_code name latitude longitude wiki <<< "$info"
             country="$(country_code_to_name "$country_code")"
             if [[ -n "$info" ]] ; then
