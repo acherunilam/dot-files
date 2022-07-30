@@ -185,7 +185,7 @@ GUI_APPS=(
     tuxera-ntfs
     vlc
     whatsapp
-    wifi-explorer
+    wifi-explorer-pro
     wireshark
     xee
     yacreader
