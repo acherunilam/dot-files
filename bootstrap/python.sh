@@ -7,4 +7,4 @@ PKGS=(
     xkcdpass
     yq
 )
-sudo pip3 install "${PKGS[@]}"
+pip3 install "${PKGS[@]}"
