@@ -4,4 +4,4 @@
 PKGS=(
     fast-cli
 )
-sudo npm install --global "${PKGS[@]}"
+npm install --global "${PKGS[@]}"
