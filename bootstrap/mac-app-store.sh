@@ -7,8 +7,6 @@ APPS="$(command awk '{print $1}' <<< "
     668208984       # GIPHY CAPTURE
     1451685025      # WireGuard
     1365531024      # 1Blocker
-    1480068668      # Messenger
-    1529448980      # Reeder 5
-    497799835       # Xcode
+    1529448980      # Reeder
 ")"
 mas install $APPS

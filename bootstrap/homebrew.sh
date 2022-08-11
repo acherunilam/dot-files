@@ -8,7 +8,9 @@ TAPS=(
     homebrew/autoupdate
     homebrew/cask-drivers
 )
-brew tap "${TAPS[@]}"
+for tap in "${TAPS[@]}" ; do
+    brew tap "$tap"
+done
 
 
 # Install CLI apps.
@@ -21,7 +23,6 @@ CLI_APPS=(
     bind
     blueutil
     brightness
-    burp-suite
     cabextract
     cliclick
     cmake
@@ -30,8 +31,6 @@ CLI_APPS=(
     curl
     diffutils
     dnsperf
-    docker-completion
-    docker-compose-completion
     e2fsprogs
     ettercap
     exiftool
@@ -39,6 +38,7 @@ CLI_APPS=(
     fasd
     fd
     ffmpeg
+    ffms2
     findutils
     flac
     fzf
@@ -50,6 +50,7 @@ CLI_APPS=(
     git
     git-extras
     gnu-sed
+    gnu-tar
     go
     handbrake
     hping
@@ -69,6 +70,7 @@ CLI_APPS=(
     mkvtoolnix
     mpv
     mtr
+    mvtools
     ncdu
     netmask
     nethogs
@@ -92,7 +94,6 @@ CLI_APPS=(
     restic
     ripgrep
     rustup-init
-    secretive
     shellcheck
     shfmt
     socat
@@ -133,7 +134,6 @@ brew install "${CLI_APPS[@]}"
 
 # Install GUI apps.
 GUI_APPS=(
-    010-editor
     1password
     1password-cli
     alfred
@@ -144,6 +144,7 @@ GUI_APPS=(
     bettertouchtool
     bit-slicer
     bricklink-studio
+    burp-suite
     calibre
     charles
     chrome-remote-desktop-host
@@ -152,37 +153,42 @@ GUI_APPS=(
     daisydisk
     discord
     docker
-    dosbox
     dropbox
     fantastical
     firefox
+    garmin-basecamp
+    garmin-express
     google-chrome
     handbrake
-    intel-power-gadget
     istat-menus
     iterm2
-    java
     keepingyouawake
     kindle
     knockknock
     little-snitch
     loopback
+    messenger
     meta
     metasploit
+    monodraw
+    musescore
     notion
     obs
     obs-virtualcam
-    playonmac
     qlvideo
     rar
     rectangle
-    signal
+    roli-connect
+    secretive
     spotify
     steam
     synthesia
+    telegram
     textual
     the-unarchiver
+    tor-browser
     tuxera-ntfs
+    visual-studio-code
     vlc
     whatsapp
     wifi-explorer-pro
@@ -192,6 +198,6 @@ GUI_APPS=(
     yubico-authenticator
     yubico-yubikey-manager
     zenmap
-    zoomus
+    zoom
 )
 brew install --cask "${GUI_APPS[@]}"
