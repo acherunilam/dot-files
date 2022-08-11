@@ -123,7 +123,7 @@ fi
 check_if_installed "rsync"
 command rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
 
-if [[ "$OSTYPE" != "darwin"* ]] && [[ $INSTALL_FASD == 1 ]] ; then
+if [[ $INSTALL_FASD == 1 ]] ; then
     check_if_installed "curl"
     command curl $CURL_OPTS -o "$HOME/bin/fasd" --create-dirs "https://raw.githubusercontent.com/clvv/fasd/master/fasd" \
         && command chmod 755 "$HOME/bin/fasd"
