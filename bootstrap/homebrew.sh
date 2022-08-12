@@ -67,13 +67,14 @@ CLI_APPS=(
     mas
     media-info
     miller
+    MisterTea/et/et
     mkvtoolnix
     mpv
     mtr
     mvtools
     ncdu
-    netmask
     nethogs
+    netmask
     nginx-full --with-fancyindex-module --with-http2 --with-autols-module
     ngrep
     nmap
