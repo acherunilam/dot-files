@@ -48,8 +48,8 @@ shopt -s nullglob                                   # file name patterns expand 
 if [[ "$OSTYPE" == "linux"* ]] ; then
     include "/usr/share/fzf/shell/key-bindings.bash"
 elif [[ "$OSTYPE" == "darwin"* ]] ; then
-    include "$BREW_PREFIX/opt/fzf/shell/completion.bash"
-    include "$BREW_PREFIX/opt/fzf/shell/key-bindings.bash"
+    include "$HOMEBREW_PREFIX/opt/fzf/shell/completion.bash"
+    include "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.bash"
 fi
 _fzf_compgen_dir() { fd --type d --hidden --follow --exclude ".git" --exclude ".hg" . "$1" ; }
 _fzf_compgen_path() { fd --hidden --follow --exclude ".git" --exclude ".hg" . "$1" ; }
