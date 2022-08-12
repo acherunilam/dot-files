@@ -23,8 +23,8 @@ export PATH="/opt/metasploit-framework/bin:$PATH"
 
 
 # Configure Secretive (https://github.com/maxgoedjen/secretive), a Secure Enclave-based SSH Agent.
-export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
-export PATH="$BREW_PREFIX/opt/openssh/bin:$PATH"
+# export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
+# export PATH="$BREW_PREFIX/opt/openssh/bin:$PATH"
 
 
 # Load GNU binaries instead of the BSD variants.
