@@ -54,6 +54,7 @@ CLI_APPS=(
     go
     handbrake
     hping
+    htmlq
     htop
     hydra
     iftop
