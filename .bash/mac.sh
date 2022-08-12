@@ -5,12 +5,16 @@
 [[ "$OSTYPE" != "darwin"* ]] && return
 
 
-BREW_PREFIX="${BREW_PREFIX:-/usr/local}"
-for file in "$BREW_PREFIX"/bash_completion.d/* ; do
+export HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}";
+export HOMEBREW_CELLAR="$HOMEBREW_PREFIX/Cellar";
+export HOMEBREW_REPOSITORY="$HOMEBREW_PREFIX";
+export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin${PATH+:$PATH}";
+export MANPATH="$HOMEBREW_PREFIX/share/man${MANPATH+:$MANPATH}:";
+export INFOPATH="$HOMEBREW_PREFIX/share/info:${INFOPATH:-}";
+include "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh"
+for file in "$HOMEBREW_PREFIX/etc/bash_completion.d/"* ; do
     include "$file"
 done
-include "$BREW_PREFIX/share/bash-completion/bash_completion"
-
 
 # Preview the colors here (https://geoff.greer.fm/lscolors/).
 export CLICOLOR=1
@@ -28,14 +32,14 @@ export PATH="/opt/metasploit-framework/bin:$PATH"
 
 
 # Load GNU binaries instead of the BSD variants.
-export PATH="/usr/local/opt/curl/bin:$PATH"
-export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
-export MANPATH="/usr/local/opt/findutils/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
-export MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-export MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
-export PATH="/usr/local/opt/util-linux/bin:$PATH"
+export PATH="$HOMEBREW_PREFIX/opt/curl/bin:$PATH"
+export PATH="$HOMEBREW_PREFIX/opt/findutils/libexec/gnubin:$PATH"
+export MANPATH="$HOMEBREW_PREFIX/opt/findutils/libexec/gnuman:$MANPATH"
+export PATH="$HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnubin:$PATH"
+export MANPATH="$HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnuman:$MANPATH"
+export PATH="$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin:$PATH"
+export MANPATH="$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnuman:$MANPATH"
+export PATH="$HOMEBREW_PREFIX/opt/util-linux/bin:$PATH"
 alias base64='gbase64'                                                      # `base64 -w0` should work
 alias date='gdate'                                                          # `date -I` should work
 alias head='ghead'                                                          # `head -n0` should work
