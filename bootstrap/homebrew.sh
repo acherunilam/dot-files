@@ -199,7 +199,6 @@ GUI_APPS=(
     yacreader
     yubico-authenticator
     yubico-yubikey-manager
-    zenmap
     zoom
 )
 brew install --cask "${GUI_APPS[@]}"
