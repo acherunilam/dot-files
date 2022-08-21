@@ -28,7 +28,7 @@ export PATH="/opt/metasploit-framework/bin:$PATH"
 
 # Configure Secretive (https://github.com/maxgoedjen/secretive), a Secure Enclave-based SSH Agent.
 # export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
-# export PATH="$BREW_PREFIX/opt/openssh/bin:$PATH"
+# export PATH="$HOMEBREW_PREFIX/opt/openssh/bin:$PATH"
 
 
 # Load GNU binaries instead of the BSD variants.
@@ -52,8 +52,8 @@ alias tac='gtac'                                                            # BS
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
 alias gls='gls --color=auto'                                                # export color scheme for GNU ls
 alias lck='pmset displaysleepnow'                                           # switch off display
-alias osv='sw_vers'                                                         # output Mac system version
-alias mtr="sudo $BREW_PREFIX/sbin/mtr"                                      # bug fix (https://github.com/traviscross/mtr/issues/204)
+alias osv='sw_vers'                                                         # output macOS system version
+alias mtr="sudo mtr"                                                        # run with elevated privileges by default
 alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"'         # show all ports listening for connections
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
