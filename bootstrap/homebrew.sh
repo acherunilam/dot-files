@@ -161,6 +161,7 @@ GUI_APPS=(
     garmin-basecamp
     garmin-express
     google-chrome
+    guitar-pro
     handbrake
     istat-menus
     iterm2
