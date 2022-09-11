@@ -138,6 +138,7 @@ brew install "${CLI_APPS[@]}"
 GUI_APPS=(
     1password
     1password-cli
+    adobe-creative-cloud
     alfred
     android-platform-tools
     appcleaner
