@@ -111,6 +111,7 @@ CLI_APPS=(
     thefuck
     tmux
     tor
+    tree
     unrar
     vim
     wireguard-tools
