@@ -175,7 +175,6 @@ GUI_APPS=(
     meta
     metasploit
     monodraw
-    musescore
     notion
     obs
     obs-virtualcam
