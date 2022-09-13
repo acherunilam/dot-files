@@ -76,7 +76,7 @@ CLI_APPS=(
     ncdu
     nethogs
     netmask
-    nginx-full --with-fancyindex-module --with-http2 --with-autols-module
+    nginx-full --with-fancyindex-module --with-gunzip --with-http2 --with-autols-module
     ngrep
     nmap
     node
@@ -162,6 +162,7 @@ GUI_APPS=(
     garmin-basecamp
     garmin-express
     google-chrome
+    google-cloud-sdk
     guitar-pro
     handbrake
     istat-menus
