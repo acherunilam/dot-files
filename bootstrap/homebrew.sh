@@ -87,6 +87,7 @@ CLI_APPS=(
     p7zip
     pandoc
     parallel
+    pdftk-java
     pip-completion
     poppler
     pv
