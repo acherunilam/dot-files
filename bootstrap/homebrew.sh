@@ -76,7 +76,7 @@ CLI_APPS=(
     ncdu
     nethogs
     netmask
-    nginx-full --with-fancyindex-module --with-gunzip --with-http2 --with-autols-module
+    nginx-full
     ngrep
     nmap
     node
