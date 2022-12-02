@@ -6,7 +6,7 @@
 # code of 1.
 #
 # Usage:
-#       error <message> <return_code> ; return
+#       error <message> [<return_code>] ; return
 error() {
     local message="$1"
     local exit_code=${2:-1}
