@@ -26,6 +26,7 @@ CLI_APPS=(
     cabextract
     cliclick
     cmake
+    composer
     coreutils
     crunch
     curl
@@ -65,6 +66,7 @@ CLI_APPS=(
     jq
     launchctl-completion
     lynis
+    mariadb
     mas
     media-info
     miller
@@ -88,6 +90,7 @@ CLI_APPS=(
     pandoc
     parallel
     pdftk-java
+    php
     pip-completion
     poppler
     pv
