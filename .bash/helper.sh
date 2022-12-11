@@ -239,13 +239,12 @@ notify() {
 #
 # Dependencies:
 #       error()
+#       validate-env()
 #
 # shellcheck disable=SC2086,SC2181
 pb() {
     local content curl_auth_arg response
-    if [[ -z "$PASTEBIN_URL" ]] ; then
-        error "please set the environment variable \$PASTEBIN_URL" ; return
-    fi
+    validate-env "PASTEBIN_URL" || return
     if [[ -p /dev/stdin ]] ; then
         content="$(</dev/stdin)"
     elif [[ "$OSTYPE" == "darwin"* ]] ; then
@@ -347,6 +346,7 @@ ppb() {
 #
 # Dependencies:
 #       error()
+#       validate-env()
 #
 # shellcheck disable=SC2155,SC2181,SC2199
 push() {
@@ -380,9 +380,7 @@ Options:
         esac
     done
     shift $((OPTIND-1))
-    if [[ -z "$PUSHOVER_USER" ]] || [[ -z "$PUSHOVER_TOKEN" ]] ; then
-        error "missing environment variables, please set both PUSHOVER_USER and PUSHOVER_TOKEN" ; return
-    fi
+    validate-env "PUSHOVER_USER" "PUSHOVER_TOKEN" || return
     [[ "$1" == "-p" ]] && priority=1 && shift
     [[ "${@: -1}" == "-p" ]] && priority=1 && set -- "${@:1:$(($#-1))}"
     local message="$*"
@@ -424,14 +422,13 @@ Options:
 #
 # Dependencies:
 #       error()
+#       validate-env()
 #
 # shellcheck disable=SC2015,SC2181
 url-shorten() {
     local custom_slug response result
     local url="$1"
-    if [[ -z "$URL_SHORTENER_URL" ]] || [[ -z "$URL_SHORTENER_API_KEY" ]] ; then
-        error "please set both the environment variables \$URL_SHORTENER_URL and \$URL_SHORTENER_API_KEY" ; return
-    fi
+    validate-env "URL_SHORTENER_URL" "URL_SHORTENER_API_KEY" || return
     if [[ -z $url ]] ; then
         error "please pass the URL as the first argument" 2
     elif [[ ! $url =~ ^https?://[^\.]+\..+$ ]] ; then
