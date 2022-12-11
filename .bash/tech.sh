@@ -372,6 +372,7 @@ EOF
 # Dependencies:
 #       dnf install jq
 #       error()
+#       validate-env()
 ripe-atlas-report() {
     local RIPE_MEASUREMENT_ID="$1"
     if [[ $# -eq 0 ]] ; then
@@ -381,9 +382,7 @@ ripe-atlas-report() {
     elif [[ ! "$RIPE_MEASUREMENT_ID" =~ ^[0-9]+$ ]] ; then
         error "'$RIPE_MEASUREMENT_ID' is not a valid measurement ID" 2 ; return
     fi
-    if [[ -z "$ATLAS_CREATE_KEY" ]] ; then
-        error "please set the environment variable \$ATLAS_CREATE_KEY" ; return
-    fi
+    validate-env "ATLAS_CREATE_KEY" || return
     command curl -qsS -H "Authorization: Key $ATLAS_CREATE_KEY" \
             "https://atlas.ripe.net/api/v2/measurements/$RIPE_MEASUREMENT_ID/results" \
         | command jq '.'

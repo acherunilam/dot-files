@@ -200,14 +200,13 @@ mdownload() {
 #       brew install oath-toolkit
 #       error()
 #       pass()
+#       validate-env()
 #
 # Environment variables:
 #       export OTP_KEYS=("facebook" "google" "twitter")
 otp() {
     local key="$1"
-    if [[ -z $OTP_KEYS ]] ; then
-        error "please set the environment variable \$OTP_KEYS" ; return
-    fi
+    validate-env "OTP_KEYS" || return
     if ! [[ "$key" =~ ^($(command sed 's/\ /|/g' <<< "${OTP_KEYS[@]}"))$ ]] ; then
         error "key has to be one of: ${OTP_KEYS[*]}" 2 ; return
     fi

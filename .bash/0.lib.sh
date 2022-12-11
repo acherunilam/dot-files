@@ -24,3 +24,19 @@ error() {
 include() {
     [[ -f "$1" ]] && source "$1"
 }
+
+
+# Validate whether the given environment variables exist.
+#
+# Usage:
+#       validate-env <env>... || return
+validate-env() {
+    local exit_code=0
+    for env_var in "$@" ; do
+        if [[ -z "${!env_var}" ]] ; then
+            echo "${FUNCNAME[1]}: please set the environment variable \$$env_var"
+            exit_code=1
+        fi
+    done
+    return "$exit_code"
+}
