@@ -359,3 +359,32 @@ EOF
     command bash --noprofile --norc -il "$script_file"
     command rm "$script_file"
 }
+
+
+# Fetches the RIPE Atlas (https://atlas.ripe.net/about/) report for the given measurement ID.
+#
+# Usage:
+#       ripe-atlas-report <id>
+#
+# Environment variables:
+#       export ATLAS_CREATE_KEY="<api_key>"
+#
+# Dependencies:
+#       dnf install jq
+#       error()
+ripe-atlas-report() {
+    local RIPE_MEASUREMENT_ID="$1"
+    if [[ $# -eq 0 ]] ; then
+        error "please provide a measurement ID" 2 ; return
+    elif [[ $# -gt 1 ]] ; then
+        error "do not specify more than one measurement ID" 2 ; return
+    elif [[ ! "$RIPE_MEASUREMENT_ID" =~ ^[0-9]+$ ]] ; then
+        error "'$RIPE_MEASUREMENT_ID' is not a valid measurement ID" 2 ; return
+    fi
+    if [[ -z "$ATLAS_CREATE_KEY" ]] ; then
+        error "please set the environment variable \$ATLAS_CREATE_KEY" ; return
+    fi
+    command curl -qsS -H "Authorization: Key $ATLAS_CREATE_KEY" \
+            "https://atlas.ripe.net/api/v2/measurements/$RIPE_MEASUREMENT_ID/results" \
+        | command jq '.'
+}
