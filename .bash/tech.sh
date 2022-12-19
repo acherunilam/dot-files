@@ -361,6 +361,41 @@ EOF
 }
 
 
+# Counts the number of active RIPE Atlas probes (https://atlas.ripe.net/about/) for the
+# given country or ASN.
+#
+# Usage:
+#       ripe-atlas-probe (<country>|<asn>)
+#
+# Environment variables:
+#       export ATLAS_CREATE_KEY="<api_key>"
+#
+# Dependencies:
+#       pip install ripe.atlas.tools
+#       error()
+#       validate-env()
+ripe-atlas-probe() {
+    local INPUT="${1,,}"
+    local FILTER_BY="country"
+    local PROBE_SEARCH_LIMIT=10000
+    if [[ $# -eq 0 ]] ; then
+        error "please provide a country or ASN" 2 ; return
+    elif [[ $# -gt 1 ]] ; then
+        error "do not specify more than one country or ASN" 2 ; return
+    elif [[ "$INPUT" =~ ^(asn?)?[0-9]+$ ]] ; then
+        FILTER_BY="asn"
+        INPUT="$(echo "$INPUT" | command sed -E 's/^asn?//g')"
+    elif [[ ! "$INPUT" =~ ^[a-z]{2}$ ]] ; then
+        error "'$INPUT' is not a valid country or ASN" 2 ; return
+    fi
+    validate-env "ATLAS_CREATE_KEY" || return
+    command ripe-atlas probe-search --limit "$PROBE_SEARCH_LIMIT" \
+            --"$FILTER_BY" "$INPUT" --status 1 --ids-only \
+        | command wc -l \
+        | command awk '{print $1}'
+}
+
+
 # Fetches the RIPE Atlas (https://atlas.ripe.net/about/) report for the given measurement ID.
 #
 # Usage:
