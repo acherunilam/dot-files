@@ -422,3 +422,42 @@ ripe-atlas-report() {
             "https://atlas.ripe.net/api/v2/measurements/$RIPE_MEASUREMENT_ID/results" \
         | command jq '.'
 }
+
+
+# Runs traceroute using RIPE Atlas probes (https://atlas.ripe.net/about/).
+#
+# Usage:
+#       ripe-atlas-trace <destination> [<country|asn>] [probe_count]
+#
+# Environment variables:
+#       export ATLAS_CREATE_KEY="<api_key>"
+#
+# Dependencies:
+#       error()
+#       validate-env()
+ripe-atlas-trace() {
+    local DST="$1"
+    local FILTER_BY="area"
+    local FILTER_VALUE="${2:-WW}"
+    FILTER_VALUE="${FILTER_VALUE^^}"
+    local PROBE_COUNT="${3:-10}"
+    if [[ $# -eq 0 ]] ; then
+        error "please provide a destination hostname or IP" 2 ; return
+    elif [[ $# -gt 3 ]] ; then
+        error "do not specify more than 3 arguments" 2 ; return
+    elif [[ "$FILTER_VALUE" =~ ^(asn?)?[0-9]+$ ]] ; then
+        FILTER_BY="asn"
+        FILTER_VALUE="$(echo "$FILTER_VALUE" | command sed -E 's/^ASN?//g')"
+    elif [[ "$FILTER_VALUE" =~ ^[A-Z]{2}$ ]] && [[ "$FILTER_VALUE" != "WW" ]] ; then
+        FILTER_BY="country"
+    elif [[ "$FILTER_VALUE" != "WW" ]] ; then
+        error "'$FILTER_VALUE' is not a valid country or ASN" 2 ; return
+    fi
+    validate-env "ATLAS_CREATE_KEY" || return
+    command ripe-atlas measure traceroute "$DST" \
+        --description "[traceroute] [$FILTER_VALUE] $DST" \
+        --from-"$FILTER_BY" "$FILTER_VALUE" \
+        --probes "$PROBE_COUNT" \
+        --resolve-on-probe \
+        --no-report
+}
