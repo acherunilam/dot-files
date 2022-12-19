@@ -37,7 +37,7 @@ function print_usage_and_exit() {
 
 function check_if_installed() {
     if ! type -P "$1" 1>/dev/null ; then
-        "$BASENAME: '$1' is not installed" >&2
+        echo "$BASENAME: '$1' is not installed" >&2
         exit 1
     fi
 }
