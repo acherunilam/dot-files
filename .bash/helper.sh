@@ -13,6 +13,7 @@ alias dig='dig +short'
 alias mv='mv -v'
 alias rm='rm -v'
 # Shorten frequently used commands.
+alias c='cat'
 alias dni='sudo dnf install -qy'
 alias dnu='sudo dnf remove -qy'
 alias ga='git add -A'
@@ -20,6 +21,7 @@ alias gc='git checkout .'
 alias gd='git diff'
 alias gl='git lg'
 alias gs='git status'
+alias j='jq -C '.' | less -Ri'
 alias l='ls -CF'                                                               # distinguish between file types by suffixing file name with a symbol
 alias la='ls -A'                                                               # list all files
 alias ld='ls -d */ 2>/dev/null'                                                # list only directories
