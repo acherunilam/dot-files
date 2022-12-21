@@ -18,6 +18,8 @@
 [core]
   # make sure that CRLF is replaced with LF when writing file to object database
   autocrlf = input
+[init]
+  defaultBranch = main
 [merge]
   tool = opendiff
 [pull]
