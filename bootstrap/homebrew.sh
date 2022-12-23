@@ -92,6 +92,7 @@ CLI_APPS=(
     pdftk-java
     php
     pip-completion
+    pnpm
     poppler
     pv
     python
