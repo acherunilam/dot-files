@@ -30,6 +30,7 @@
     rebase = false
 [push]
     default = current
+    autoSetupRemote = true
 
 [alias]
     # show all aliases
