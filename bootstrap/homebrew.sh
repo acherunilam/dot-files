@@ -204,7 +204,6 @@ GUI_APPS=(
     wifi-explorer-pro
     wifispoof
     wireshark
-    xee
     yacreader
     yubico-authenticator
     yubico-yubikey-manager
