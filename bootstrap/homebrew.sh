@@ -61,6 +61,7 @@ CLI_APPS=(
     iftop
     imagemagick
     innoextract
+    iodine
     iperf3
     john-jumbo
     jq
@@ -201,6 +202,7 @@ GUI_APPS=(
     vlc
     whatsapp
     wifi-explorer-pro
+    wifispoof
     wireshark
     xee
     yacreader
