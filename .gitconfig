@@ -1,76 +1,76 @@
 [user]
-  name = Adithya Cherunilam
-  email = me@adi.xyz
+    name = Adithya Cherunilam
+    email = me@adi.xyz
 
 [color]
-  ui = true
+    ui = true
 [color "branch"]
-  current = yellow bold reverse
-  local = yellow bold
-  remote = green bold
+    current = yellow bold reverse
+    local = yellow bold
+    remote = green bold
 [color "diff"]
-  meta = yellow bold
-  whitespace = red reverse
-  frag = magenta bold
-  old = red
-  new = green
+    meta = yellow bold
+    whitespace = red reverse
+    frag = magenta bold
+    old = red
+    new = green
 [color "status"]
-  added = yellow bold
-  changed = green bold
-  untracked = cyan bold
+    added = yellow bold
+    changed = green bold
+    untracked = cyan bold
 
 [core]
-  # make sure that CRLF is replaced with LF when writing file to object database
-  autocrlf = input
+    # make sure that CRLF is replaced with LF when writing file to object database
+    autocrlf = input
 [init]
-  defaultBranch = main
+    defaultBranch = main
 [merge]
-  tool = opendiff
+    tool = opendiff
 [pull]
-  rebase = false
+    rebase = false
 [push]
-  default = current
+    default = current
 
 [alias]
-  # show all aliases
-  lal = "!git config -l | grep alias | cut -c 7-"
+    # show all aliases
+    lal = "!git config -l | grep alias | cut -c 7-"
 
-  # commit using the given message
-  cm = commit --message
-  # amend the most recent commit
-  cmd = commit --amend --no-edit
-  # commit all changes using the given message
-  cam = commit --all --message
-  # switch branches or restore working tree files
-  co = checkout
-  # show prettified commit logs
-  lg = log --pretty=format:'%Cred%h%Creset %Cgreen(%cd) %Creset%s %C(bold blue)<%an> %Creset%Cgreen(%cr)%Creset'
-  # show prettified commit logs along with the altered list of files
-  lgl = log --pretty=format:'%Cred%h%Creset %Cgreen(%cd) %Creset%s %C(bold blue)<%an> %Creset%Cgreen(%cr)%Creset' --numstat
-  # show the working tree status minus the untracked files
-  st = status --short --untracked-files=no
+    # commit using the given message
+    cm = commit --message
+    # amend the most recent commit
+    cmd = commit --amend --no-edit
+    # commit all changes using the given message
+    cam = commit --all --message
+    # switch branches or restore working tree files
+    co = checkout
+    # show prettified commit logs
+    lg = log --pretty=format:'%Cred%h%Creset %Cgreen(%cd) %Creset%s %C(bold blue)<%an> %Creset%Cgreen(%cr)%Creset'
+    # show prettified commit logs along with the altered list of files
+    lgl = log --pretty=format:'%Cred%h%Creset %Cgreen(%cd) %Creset%s %C(bold blue)<%an> %Creset%Cgreen(%cr)%Creset' --numstat
+    # show the working tree status minus the untracked files
+    st = status --short --untracked-files=no
 
-  # remove all ignored directories and files
-  cl = clean -Xdf
-  # list all files inside that aren't part of the original repo
-  ign = ls-files --others --exclude-standard --ignored
-  # list just the untracked files
-  unt = ls-files --others --exclude-standard
+    # remove all ignored directories and files
+    cl = clean -Xdf
+    # list all files inside that aren't part of the original repo
+    ign = ls-files --others --exclude-standard --ignored
+    # list just the untracked files
+    unt = ls-files --others --exclude-standard
 
-  # ignore a file that you may need to modify but not commit
-  assume = update-index --assume-unchanged
-  # show all assumed files
-  assumed = "!git ls-files -v | grep ^h | cut -c 3-"
-  # unassume a file
-  unassume = update-index --no-assume-unchanged
-  # unassume all assumed files
-  unassume-all = "!git assumed | xargs git unassume"
+    # ignore a file that you may need to modify but not commit
+    assume = update-index --assume-unchanged
+    # show all assumed files
+    assumed = "!git ls-files -v | grep ^h | cut -c 3-"
+    # unassume a file
+    unassume = update-index --no-assume-unchanged
+    # unassume all assumed files
+    unassume-all = "!git assumed | xargs git unassume"
 
-  # update remote from HTTPS to SSH
-  # takes in the remote as an optional first argument, else defaults to origin
-  ru = "!remote_update_ssh() { \
-    local REMOTE URL ; \
-    REMOTE="${1:-origin}" \
-    URL=$(git remote get-url $REMOTE | sed -E 's/https:\\/\\/(.*)\\/(.*)\\/(.*)/git@\\1:\\2\\/\\3.git/') ; \
-    git remote set-url $REMOTE $URL ; \
-  } ; remote_update_ssh"
+    # update remote from HTTPS to SSH
+    # takes in the remote as an optional first argument, else defaults to origin
+    ru = "!remote_update_ssh() { \
+        local REMOTE URL ; \
+        REMOTE="${1:-origin}" \
+        URL=$(git remote get-url $REMOTE | sed -E 's/https:\\/\\/(.*)\\/(.*)\\/(.*)/git@\\1:\\2\\/\\3.git/') ; \
+        git remote set-url $REMOTE $URL ; \
+    } ; remote_update_ssh"
