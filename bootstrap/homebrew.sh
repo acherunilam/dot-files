@@ -45,6 +45,7 @@ CLI_APPS=(
     fzf
     gawk
     gcc
+    gcc-c++
     gdrive
     geoip
     geoipupdate
