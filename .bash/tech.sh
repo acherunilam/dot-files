@@ -178,7 +178,7 @@ dns-flush() {
 #       dnf install util-linux
 #       error()
 #
-# shellcheck disable=SC2015,SC2016,SC2199
+# shellcheck disable=SC2015,SC2016,SC2086,SC2199
 iata() {
     local CRON_SCHEDULE="0 5 * * *"  # every day 5 AM
     local DB_PATH="$HOME/.local/share/iata"
@@ -304,6 +304,37 @@ wiki|$wiki" \
 
     # I need exit code 1 if there's no match.
     echo "$result" | command grep .
+}
+
+
+# Looks up the vendor for the given MAC ID.
+#
+# Dependencies:
+#       error()
+#
+# shellcheck disable=SC2181
+mac-lookup() {
+    local MAC_ID="${1^^}"
+    if [[ -z "$MAC_ID" ]]; then
+        error "please pass the MAC ID" ; return
+    elif [[ $# -gt 1 ]] ; then
+        error "do not pass more than one MAC ID"
+    elif [[ ! "$MAC_ID" =~ ^([0-9A-F]{2}[:-]?){5}([0-9A-F]{2})$ ]] ; then
+        error "invalid MAC ID" ; return
+    fi
+    MAC_ID="$(command sed -E 's/(-|:)//g' <<< "$MAC_ID")"
+    local OUI_DB_URL="https://standards-oui.ieee.org/oui/oui.txt"
+    local DB_PATH="$HOME/.local/share/mac-lookup/oui.txt"
+    if [[ ! -f "$DB_PATH" ]] ; then
+        command curl -qsS --connect-timeout 2 --max-time 5 "$OUI_DB_URL" --create-dirs -o "$DB_PATH"
+        if [[ $? -ne 0 ]] ; then
+            error "unable to connect to $OUI_DB_URL" ; return
+        fi
+    fi
+    command cat "$DB_PATH" \
+        | command grep "${MAC_ID:0:6}" \
+        | command sed -E 's/.*\(base 16\)\s+(.*)/\1/g' \
+        | command grep .
 }
 
 
