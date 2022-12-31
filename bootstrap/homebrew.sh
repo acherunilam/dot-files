@@ -186,6 +186,7 @@ GUI_APPS=(
     notion
     obs
     obs-virtualcam
+    pixelsnap
     qlvideo
     rar
     rectangle
