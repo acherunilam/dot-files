@@ -59,6 +59,7 @@ CLI_APPS=(
     htmlq
     htop
     hydra
+    icoutils
     iftop
     imagemagick
     innoextract
