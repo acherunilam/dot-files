@@ -9,7 +9,7 @@
 
 
 BASENAME=$(basename "$0")
-CURL_OPTS="-sS --connect-timeout 2 --max-time 5 -fL"
+CURL_OPTS="-sSq --connect-timeout 2 --max-time 5 -fL"
 TARGET_DIR="$HOME"
 USAGE="Usage: $BASENAME [OPTIONS]
 A wrapper script to install the dot files present in this repo. Backups for
@@ -17,6 +17,7 @@ existing dot files will be taken prior to copying this over.
 
 --all               install all dot files
 --bash              install the bash dot files
+--curl              install the curl config file
 --editline          install the editline config file
 --fasd              install the fasd config file
 --git               install the git config file
@@ -50,6 +51,9 @@ for arg in "$@"; do
         ;;
     --bash)
         INSTALL_BASH=1
+        ;;
+    --curl)
+        INSTALL_CURL=1
         ;;
     --editline)
         INSTALL_EDITLINE=1
@@ -99,6 +103,7 @@ EXCLUDE_FILES=""
 [[ $SKIP_EXISTING == 1 ]] && OVERWRITE_SETTINGS="--ignore-existing" || OVERWRITE_SETTINGS="--backup --suffix=.bak"
 if [[ $INSTALL_ALL == 1 ]] ; then
     INSTALL_BASH=1
+    INSTALL_CURL=1
     INSTALL_EDITLINE=1
     INSTALL_FASD=1
     INSTALL_GIT=1
@@ -110,6 +115,7 @@ if [[ $INSTALL_ALL == 1 ]] ; then
     INSTALL_VIM=1
 fi
 [[ $INSTALL_BASH == 1 ]] && SOURCE+=" ./.bashrc ./.bash_profile ./.bash/*.sh"
+[[ $INSTALL_CURL == 1 ]] && SOURCE+=" ./.curlrc"
 [[ $INSTALL_EDITLINE == 1 ]] && SOURCE+=" ./.editrc"
 [[ $INSTALL_FASD == 1 ]] && SOURCE+=" ./.fasdrc"
 [[ $INSTALL_GIT == 1 ]] && SOURCE+=" ./.gitconfig"
