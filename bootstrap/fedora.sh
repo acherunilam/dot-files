@@ -55,6 +55,7 @@ CLI_APPS=(
     cmake
     colordiff
     containerd.io
+    dnf-automatic
     dnsperf
     docker-ce
     docker-ce-cli
@@ -139,6 +140,7 @@ sudo dnf install -y "${GUI_APPS[@]}"
 # Auto-start on booting up.
 SERVICES=(
     containerd
+    dnf-automatic.timer
     docker
     et
     tor
