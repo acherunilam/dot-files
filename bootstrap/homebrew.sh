@@ -133,6 +133,7 @@ CLI_APPS=(
     whois
     wifi-password
     winetricks
+    xq
     xz
     youtube-dl
     yq
