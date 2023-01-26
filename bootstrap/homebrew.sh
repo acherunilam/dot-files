@@ -124,6 +124,7 @@ CLI_APPS=(
     trash
     tree
     tvnamer
+    uni
     util-linux
     vapoursynth
     vim
