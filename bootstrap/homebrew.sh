@@ -138,6 +138,7 @@ CLI_APPS=(
     xz
     youtube-dl
     yq
+    zbar
     zsh
     zsh-completions
 )
