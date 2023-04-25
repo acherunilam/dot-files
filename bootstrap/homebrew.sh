@@ -98,6 +98,7 @@ CLI_APPS=(
     pnpm
     poppler
     pv
+    pwgen
     python
     qrencode
     rename
