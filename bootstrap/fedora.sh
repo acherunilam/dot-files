@@ -66,9 +66,6 @@ CLI_APPS=(
     fd-find
     ffmpeg
     fzf
-    GeoIP
-    GeoIP-GeoLite-data-extra
-    geoipupdate
     git
     git-extras
     golang

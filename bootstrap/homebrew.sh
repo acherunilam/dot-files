@@ -47,8 +47,6 @@ CLI_APPS=(
     gcc
     gcc-c++
     gdrive
-    geoip
-    geoipupdate
     git
     git-extras
     gnu-sed
@@ -65,6 +63,7 @@ CLI_APPS=(
     innoextract
     iodine
     iperf3
+    ipinfo-cli
     john-jumbo
     jq
     launchctl-completion
