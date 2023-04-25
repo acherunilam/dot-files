@@ -99,6 +99,7 @@ CLI_APPS=(
     poppler
     prename
     pv
+    pwgen
     python3-devel
     python3-pip
     qrencode
