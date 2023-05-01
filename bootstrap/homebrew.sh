@@ -30,6 +30,7 @@ CLI_APPS=(
     coreutils
     crunch
     curl
+    datamash
     diffutils
     dnsperf
     e2fsprogs

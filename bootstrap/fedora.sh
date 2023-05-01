@@ -55,6 +55,7 @@ CLI_APPS=(
     cmake
     colordiff
     containerd.io
+    datamash
     dnf-automatic
     dnsperf
     docker-ce
