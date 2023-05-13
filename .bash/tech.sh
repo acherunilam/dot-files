@@ -126,6 +126,20 @@ Options:
 }
 
 
+# Print the X.509 TLS certificate details.
+#
+# Usage:
+#       cert <host>[:<port>] [<sni>]
+cert() {
+    local DST="$1"
+    local SNI="${2:-${1%:*}}"
+    [[ "$DST" != *":"* ]] && DST="$DST:443"
+    echo \
+        | command openssl s_client -showcerts -servername "$SNI" -connect "$DST" 2>/dev/null \
+        | command openssl x509 -noout -text
+}
+
+
 # Benchmark how long it takes for your curl query to finish.
 curl-time() {
     command curl -qsS --location --fail --output /dev/null "$@" \
