@@ -128,9 +128,8 @@ Options:
 
 # Benchmark how long it takes for your curl query to finish.
 curl-time() {
-    command curl -qsS --location --fail "$@" \
-        --write-out "
-dns         %{time_namelookup}
+    command curl -qsS --location --fail --output /dev/null "$@" \
+        --write-out "dns         %{time_namelookup}
 tcp         %{time_connect}
 tls         %{time_appconnect} (fail=%{ssl_verify_result})
 req sent    %{time_pretransfer} (%{size_request} bytes)
