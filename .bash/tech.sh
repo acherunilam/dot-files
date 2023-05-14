@@ -27,12 +27,11 @@ alias tor-ip='curl-time --proxy socks5://localhost:9050 "https://checkip.amazona
 # Prints the AS details for the given IP or ASN.
 #
 # Usage:
-#       asn 8.8.8.8                 # Print details of the ASN owning this IP
-#       asn 2a03:2880:f10c::
-#       asn 32934                   # Print details of this ASN
-#       asn AS15169
-#       asn ASN55836
-#       asn AS54115 -p              # List all prefixes for this ASN
+#       asn <ip_address>
+#       asn <as_number> [-p]
+#
+# Options:
+#       -p      List all prefixes for the ASN.
 #
 # Dependencies:
 #       dnf install coreutils jq netmask
@@ -141,6 +140,9 @@ cert() {
 
 
 # Benchmark how long it takes for your curl query to finish.
+#
+# Usage:
+#       curl-time [<options>...] <url>
 curl-time() {
     command curl -qsS --location --fail --output /dev/null "$@" \
         --write-out "dns         %{time_namelookup}
@@ -179,13 +181,18 @@ dns-flush() {
 # Prints the details of the IATA airport code or country code.
 #
 # Usage:
-#       iata sea            # Prints city and country of the airport
-#       iata sea -v         # Prints verbose details of the airport
-#       iata mumbai         # Searches for the airport by name
-#       iata IN             # Prints country name for the given ISO 3166 two-letter code
-#       iata germany -l     # Looks up country code by the country name
-#       iata -i             # Installs a cron job to periodically update the DB
-#       iata -s             # Syncs the local IATA DB to the latest version
+#       iata <airport_code> [-v]
+#       iata <airport_name>
+#       iata <country_code>
+#       iata <country_name> -l
+#       iata -i
+#       iata -s
+#
+# Options:
+#       -v      Prints verbose details of the airport.
+#       -l      Looks up country code by the country name.
+#       -i      Installs a cron job to periodically update the DB.
+#       -s      Syncs the local IATA DB to the latest version.
 #
 # Dependencies:
 #       dnf install util-linux
@@ -321,6 +328,9 @@ wiki|$wiki" \
 
 
 # Looks up the vendor for the given MAC ID.
+#
+# Usage:
+#       mac-lookup <mac_id>
 #
 # Dependencies:
 #       error()
@@ -471,7 +481,7 @@ ripe-atlas-report() {
 # Runs traceroute using RIPE Atlas probes (https://atlas.ripe.net/about/).
 #
 # Usage:
-#       ripe-atlas-trace <destination> [<country|asn>] [probe_count]
+#       ripe-atlas-trace <destination> [ww|<country>|<asn>] [<probe_count>]
 #
 # Environment variables:
 #       export ATLAS_CREATE_KEY="<api_key>"

@@ -62,8 +62,10 @@ alias slp='pmset sleepnow'                                                  # go
 # Used to shutdown/reboot immediately.
 #
 # Usage:
-#     bye               Shutdown asap
-#     bye -r            Restart asap
+#       bye [-r]
+#
+# Options:
+#       -r      Reboot instead of shutting down.
 bye() {
     local mode="${1:--h}"
     [[ $# -le 1 ]] && sudo command shutdown "$mode" now || return 1
@@ -150,8 +152,10 @@ clear-history() {
 # Unmount all DMGs or external HDDs.
 #
 # Usage:
-#       unmount               Unmount the DMGs
-#       unmount -e            Unmount the HDDs
+#       unmount [-e]
+#
+# Options:
+#       -e      Unmount HDDs instead of DMGs.
 eject() {
     local volume volumes disk_type label device devices
     volumes=$(command diskutil list | command grep "/dev/disk")
@@ -173,6 +177,9 @@ eject() {
 # It works using OSC 9, an Xterm-specific escape sequence used to send terminal notifications.
 # (https://iterm2.com/documentation-escape-codes.html).
 #
+# Usage:
+#       iterm-title <title>
+#
 # shellcheck disable=SC1003
 iterm-title() {
     local output
@@ -183,6 +190,9 @@ iterm-title() {
 
 
 # Move the downloaded files matching the given regex into current directory.
+#
+# Usage:
+#       mdownload [<pattern>]
 mdownload() {
     local cmd is_dry_run
     [[ "$1" == "-n" ]] && shift && is_dry_run=1
@@ -195,6 +205,9 @@ mdownload() {
 
 # Generate OTP using the TOTP secret stored in Keychain. You can add it to the Keychain
 # by using the pass() helper method.
+#
+# Usage:
+#       otp <key>
 #
 # Dependencies:
 #       brew install oath-toolkit

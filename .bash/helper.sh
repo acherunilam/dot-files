@@ -75,7 +75,11 @@ aw() {
     command awk $opts '{print '"${columns%,}"'}'
 }
 
+
 # Which RPM contains the given keyword in its name.
+#
+# Usage:
+#       dns <keyword>
 #
 # Dependencies:
 #       error()
@@ -89,8 +93,12 @@ dns() {
     command dnf search -qC "$pkg" | command grep -i "$pkg.* :" | command grep --color=always -i "$pkg"
 }
 
+
 # Which RPM provides the given file. It assumes that the provided filename is
 # either a library or a binary,
+#
+# Usage:
+#       dnp (<binary>|<library>)
 #
 # Dependencies:
 #       error()
@@ -115,9 +123,8 @@ dnp() {
 # the clipboard. It notifies once the download is complete using an iTerm-specific
 # escape sequence (https://iterm2.com/documentation-escape-codes.html).
 #
-# Dependencies:
-#       dnf install aria2
-#       notify()
+# Usage:
+#       download [<file>...]
 #
 # Environment variables:
 #       export DOWNLOAD_ARIA_OPTIONS='(
@@ -125,8 +132,9 @@ dnp() {
 #           ["*uri_regex2*"]="--header=\"Referer: https://example.com\""
 #       )'
 #
-# Usage:
-#       download [<file>...]
+# Dependencies:
+#       dnf install aria2
+#       notify()
 #
 # shellcheck disable=SC1003,SC2086
 download() {
@@ -152,6 +160,9 @@ download() {
 
 
 # Extract the contents of an archive.
+#
+# Usage:
+#       extract <file>
 #
 # Dependencies:
 #       dnf install binutils cabextract p7zip p7zip-plugins unrar xz
@@ -190,15 +201,22 @@ extract() {
 
 
 # Find file by name.
+#
+# Usage:
+#       ff <pattern>
 ff() {
     command find -L . -type f -iname '*'"$*"'*' -ls 2>/dev/null
 }
 
 
 # Search the command line history and show the matches.
+#
+# Usage:
+#       his <pattern>
 his() {
     command grep "$*" "$HISTFILE" | command less +G
 }
+
 
 # List all network interfaces and their IPs.
 ipp() {
@@ -228,6 +246,9 @@ ipp() {
 
 
 # Like mv, but with a progress bar.
+#
+# Usage:
+#       msync <src> <dst>
 msync() {
     rsync --remove-source-files "$@" && [[ -d "$1" ]] && command find "$1" -type d -empty -delete
 }
@@ -237,6 +258,10 @@ msync() {
 #
 # It works using OSC 9, an Xterm-specific escape sequence used to send terminal notifications.
 # (https://iterm2.com/documentation-escape-codes.html).
+#
+#
+# Usage:
+#       notify <message>
 #
 # shellcheck disable=SC1003
 notify() {
@@ -249,6 +274,9 @@ notify() {
 
 # Upload contents to @mkaczanowski's Pastebin, an open-source Rust pastebin. If no input is
 # passed, then the contents of the clipboard will be used.
+#
+# Usage:
+#       echo "text message" | pb
 #
 # Environment variables:
 #       export PASTEBIN_URL="<url-of-pastebin>"
@@ -321,6 +349,9 @@ pipp() {
 # Upload contents to Sprunge, a public pastebin. If no input is passed, then the
 # contents of the clipboard will be used.
 #
+# Usage:
+#       echo "text message" | ppb
+#
 # Dependencies:
 #       error()
 #
@@ -353,13 +384,15 @@ ppb() {
 # Sends a push notification using Pushover (https://pushover.net/). The user and token can
 # be obtained by registering your app over here (https://pushover.net/apps/build).
 #
+# Usage:
+#       push [-p] <message>
+#
+# Options:
+#       -p      High priority.
+#
 # Environment variables:
 #       export PUSHOVER_USER="<user>"
 #       export PUSHOVER_TOKEN="<token>"
-#
-# Usage:
-#       push foo              Sends the message 'foo'
-#       push -p bar           Sends the message 'bar' with high priority
 #
 # Dependencies:
 #       error()
@@ -426,16 +459,15 @@ Options:
 
 
 # Shorten the given URL using Shlink, an open-source URL Shortener. The API key can be
-# generated from by running `bin/cli api-key:generate`.
+# generated from by running `bin/cli api-key:generate`. If the slug isn't specified,
+# then it uses a randomized 4-letter slug. If it already exists, then it overwrites it.
+#
+# Usage:
+#       url-shorten <url> [<slug>]
 #
 # Environment variables:
 #       export URL_SHORTENER_API_KEY="<generated-api-key>"
 #       export URL_SHORTENER_URL="<url-of-endpoint>"
-#
-# Usage:
-#       url-shorten <url>             Shortens the given URL, uses a randomized 4-letter slug
-#       url-shorten <url> <slug>      Shortens the given URL using the given slug. If slug
-#                                       already exists, then it overwrites it
 #
 # Dependencies:
 #       error()
