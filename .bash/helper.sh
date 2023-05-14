@@ -314,8 +314,8 @@ pbcopy() {
 # shellcheck disable=SC2086
 pipp() {
     local DIG_OPTS="+short +timeout=1 +retry=1 myip.opendns.com @resolver1.opendns.com"
-    command dig -4 A $DIG_OPTS
-    command dig -6 AAAA $DIG_OPTS
+    command dig -4 A $DIG_OPTS | command grep -v '^;;'
+    command dig -6 AAAA $DIG_OPTS | command grep -v '^;;'
 }
 
 # Upload contents to Sprunge, a public pastebin. If no input is passed, then the
