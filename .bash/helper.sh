@@ -202,13 +202,28 @@ his() {
 
 # List all network interfaces and their IPs.
 ipp() {
-    local interfaces ips
-    interfaces="$(command ifconfig | command awk '!/^\s+/ && !/^$/ {gsub(/:$/, "", $1); print $1}')"
-    for i in $interfaces ; do
-        ips="$(command ifconfig "$i" 2>/dev/null | \
-            command awk '/inet/ && !/inet (127|169.254)/ && !/inet6 (::1|fe80::)/ {print "\t"$2}')"
-        [[ -n "$ips" ]] && echo -e "${i}${ips}"
-    done
+    local result
+    # Always prefer 'ip' over 'ifconfig' since the latter has been deprecated.
+    if type -P "ip" 1>/dev/null ; then
+        result="$(
+            command ip -brief addr show scope global \
+                | command sort \
+                | command awk '$2 != "DOWN" {$2=""; print $0}' \
+                | command sed -E 's/([0-9a-f:]+)\/[0-9]+/\1/g'
+
+        )"
+    else
+        result="$(
+            command ifconfig \
+                | command grep -E '(flags=|inet)' \
+                | command grep -vE ' (127|169.254|::1|fe80::)' \
+                | command grep 'inet' -B1 \
+                | command grep -v '^--$' \
+                | command sed -E 's/(.*): flags=.*/\1/g;s/\s+inet6?\ (\S*).*/+\1/g' \
+                | command sed ':a;$!N;s/\n+/ /;ta;P;D'
+        )"
+    fi
+    echo -e "$result" | command column -t
 }
 
 
