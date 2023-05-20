@@ -326,11 +326,11 @@ pb() {
 # shellcheck disable=SC1003
 pbcopy() {
     local content output
+    content="$(</dev/stdin)"
     if [[ "$OSTYPE" == "darwin"* ]] ; then
-        command pbcopy
+        echo -n "$content" | command pbcopy
         return
     fi
-    content="$(</dev/stdin)"
     output="$(printf '\e]52;c;%s\a' "$(echo -n "$content" | command base64 -w0)")"
     [[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
     printf "%s" "$output"
