@@ -95,7 +95,8 @@ Options:
     elif [[ $input =~ :[0-9a-f:]+ ]] ; then
         hextets=$(echo "$input" | command sed 's/::/:/g;s/:/\n/g;/^$/d' | command wc -l)
         exploded_ip="$(
-            echo "$input" | command sed -E "s/::/:$(command yes "0:" | command head -n $((8 - hextets)) | paste -sd '')/g;s/^://g;s/:$//g"
+            echo "$input" | command sed -E "s/::/:$(command yes "0:" 2>/dev/null \
+                | command head -n $((8 - hextets)) 2>/dev/null | paste -sd '')/g;s/^://g;s/:$//g"
         )"
         prefix="$(
             echo "$exploded_ip" | command tr ':' '\n' | while read -r line ; do printf "%04x\n" "0x$line" 2>/dev/null ; done \
