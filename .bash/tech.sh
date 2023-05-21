@@ -185,13 +185,12 @@ dns-flush() {
 #       iata <airport_code> [-v]
 #       iata <airport_name>
 #       iata <country_code>
-#       iata <country_name> -l
-#       iata -i
-#       iata -s
+#       iata <country_name> -c
+#       iata (-i | -s)
 #
 # Options:
 #       -v      Prints verbose details of the airport.
-#       -l      Looks up country code by the country name.
+#       -c      Looks up country code by the country name.
 #       -i      Installs a cron job to periodically update the DB.
 #       -s      Syncs the local IATA DB to the latest version.
 #
@@ -222,14 +221,16 @@ iata() {
     }
 
     help() {
-        echo "Usage: ${FUNCNAME[1]} [-v] <iata_code|country_code|city>
-       ${FUNCNAME[1]} -l <country>
+        echo "Usage: ${FUNCNAME[1]} <airport_code> [-v]
+       ${FUNCNAME[1]} <airport_name>
+       ${FUNCNAME[1]} <country_code>
+       ${FUNCNAME[1]} <country_name> -c
        ${FUNCNAME[1]} (-i | -s)
 Prints the details of the IATA airport code or country code.
 
 Options:
   -v    Print verbose details of the airport.
-  -l    Look up the ISO 3166 two-letter country code by country name.
+  -c    Look up the ISO 3166 two-letter country code by country name.
   -i    Install a cron job to periodically update the DB.
   -s    Sync the local DB to the latest version.
   -h    Print this help message."
@@ -237,8 +238,8 @@ Options:
 
     local OPTIND info result country iata city continent country_code name latitude longitude wiki
     local verbose=0
-    local lookup=0
-    while getopts ":ishlv" arg; do
+    local country=0
+    while getopts ":ishcv" arg; do
         case $arg in
             i)  # install
                 echo -e "$(command crontab -l)\n\n# Update IATA/country DB.\n$CRON_SCHEDULE $(command realpath "$0") -s" | command crontab - \
@@ -256,8 +257,8 @@ Options:
             h)  # help
                 help && return
                 ;;
-            l)  # lookup
-                lookup=1
+            c)  # country
+                country=1
                 ;;
             v)  # verbose
                 verbose=1
@@ -269,9 +270,9 @@ Options:
     done
     shift $((OPTIND-1))
     # Allow arguments to be passed after the input.
-    while [[ "${@: -1}" =~ ^(-l|-v)$ ]] ; do
-        if [[ "${@: -1}" == "-l" ]] ; then
-            lookup=1
+    while [[ "${@: -1}" =~ ^(-c|-v)$ ]] ; do
+        if [[ "${@: -1}" == "-c" ]] ; then
+            country=1
         elif [[ "${@: -1}" == "-v" ]] ; then
             verbose=1
         fi
@@ -286,7 +287,7 @@ Options:
     [[ ! -f "$DB_PATH/countries.csv" ]] && download_iata_db "countries"
     local input="${*^^}"
 
-    if [[ $lookup -eq 1 ]] ; then  # lookup
+    if [[ $country -eq 1 ]] ; then  # country
         result="$(command awk -F, 'toupper($3) ~ /'"$input"'/ {gsub("\"", ""); OFS="  "; print $2, $3}' "$DB_PATH/countries.csv" \
             | command sort -k2
         )"
