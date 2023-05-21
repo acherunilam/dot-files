@@ -15,9 +15,6 @@ include "$HOME/.acme.sh/acme.sh.env"
 export PATH="/usr/share/bcc/tools:$PATH"
 
 
-# Dependencies:
-#       go install github.com/ipinfo/cli/ipinfo@latest
-alias geo='ipinfo'                                                                          # Geolocates the IP.
 alias scl='sudo systemctl'                                                                  # Systemd inspection.
 alias tor-curl='curl -qsS --location --proxy socks5://localhost:9050'                       # Curl through Tor.
 alias tor-cycle='sudo killall -HUP tor'                                                     # Change the Tor exit node.
@@ -175,6 +172,111 @@ dns-flush() {
         sudo command systemd-resolve --flush-caches
     else
         error "error, only systemd-resolved is supported on Linux" ; return
+    fi
+}
+
+
+# Prints geolocation information for an IP address. The API token can be viewed
+# over here (https://ipinfo.io/account/token).
+#
+# Usage:
+#       geo <ip_address> [-e]
+#       geo (-i | -s)
+#
+# Options:
+#       -e      Makes an external API call instead of reading from the local MMDB.
+#               This shows extra info like city, hostname, is_anycast, etc.
+#       -i      Installs a cron job to periodically update the MMDB.
+#       -s      Syncs the local MMDB to the latest version.
+#
+# Environment variables:
+#       export IPINFO_API_TOKEN="<api_token>"
+#
+# Dependencies:
+#       dnf install jq
+#       go install github.com/ipinfo/mmdbctl@latest
+#       error()
+#       validate-env()
+#
+# shellcheck disable=SC2015,SC2199
+geo() {
+    local CRON_SCHEDULE="0 5 * * 1"  # every Mon 5 AM
+    local DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
+
+    download_mmdb() {
+        command curl -qsS --connect-timeout 2 --max-time 30 -L \
+            "https://ipinfo.io/data/free/country_asn.mmdb?token=$IPINFO_API_TOKEN" --create-dirs -o "$DB_PATH.new"
+        if command grep -aq "limit" "$DB_PATH.new" 2>/dev/null ; then
+            command rm "$DB_PATH.new"
+            error "download failed, per day limit reached"
+        else
+            command mv "$DB_PATH.new" "$DB_PATH" 2>/dev/null
+        fi
+    }
+
+    help() {
+        echo "Usage: ${FUNCNAME[1]} <ip_address> [-e]
+       ${FUNCNAME[1]} (-i | -s)
+Prints geolocation information for an IP address.
+
+Options:
+  -e    Make an external API call instead of reading from the local MMDB.
+  -i    Install a cron job to periodically update the MMDB.
+  -s    Sync the local MMDB to the latest version.
+  -h    Print this help message."
+    }
+
+    local OPTIND
+    local external=0
+    while getopts ":ishe" arg; do
+        case $arg in
+            i)  # install
+                echo -e "$(command crontab -l)\n\n# Update gelocation MMDB.\n$CRON_SCHEDULE $SHELL -ic '${FUNCNAME[0]} -s'" | command crontab - \
+                    && error "installed cron tab" 0 \
+                    || error "installation failed"
+                return
+                ;;
+            s)  # sync
+                validate-env "IPINFO_API_TOKEN" || return
+                download_mmdb \
+                    && error "synced DB" 0 \
+                    || error "sync failed"
+                return
+                ;;
+            h)  # help
+                help && return
+                ;;
+            e)  # external
+                external=1
+                ;;
+            *)
+                help >&2 && return 2
+                ;;
+        esac
+    done
+    shift $((OPTIND-1))
+    # Allow arguments to be passed after the input.
+    if [[ "${@: -1}" == "-e" ]] ; then
+        external=1
+        set -- "${@:1:$(($#-1))}"
+    fi
+    if [[ $# -eq 0 ]] ; then
+        error "missing input, please pass an IP address" 2
+        return
+    elif [[ $# -gt 1 ]] ; then
+        error "do not pass more than one IP address" 2 ; return
+    fi
+    local ip_addr="$1"
+
+    if [[ $external -eq 0 ]] ; then  # MMDB
+        if [[ ! -f "$DB_PATH" ]] ; then
+            validate-env "IPINFO_API_TOKEN" || return
+            download_mmdb || return
+        fi
+        command mmdbctl read "$ip_addr" "$DB_PATH" | command jq '.'
+    else # external API
+        command curl -qsS --connect-timeout 2 --max-time 5 "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN" \
+            | command jq '.'
     fi
 }
 
