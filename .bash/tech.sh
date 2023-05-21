@@ -242,7 +242,7 @@ Options:
     while getopts ":ishcv" arg; do
         case $arg in
             i)  # install
-                echo -e "$(command crontab -l)\n\n# Update IATA/country DB.\n$CRON_SCHEDULE $(command realpath "$0") -s" | command crontab - \
+                echo -e "$(command crontab -l)\n\n# Update IATA/country DB.\n$CRON_SCHEDULE $SHELL -ic '${FUNCNAME[0]} -s'" | command crontab - \
                     && error "installed cron tab" 0 \
                     || error "installation failed"
                 return
