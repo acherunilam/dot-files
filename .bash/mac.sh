@@ -40,6 +40,7 @@ export MANPATH="$HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnuman:$MANPATH"
 export PATH="$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin:$PATH"
 export MANPATH="$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnuman:$MANPATH"
 export PATH="$HOMEBREW_PREFIX/opt/util-linux/bin:$PATH"
+alias awk='gawk'                                                            # `awk -vFPAT` should work
 alias base64='gbase64'                                                      # `base64 -w0` should work
 alias date='gdate'                                                          # `date -I` should work
 alias head='ghead'                                                          # `head -n0` should work
