@@ -176,8 +176,8 @@ dns-flush() {
 }
 
 
-# Prints geolocation information for an IP address. The API token can be viewed
-# over here (https://ipinfo.io/account/token).
+# Prints geolocation information for an IP address using IPinfo (https://ipinfo.io).
+# The API token can be viewed over here (https://ipinfo.io/account/token).
 #
 # Usage:
 #       geo <ip_address> [-e]
@@ -281,7 +281,8 @@ Options:
 }
 
 
-# Prints the details of the IATA airport code or country code.
+# Prints the details of the IATA airport code or country code using Team
+# Cymru (https://www.team-cymru.com/ip-asn-mapping).
 #
 # Usage:
 #       iata <airport_code> [-v]
@@ -521,7 +522,7 @@ EOF
 
 
 # Counts the number of active RIPE Atlas probes (https://atlas.ripe.net/about/) for the
-# given country or ASN.
+# given country or ASN. The API key can generated over here (https://atlas.ripe.net/keys/).
 #
 # Usage:
 #       ripe-atlas-probe (<country>|<asn>)

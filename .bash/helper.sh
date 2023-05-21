@@ -382,7 +382,7 @@ ppb() {
 
 
 # Sends a push notification using Pushover (https://pushover.net/). The user and token can
-# be obtained by registering your app over here (https://pushover.net/apps/build).
+# be generated over here (https://pushover.net/apps/build).
 #
 # Usage:
 #       push [-p] <message>
@@ -458,9 +458,10 @@ Options:
 }
 
 
-# Shorten the given URL using Shlink, an open-source URL Shortener. The API key can be
-# generated from by running `bin/cli api-key:generate`. If the slug isn't specified,
-# then it uses a randomized 4-letter slug. If it already exists, then it overwrites it.
+# Shorten the given URL using Shlink (https://shlink.io), an open-source URL Shortener.
+# The API key can be generated from by running `bin/cli api-key:generate`. If the slug
+# isn't specified, then it uses a randomized 4-letter slug. If it already exists, then
+# it overwrites it.
 #
 # Usage:
 #       url-shorten <url> [<slug>]
