@@ -207,6 +207,7 @@ iata() {
     airport_search() {
         [[ -n "$2" ]] && opts="-i"
         command grep $opts "$1" "$DB_PATH/airports.csv" \
+            | command awk -F'"' -v OFS='' '{ for (i=2; i<=NF; i+=2) gsub(",", "~", $i) } 1' \
             | command awk -F, '{gsub("\"", ""); OFS=","; print $14, $11, $8, $9, $4, $5, $6, $17}' \
             | command grep -v '^,'
     }
@@ -324,7 +325,7 @@ wiki|$wiki" \
     fi
 
     # I need exit code 1 if there's no match.
-    echo "$result" | command grep .
+    echo "$result" | command sed 's/~/,/g' | command grep .
 }
 
 
