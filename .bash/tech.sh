@@ -217,7 +217,7 @@ iata() {
     }
 
     download_iata_db() {
-        command curl -qsS --connect-timeout 2 --max-time 5 \
+        command curl -qsS --connect-timeout 2 --max-time 10 \
             "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/$1.csv" --create-dirs -o "$DB_PATH/$1.csv"
     }
 
