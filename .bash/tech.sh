@@ -192,12 +192,12 @@ dns-flush() {
 # The API token can be viewed over here (https://ipinfo.io/account/token).
 #
 # Usage:
-#       geo <ip_address> [-e]
+#       geo <ip_address> [-l]
 #       geo (-i | -s)
 #
 # Options:
-#       -e      Makes an external API call instead of reading from the local MMDB.
-#               This shows extra info like city, hostname, is_anycast, etc.
+#       -l      Reads from the local MMDB instead of malking external API call.
+#               This omits extra info like city, hostname, is_anycast, etc.
 #       -i      Installs a cron job to periodically update the MMDB.
 #       -s      Syncs the local MMDB to the latest version.
 #
@@ -227,20 +227,21 @@ geo() {
     }
 
     help() {
-        echo "Usage: ${FUNCNAME[1]} <ip_address> [-e]
+        echo "Usage: ${FUNCNAME[1]} <ip_address> [-l]
        ${FUNCNAME[1]} (-i | -s)
 Prints geolocation information for an IP address.
 
 Options:
-  -e    Make an external API call instead of reading from the local MMDB.
+  -l    Read from the local MMDB instead of malking external API call.
+        This omits extra info like city, hostname, is_anycast, etc.
   -i    Install a cron job to periodically update the MMDB.
   -s    Sync the local MMDB to the latest version.
   -h    Print this help message."
     }
 
     local OPTIND
-    local external=0
-    while getopts ":ishe" arg; do
+    local local=0
+    while getopts ":ishl" arg; do
         case $arg in
             i)  # install
                 echo -e "$(command crontab -l)\n\n# Update gelocation MMDB.\n$CRON_SCHEDULE $SHELL -ic '${FUNCNAME[0]} -s'" | command crontab - \
@@ -258,8 +259,8 @@ Options:
             h)  # help
                 help && return
                 ;;
-            e)  # external
-                external=1
+            l)  # local
+                local=1
                 ;;
             *)
                 help >&2 && return 2
@@ -268,8 +269,8 @@ Options:
     done
     shift $((OPTIND-1))
     # Allow arguments to be passed after the input.
-    if [[ "${@: -1}" == "-e" ]] ; then
-        external=1
+    if [[ "${@: -1}" == "-l" ]] ; then
+        local=1
         set -- "${@:1:$(($#-1))}"
     fi
     if [[ $# -eq 0 ]] ; then
@@ -280,7 +281,7 @@ Options:
     fi
     local ip_addr="$1"
 
-    if [[ $external -eq 0 ]] ; then  # MMDB
+    if [[ $local -eq 1 ]] ; then  # MMDB
         if [[ ! -f "$DB_PATH" ]] ; then
             validate-env "IPINFO_API_TOKEN" || return
             download_mmdb || return
