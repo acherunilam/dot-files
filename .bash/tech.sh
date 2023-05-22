@@ -303,7 +303,7 @@ Options:
 #
 # shellcheck disable=SC2015,SC2016,SC2086,SC2199
 iata() {
-    local CRON_SCHEDULE="0 5 * * *"  # every day 5 AM
+    local CRON_SCHEDULE="0 5 * * 1"  # every Mon 5 AM
     local DB_PATH="$HOME/.local/share/iata"
 
     airport_search() {
@@ -319,8 +319,14 @@ iata() {
     }
 
     download_iata_db() {
-        command curl -qsS --connect-timeout 2 --max-time 10 \
-            "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/$1.csv" --create-dirs -o "$DB_PATH/$1.csv"
+        command curl -qsS --connect-timeout 2 --max-time 60 \
+            "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/$1.csv" --create-dirs -o "$DB_PATH/$1.csv.new"
+        if command head -n1 "$DB_PATH/$1.csv.new" 2>/dev/null | command grep -aq '"name"' ; then
+            command mv "$DB_PATH/$1.csv.new" "$DB_PATH/$1.csv"
+        else
+            command rm -f "$DB_PATH/$1.csv.new"
+            error "download failed"
+        fi
     }
 
     help() {
@@ -386,8 +392,12 @@ Options:
         error "missing input, please pass an airport code, country code, or city" 2
         return
     fi
-    [[ ! -f "$DB_PATH/airports.csv" ]] && download_iata_db "airports"
-    [[ ! -f "$DB_PATH/countries.csv" ]] && download_iata_db "countries"
+    if [[ ! -f "$DB_PATH/airports.csv" ]] ; then
+        download_iata_db "airports" || return
+    fi
+    if [[ ! -f "$DB_PATH/countries.csv" ]] ; then
+        download_iata_db "countries" || return
+    fi
     local input="${*^^}"
 
     if [[ $country -eq 1 ]] ; then  # country
