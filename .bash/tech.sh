@@ -142,8 +142,8 @@ cert() {
 # Usage:
 #       curl-time [<options>...] <url>
 curl-time() {
-    command curl -qsS --location --fail --output /dev/null "$@" \
-        --write-out "dns         %{time_namelookup}
+    command curl -qsS --location --fail "$@" --write-out "
+dns         %{time_namelookup}
 tcp         %{time_connect}
 tls         %{time_appconnect} (fail=%{ssl_verify_result})
 req sent    %{time_pretransfer} (%{size_request} bytes)
@@ -151,6 +151,18 @@ redir       %{time_redirect} (%{num_redirects} redirs)
 first byte  %{time_starttransfer} (HTTP %{response_code})
 last byte   %{time_total} (%{num_connects} connect(s), rx: %{size_download} bytes / tx: %{size_upload} bytes)
 "
+}
+
+
+# Silently benchmark Curl.
+#
+# Usage:
+#       curly [<options>...] <url>
+#
+# Dependencies:
+#       curl-time()
+curly() {
+    curl-time --output /dev/null "$@" | command sed '/^$/d'
 }
 
 
