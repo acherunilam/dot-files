@@ -12,7 +12,7 @@ error() {
     local exit_code=${2:-1}
     local stdout_or_err
     [[ $exit_code -eq 0 ]] && stdout_or_err=1 || stdout_or_err=2
-    echo -e "${FUNCNAME[1]}: $message" >&$stdout_or_err
+    echo -e "${FUNCNAME[-1]}: $message" >&$stdout_or_err
     return "$exit_code"
 }
 
