@@ -218,7 +218,7 @@ geo() {
     download_mmdb() {
         command curl -qsS --connect-timeout 2 --max-time 30 -L \
             "https://ipinfo.io/data/free/country_asn.mmdb?token=$IPINFO_API_TOKEN" --create-dirs -o "$DB_PATH.new"
-        if command grep -aq "limit" "$DB_PATH.new" 2>/dev/null ; then
+        if command grep -aq "per day limit" "$DB_PATH.new" 2>/dev/null ; then
             command rm "$DB_PATH.new"
             error "download failed, per day limit reached"
         else
