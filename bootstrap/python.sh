@@ -2,6 +2,7 @@
 
 
 PKGS=(
+    blaeu
     ffsubsync
     ripe.atlas.tools
     xkcdpass
