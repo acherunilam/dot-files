@@ -74,6 +74,7 @@ CLI_APPS=(
     media-info
     miller
     MisterTea/et/et
+    mitmproxy
     mkvtoolnix
     mpv
     mtr
