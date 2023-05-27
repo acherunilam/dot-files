@@ -343,7 +343,7 @@ pbcopy() {
 pipp() {
     local DIG_OPTS="+short +timeout=1 +retry=1 TXT o-o.myaddr.l.google.com @ns1.google.com"
     { command dig -4 $DIG_OPTS ; command dig -6 $DIG_OPTS ; } \
-        | command sed 's/"//g;/^;;/d'
+        | command sed 's/"//g;/^;;/d;/^$/d'
 }
 
 # Upload contents to Sprunge, a public pastebin. If no input is passed, then the
