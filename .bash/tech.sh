@@ -644,3 +644,16 @@ ripe-atlas-trace() {
         --resolve-on-probe \
         --no-report
 }
+
+
+# Switch Tailscale exit node.
+#
+# Usage:
+#		ts [<exit_node_hostname>]
+#
+# Environment variables:
+#       export TAILSCALE_EXIT_NODES=("node1" "node2")
+ts() {
+	local NODE="$1"
+	sudo tailscale up --exit-node="$NODE"
+}
