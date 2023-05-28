@@ -40,6 +40,9 @@ EOF
 for repo in free nonfree ; do
     sudo dnf install -y "https://mirrors.rpmfusion.org/$repo/fedora/rpmfusion-$repo-release-$(rpm -E %fedora).noarch.rpm"
 done
+# Tailscale
+sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+sudo rpm --import "https://pkgs.tailscale.com/stable/fedora/repo.gpg"
 # Update all installed packages.
 sudo dnf upgrade -y
 
@@ -142,8 +145,8 @@ SERVICES=(
     dnf-automatic.timer
     docker
     et
+    tailscaled
     tor
-    wg-quick@wg0
 )
 sudo systemctl enable --now "${SERVICES[@]}"
 # Interact with Docker daemon without sudo.
