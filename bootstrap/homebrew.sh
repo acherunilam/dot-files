@@ -202,6 +202,7 @@ GUI_APPS=(
     spotify
     steam
     synthesia
+    tailscale
     telegram
     textual
     the-unarchiver
