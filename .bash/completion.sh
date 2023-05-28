@@ -2,11 +2,9 @@
 # shellcheck disable=SC1091,SC2207,SC2155
 
 
-# Enable Bash completion.
 include "/usr/share/bash-completion/bash_completion"
 
 
-# Update Git repository's remote from HTTPS to SSH.
 _git_ru() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local pos=${COMP_CWORD}
@@ -16,7 +14,6 @@ _git_ru() {
 }
 
 
-# macOS-specific helper for generating TOTPs.
 _otp() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local pos=${COMP_CWORD}
@@ -26,7 +23,6 @@ _otp() {
 complete -F _otp otp
 
 
-# macOS Keychain-backed key-value CRUD helper.
 _pass() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local pos=${COMP_CWORD}
@@ -36,6 +32,14 @@ _pass() {
 complete -F _pass pass
 
 
-# Systemd inspection.
+_ts() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local pos=${COMP_CWORD}
+  COMPREPLY=()
+  [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${TAILSCALE_EXIT_NODES[*]}" "$cur") )
+}
+complete -F _ts ts
+
+
 include "/usr/share/bash-completion/completions/systemctl"
 complete -F _systemctl scl
