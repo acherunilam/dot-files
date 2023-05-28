@@ -65,6 +65,7 @@ CLI_APPS=(
     iodine
     iperf3
     ipinfo-cli
+    java
     john-jumbo
     jq
     launchctl-completion
