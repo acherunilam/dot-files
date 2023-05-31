@@ -166,6 +166,7 @@ GUI_APPS=(
     charles
     chrome-remote-desktop-host
     chromedriver
+    cleanshot
     contexts
     daisydisk
     discord
