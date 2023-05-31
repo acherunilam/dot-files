@@ -21,6 +21,7 @@ alias gc='git checkout .'
 alias gd='git diff'
 alias gl='git lg'
 alias gs='git status'
+alias h='head -n'
 alias j='jq -C '.' | less -Ri'
 alias l='less'
 alias la='ls -A'                                                               # list all files
@@ -28,6 +29,7 @@ alias ld='ls -d */ 2>/dev/null'                                                #
 alias lh='ls -d .??* 2>/dev/null'                                              # list only hidden files
 alias ll='ls -alFh'                                                            # list all files with their details
 alias p='pbcopy'                                                               # copy contents to clipboard
+alias t='tail -n'
 alias x='extract'                                                              # extract the contents of an archive
 # Inspect the system.
 alias osv='cat /etc/system-release'                                            # print the Linux distribution
