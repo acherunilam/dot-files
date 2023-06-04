@@ -36,7 +36,7 @@ _ts() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local pos=${COMP_CWORD}
   COMPREPLY=()
-  [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${TAILSCALE_EXIT_NODES[*]}" "$cur") )
+  [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${!TAILSCALE_EXIT_NODES[*]}" "$cur") )
 }
 complete -F _ts ts
 

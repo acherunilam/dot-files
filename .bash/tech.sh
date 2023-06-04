@@ -649,11 +649,12 @@ ripe-atlas-trace() {
 # Switch Tailscale exit node.
 #
 # Usage:
-#		ts [<exit_node_hostname>]
+#		ts [<exit_node_alias>]
 #
 # Environment variables:
-#       export TAILSCALE_EXIT_NODES=("node1" "node2")
+#       declare -A TAILSCALE_EXIT_NODES=(["alias2"]="node1" ["alias2"]="node2")
 ts() {
-	local NODE="$1"
+    local NODE
+    [[ -n "$1" ]] && NODE="${TAILSCALE_EXIT_NODES[$1]}"
 	sudo tailscale up --exit-node="$NODE"
 }
