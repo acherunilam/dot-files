@@ -56,8 +56,8 @@ CLI_APPS=(
     calibre
     cargo
     cmake
-    colordiff
     containerd.io
+    cronie
     datamash
     dnf-automatic
     dnsperf
@@ -88,6 +88,7 @@ CLI_APPS=(
     moreutils
     mtr
     ncdu
+    netcat
     nethogs
     netmask
     ngrep
