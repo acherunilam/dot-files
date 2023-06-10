@@ -2,8 +2,8 @@
 # shellcheck disable=SC1090
 
 
-# Prints the given error message. Unless specified otherwise, it returns a
-# code of 1.
+# Print the error message. Unless specified otherwise, it returns
+# a code of 1.
 #
 # Usage:
 #       error <message> [<return_code>] ; return
@@ -26,7 +26,7 @@ include() {
 }
 
 
-# Validate whether the given environment variables exist.
+# Check whether the environment variables exist.
 #
 # Usage:
 #       validate-env <env>... || return

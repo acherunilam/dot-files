@@ -49,3 +49,10 @@ PS1+='\[\033[0m\]'${SENTINEL_CHAR}' '
 PS4='+ $EPOCHREALTIME\011(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 # Set the MySQL prompt.
 export MYSQL_PS1="\u@\h [\d]> "
+
+
+# Auto-attach to Tmux (https://github.com/tmux/tmux) when you SSH.
+#
+# Dependencies:
+#       dnf install tmux
+[[ -n $SSH_CONNECTION ]] && [[ -z $TMUX ]] && [[ -z $DONT_TMUX_ATTACH ]] && tmux attach &>/dev/null
