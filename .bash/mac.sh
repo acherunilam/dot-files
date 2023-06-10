@@ -62,6 +62,7 @@ alias tac='gtac'                                                            # BS
 # Helpers.
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
 alias lck='pmset displaysleepnow'                                           # switch off display
+alias loc='mdfind -name 2>/dev/null'                                        # search globally by file name
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
 
