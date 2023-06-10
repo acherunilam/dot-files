@@ -2,7 +2,11 @@
 # shellcheck disable=SC2086,SC2155
 
 
-# Load 'The Fuck' utility (https://github.com/nvbn/thefuck).
+# Load The Fuck (https://github.com/nvbn/thefuck), a tool that corrects errors
+# in previous console commands.
+#
+# Usage:
+#       fuck
 #
 # Dependencies:
 #       dnf install thefuck

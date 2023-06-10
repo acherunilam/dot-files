@@ -5,8 +5,8 @@
 export INPUTRC="$HOME/.inputrc"
 # Set default text editor.
 export EDITOR="vim"
-# Enable color support for `less`. Also, search within is case insensitive
-# unless the pattern contains uppercase letters.
+# Enable color support for Less. Also, search within is case insensitive unless
+# the pattern contains uppercase letters.
 export LESS="-Ri"
 
 
@@ -20,28 +20,28 @@ PROMPT_COMMAND+="history -a"                        # history buffer to be flush
 
 
 # Shell options.
-shopt -s autocd                                     # auto "cd" when entering just a path
+shopt -s autocd                                     # auto-cd when entering just a path
 shopt -s cdspell                                    # this will correct minor spelling errors in a cd command
 shopt -s checkjobs                                  # defer the exit if any of the background jobs are running
 shopt -s checkhash                                  # immediately pick up renamed executables
 shopt -s checkwinsize                               # fix line wrap on window resize
 shopt -s cmdhist                                    # force multi-line commands to be stored in the history as a single line
-shopt -s direxpand                                  # replaces directory names with the results of word expansion
-shopt -s dirspell                                   # auto completes directory names even if there's a minor spelling mistake
+shopt -s direxpand                                  # replace directory names with the results of word expansion
+shopt -s dirspell                                   # auto-complete directory names even if there's a minor spelling mistake
 shopt -s dotglob                                    # consider filenames beginning with a '.' for filename expansions
 shopt -s expand_aliases                             # expand aliases in scripts
-shopt -s extglob                                    # enhances pattern matching features
+shopt -s extglob                                    # enhance pattern matching features
 shopt -s globstar                                   # expand "**" to match files in subdirectories as well
 shopt -s histappend                                 # append to history rather than overwrite (avoid history loss)
 shopt -s histreedit                                 # make fixing failed history substitution easier
 shopt -s hostcomplete                               # tab-completion of hostnames after @
 shopt -s huponexit                                  # send SIGHUP to all background jobs before exiting
 shopt -s nocaseglob                                 # let file name expansions be case insensitive
-shopt -s nullglob                                   # file name patterns expand to NULL if there's no match
+shopt -s nullglob                                   # file name pattern expand to NULL if there's no match
 
 
-# Load Fzf settings (https://github.com/junegunn/fzf). The auto-complete is
-# automatically loaded on Linux.
+# Load Fzf (https://github.com/junegunn/fzf), a general-purpose command-line
+# fuzzy finder.
 #
 # Dependencies:
 #       dnf install fd-find fzf
@@ -57,8 +57,7 @@ export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git"
 export FZF_DEFAULT_OPTS="--bind 'ctrl-a:select-all'"
 
 
-# Load Git settings (https://github.com/git/git). The prompt is missing on
-# Linux.
+# Configure Git (https://github.com/git/git) prompt.
 #
 # Dependencies:
 #       dnf install git
@@ -67,15 +66,9 @@ if [[ "$OSTYPE" == "linux"* ]] ; then
 fi
 
 
-# Load Ripgrep settings (https://github.com/BurntSushi/ripgrep).
+# Configure Ripgrep (https://github.com/BurntSushi/ripgrep), a faster
+# alternative to Grep.
 #
 # Dependencies:
 #       dnf install ripgrep
 export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
-
-
-# When over SSH, attach to Tmux (https://github.com/tmux/tmux) right away.
-#
-# Dependencies:
-#       dnf install tmux
-[[ -n $SSH_CONNECTION ]] && [[ -z $TMUX ]] && [[ -z $DONT_TMUX_ATTACH ]] && tmux attach &>/dev/null

@@ -5,6 +5,7 @@
 [[ "$OSTYPE" != "darwin"* ]] && return
 
 
+# Load Homebrew (https://brew.sh), a package management system.
 export HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}";
 export HOMEBREW_CELLAR="$HOMEBREW_PREFIX/Cellar";
 export HOMEBREW_REPOSITORY="$HOMEBREW_PREFIX";
@@ -16,22 +17,29 @@ for file in "$HOMEBREW_PREFIX/etc/bash_completion.d/"* ; do
     include "$file"
 done
 
-# Preview the colors here (https://geoff.greer.fm/lscolors/).
+
+# Preview the colors here (https://geoff.greer.fm/lscolors).
 export CLICOLOR=1
 export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
-export TERMINFO_DIRS="$TERMINFO_DIRS:$HOME/.local/share/terminfo"
 
 
-# Load Metasploit (https://github.com/rapid7/metasploit-framework) binaries.
+# Load John the Ripper (https://www.openwall.com/john), a password security
+# auditing and password recovery tool.
+export PATH="$HOMEBREW_PREFIX/share/john/:$PATH"
+
+
+# Load Metasploit (https://github.com/rapid7/metasploit-framework), a
+# penetration testing framework.
 export PATH="/opt/metasploit-framework/bin:$PATH"
 
 
-# Configure Secretive (https://github.com/maxgoedjen/secretive), a Secure Enclave-based SSH Agent.
+# Load Secretive (https://github.com/maxgoedjen/secretive), a Secure
+# Enclave-based SSH Agent.
 # export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
 # export PATH="$HOMEBREW_PREFIX/opt/openssh/bin:$PATH"
 
 
-# Load GNU binaries instead of the BSD variants.
+# Make macOS more like Linux.
 export PATH="$HOMEBREW_PREFIX/opt/curl/bin:$PATH"
 export PATH="$HOMEBREW_PREFIX/opt/findutils/libexec/gnubin:$PATH"
 export MANPATH="$HOMEBREW_PREFIX/opt/findutils/libexec/gnuman:$MANPATH"
@@ -44,23 +52,21 @@ alias awk='gawk'                                                            # `a
 alias base64='gbase64'                                                      # `base64 -w0` should work
 alias date='gdate'                                                          # `date -I` should work
 alias head='ghead'                                                          # `head -n0` should work
+alias mtr="sudo mtr"                                                        # run with elevated privileges by default
+alias osv='sw_vers'                                                         # output macOS system version
 alias paste='gpaste'                                                        # `paste -sd' '` should work
+alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"'         # show all ports listening for connections
 alias tac='gtac'                                                            # BSD doesn't have tac
 
 
-# Dependencies:
-#       brew install brightness coreutils mtr
+# Helpers.
 alias dark='brightness 0 2>/dev/null'                                       # set display brightness to 0
-alias gls='gls --color=auto'                                                # export color scheme for GNU ls
 alias lck='pmset displaysleepnow'                                           # switch off display
-alias osv='sw_vers'                                                         # output macOS system version
-alias mtr="sudo mtr"                                                        # run with elevated privileges by default
-alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"'         # show all ports listening for connections
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
 
 
-# Used to shutdown/reboot immediately.
+# Shutdown or reboot immediately.
 #
 # Usage:
 #       bye [-r]
@@ -75,8 +81,8 @@ bye() {
 
 # cd into the directory that is currently open in Finder.
 #
-# Dependencies:
-#       error()
+# Usage:
+#       cdf
 cdf() {
     local target="$(
         osascript -e "tell application \"Finder\" to if (count of Finder \
@@ -92,53 +98,67 @@ cdf() {
 
 
 # Delete all small (>10M) downloaded files.
+#
+# Usage:
+#       clean [-n]
+#
+# Options:
+#       -n      Dry run.
 clean() {
-    local cmd="command find $HOME/Downloads/ -maxdepth 1 -type f -size -10M \
-        ! -name '.DS_Store' ! -name '*.crdownload' ! -name '*.aria2'"
+    local SIZE_LIMIT="10M"
+    local cmd="command find $HOME/Downloads/ -maxdepth 1 -type f \
+        -size -$SIZE_LIMIT ! -name '.DS_Store' ! -name '*.crdownload' \
+        ! -name '*.aria2'"
     [[ "$1" != "-n" ]] && cmd+=" -exec rm -v {} +"
     eval "$cmd" | command sed -E "s/^${HOME//\//\\/}\/Downloads\///g"
 }
 
 
-# Clears all recent files accessed through the GUI and CLI.
+# Clear all recent files accessed through the GUI and CLI.
+#
+# Usage:
+#       clear-history
 #
 # Environment variables:
-#       export CLEAR_HISTORY_BASH_KEYWORDS="<keyword1:keyword2>"
-#       export CLEAR_HISTORY_FASD_PATH="<path1:path2>"
-#
-# Dependencies:
-#       error()
+#       export CLEAR_HISTORY_BASH_KEYWORDS="<keyword1>:<keyword2>"
+#       export CLEAR_HISTORY_FASD_PATH="<path1>:<path2>"
 #
 # shellcheck disable=SC2015
 clear-history() {
     # Clear recent files.
-    osascript -e "tell application \"System Events\" to click menu item \"Clear Menu\" of menu \
-        of menu item \"Recent Items\" of menu of menu bar item \"Apple\" of menu bar of process \
-        \"Finder\"" 1>/dev/null || error "unable to clear recent files"
+    osascript -e "tell application \"System Events\" to click menu item \
+            \"Clear Menu\" of menu of menu item \"Recent Items\" of menu of \
+            menu bar item \"Apple\" of menu bar of process \"Finder\"" \
+            1>/dev/null \
+        || error "unable to clear recent files"
     # Clear recent folders.
     osascript -e "tell application \"System Events\" to click menu item \
-        \"Clear Menu\" of menu of menu item \"Recent Folders\" of menu of \
-        menu bar item \"Go\" of menu bar of process \"Finder\"" \
-        1>/dev/null || error "unable to clear recent folders"
+            \"Clear Menu\" of menu of menu item \"Recent Folders\" of menu of \
+            menu bar item \"Go\" of menu bar of process \"Finder\"" \
+            1>/dev/null \
+        || error "unable to clear recent folders"
     # Clear 'Go to' Folder.
     defaults delete com.apple.finder GoToField &>/dev/null
     defaults delete com.apple.finder GoToFieldHistory &>/dev/null
-    killall Finder || error "unable to clear Go to Folder"
+    killall "Finder" || error "unable to clear Go to Folder"
     # Clear VLC's recent files.
     osascript -e "tell application \"VLC\" to activate" 1>/dev/null \
-        && osascript -e "tell application \"Finder\" to set visible of process \"VLC\" to \
-            false" 1>/dev/null \
-        && osascript -e "tell application \"System Events\" to click menu item \"Clear Menu\" \
-            of menu of menu item \"Open Recent\" of menu of menu bar item \"File\" of menu bar \
-            1 of process \"VLC\"" 1>/dev/null \
-        && killall VLC || error "unable to clear recent VLC files"
+        && osascript -e "tell application \"Finder\" to set visible of process \
+            \"VLC\" to false" 1>/dev/null \
+        && osascript -e "tell application \"System Events\" to click menu item \
+            \"Clear Menu\" of menu of menu item \"Open Recent\" of menu of menu \
+            bar item \"File\" of menu bar 1 of process \"VLC\"" 1>/dev/null \
+        && killall "VLC" \
+        || error "unable to clear recent VLC files"
     # Clear Bash history lines containing any of the specified keywords.
     if [[ -n "$CLEAR_HISTORY_BASH_KEYWORDS" ]] ; then
         local hist_file="${HISTFILE:-$HOME/.bash_history}"
-        local tmp_file="$(mktemp)"
+        local tmp_file="$(command mktemp)"
         echo -e "${CLEAR_HISTORY_BASH_KEYWORDS//:/\\n}" | while read -r k ; do
-            command tail -r "$hist_file" | command sed "/${k//\//\\/}/,+1d" | command tail -r \
-                >"$tmp_file" && command cp -f "$tmp_file" "$hist_file"
+            command tail -r "$hist_file" \
+                    | command sed "/${k//\//\\/}/,+1d" \
+                    | command tail -r >"$tmp_file" \
+                && command cp -f "$tmp_file" "$hist_file"
         done || error "unable to clear Bash history keywords"
     fi
     # Clear Fasd paths containing any of the specified paths.
@@ -153,7 +173,7 @@ clear-history() {
 # Unmount all DMGs or external HDDs.
 #
 # Usage:
-#       unmount [-e]
+#       eject [-e]
 #
 # Options:
 #       -e      Unmount HDDs instead of DMGs.
@@ -175,8 +195,8 @@ eject() {
 
 # Set iTerm's tab title.
 #
-# It works using OSC 9, an Xterm-specific escape sequence used to send terminal notifications.
-# (https://iterm2.com/documentation-escape-codes.html).
+# It works using OSC 9, an Xterm-specific escape sequence used to send terminal
+# notifications (https://iterm2.com/documentation-escape-codes.html).
 #
 # Usage:
 #       iterm-title <title>
@@ -190,10 +210,13 @@ iterm-title() {
 }
 
 
-# Move the downloaded files matching the given regex into current directory.
+# Move the downloaded files matching the regex into current directory.
 #
 # Usage:
-#       mdownload [<pattern>]
+#       mdownload [-n] [<pattern>]
+#
+# Options:
+#       -n      Dry run.
 mdownload() {
     local cmd is_dry_run
     [[ "$1" == "-n" ]] && shift && is_dry_run=1
@@ -204,20 +227,17 @@ mdownload() {
 }
 
 
-# Generate OTP using the TOTP secret stored in Keychain. You can add it to the Keychain
-# by using the pass() helper method.
+# Generate OTP using the TOTP secret stored in Keychain. You can add it to the
+# Keychain using the pass() helper.
 #
 # Usage:
 #       otp <key>
 #
-# Dependencies:
-#       brew install oath-toolkit
-#       error()
-#       pass()
-#       validate-env()
-#
 # Environment variables:
 #       export OTP_KEYS=("facebook" "google" "twitter")
+#
+# Dependencies:
+#       brew install oath-toolkit
 otp() {
     local key="$1"
     validate-env "OTP_KEYS" || return
@@ -242,9 +262,7 @@ otp() {
 #       pass get <key>
 #       pass set <key> <value>
 #       pass del <key>
-#
-# Dependencies:
-#       error()
+#       pass help
 pass() {
     help() {
         echo "Usage: ${FUNCNAME[1]} get <key>
@@ -267,7 +285,7 @@ Create/read/update/delete key-value pairs in the macOS Keychain."
             eval "$cmd find-generic-password $cmd_opts -w 2>/dev/null"
             ;;
         set)
-            if [[ -z "${3+foo}" ]] ; then
+            if [[ -z "$3" ]] ; then
                 error "please specify the value" 2 ; return
             fi
             eval "$cmd add-generic-password $cmd_opts -Uw $3"
@@ -294,10 +312,8 @@ pbc() {
     local content="$(</dev/stdin)"
     local plaintext="$(echo -n "$content" | command sed 's/<[^>]*>//g')"
     local htmlbinary="$(echo -n "$content" | command xxd -p | command tr -d '\n')"
-    command osascript -e "set the clipboard to { \
-        string:\"$plaintext\", \
-        «class HTML»:«data HTML${htmlbinary}» \
-    }"
+    command osascript -e "set the clipboard to {string:\"$plaintext\", \
+        «class HTML»:«data HTML${htmlbinary}»}"
 }
 
 
@@ -308,14 +324,16 @@ pbc() {
 pngpaste() {
     local filename="${1:-screenshot.png}"
     [[ $filename == *.png ]] || filename+=".png"
-    osascript -e "
-        tell application \"System Events\" to write (the clipboard as «class PNGf») \
-        to (make new file at folder \"$PWD\" with properties {name:\"$filename\"})
-    " 2>/dev/null
+    osascript -e "tell application \"System Events\" to write (the clipboard \
+        as «class PNGf») to (make new file at folder \"$PWD\" with properties \
+        {name:\"$filename\"})" 2>/dev/null
 }
 
 
 # Remove extended attributes for a file downloaded from the internet.
+#
+# Usage:
+#       whitelist
 whitelist() {
     sudo command xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
     sudo command xattr -rd com.apple.quarantine "$@"

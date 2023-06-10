@@ -16,6 +16,7 @@ alias rm='rm -v'
 alias c='cat'
 alias dni='sudo dnf install -qy'
 alias dnu='sudo dnf remove -qy'
+alias g='grep -i'
 alias ga='git add -A'
 alias gc='git checkout .'
 alias gd='git diff'
@@ -29,11 +30,13 @@ alias ld='ls -d */ 2>/dev/null'                                                #
 alias lh='ls -d .??* 2>/dev/null'                                              # list only hidden files
 alias ll='ls -alFh'                                                            # list all files with their details
 alias p='pbcopy'                                                               # copy contents to clipboard
+alias py='python3'
 alias t='tail -n'
 alias x='extract'                                                              # extract the contents of an archive
 # Inspect the system.
 alias osv='cat /etc/system-release'                                            # print the Linux distribution
 alias port='sudo ss -tulpn'                                                    # show all listening ports
+alias scl='sudo systemctl'                                                     # systemd inspection
 # Run with specific settings.
 alias mkdir='mkdir -p'                                                         # create parent directory if it doesn't exist
 alias pls='sudo $(history -p \!\!)'                                            # re-execute last command with elevated privileges
@@ -48,13 +51,10 @@ alias watch='watch --color'
 
 # Simplified awk.
 #
-# Usage:
-#       aw 1-3              Prints the first 3 columns
-#       aw 1-3,7            Prints the first 3 columns, followed by the 7th
+# Example:
+#       aw 1-3              Print the first 3 columns
+#       aw 1-3,7            Print the first 3 columns, followed by the 7th
 #       aw 1-3,7 -F":"      Same as above, but passes the -F":" option to awk
-#
-# Dependencies:
-#       error()
 #
 # shellcheck disable=SC2086
 aw() {
@@ -78,13 +78,10 @@ aw() {
 }
 
 
-# Which RPM contains the given keyword in its name.
+# Which RPM contains the keyword in its name.
 #
 # Usage:
 #       dns <keyword>
-#
-# Dependencies:
-#       error()
 dns() {
     local pkg="$1"
     if [[ $# -eq 0 ]] ; then
@@ -92,18 +89,16 @@ dns() {
     elif [[ $# -gt 1 ]] ; then
         error "invalid input, do not pass more than one keyword" 2 ; return
     fi
-    command dnf search -qC "$pkg" | command grep -i "$pkg.* :" | command grep --color=always -i "$pkg"
+    command dnf search -qC "$pkg" \
+        | command grep -i "$pkg.* :" | command grep --color=always -i "$pkg"
 }
 
 
-# Which RPM provides the given file. It assumes that the provided filename is
-# either a library or a binary,
+# Which RPM provides the file. It assumes that the provided filename is
+# either a library or a binary.
 #
 # Usage:
 #       dnp (<binary>|<library>)
-#
-# Dependencies:
-#       error()
 dnp() {
     local file="$1"
     local file_type
@@ -117,13 +112,16 @@ dnp() {
     else
         file_type="bin"
     fi
-    command dnf provides -qC "*/$file_type*/$file" | command grep -E --color=always "/.*$file_type.*/$file|"
+    command dnf provides -qC "*/$file_type*/$file" \
+        | command grep -E --color=always "/.*$file_type.*/$file|"
 }
 
 
-# Downloads files. If no file is specified, then we attempt to detect the link from
-# the clipboard. It notifies once the download is complete using an iTerm-specific
-# escape sequence (https://iterm2.com/documentation-escape-codes.html).
+# Download files.
+#
+# If no file is specified, then we attempt to detect the link from the clipboard.
+# It notifies once the download is complete using an iTerm-specific escape
+# sequence (https://iterm2.com/documentation-escape-codes.html).
 #
 # Usage:
 #       download [<file>...]
@@ -136,7 +134,6 @@ dnp() {
 #
 # Dependencies:
 #       dnf install aria2
-#       notify()
 #
 # shellcheck disable=SC1003,SC2086
 download() {
@@ -151,11 +148,14 @@ download() {
     for file in $files ; do
         extra_opts=""
         for uri_regex in "${!download_opts[@]}" ; do
-            [[ $file =~ $uri_regex ]] && extra_opts+=" ${download_opts[$uri_regex]}" && break
+            [[ $file =~ $uri_regex ]] \
+                && extra_opts+=" ${download_opts[$uri_regex]}" && break
         done
         command aria2c $opts$extra_opts "$file" || ((failed+=1))
     done
-    [[ $failed -eq 0 ]] && message="download: success" || message="download: $failed/$file_count failed"
+    [[ $failed -eq 0 ]] \
+        && message="download: success" \
+        || message="download: $failed/$file_count failed"
     notify "$message"
     return $failed
 }
@@ -168,7 +168,6 @@ download() {
 #
 # Dependencies:
 #       dnf install binutils cabextract p7zip p7zip-plugins unrar xz
-#       error()
 extract() {
     if [[ -f "$1" ]] ; then
         case "$1" in
@@ -221,9 +220,12 @@ his() {
 
 
 # List all network interfaces and their IPs.
+#
+# Usage:
+#       ipp
 ipp() {
     local result
-    # Always prefer 'ip' over 'ifconfig' since the latter has been deprecated.
+    # Always prefer `ip` over `ifconfig` since the latter has been deprecated.
     if type -P "ip" 1>/dev/null ; then
         result="$(
             command ip -brief addr show scope global \
@@ -252,15 +254,15 @@ ipp() {
 # Usage:
 #       msync <src> <dst>
 msync() {
-    rsync --remove-source-files "$@" && [[ -d "$1" ]] && command find "$1" -type d -empty -delete
+    rsync --remove-source-files "$@" \
+        && [[ -d "$1" ]] && command find "$1" -type d -empty -delete
 }
 
 
-# Sends a notification via the terminal.
+# Send a notification via the terminal.
 #
-# It works using OSC 9, an Xterm-specific escape sequence used to send terminal notifications.
-# (https://iterm2.com/documentation-escape-codes.html).
-#
+# It works using OSC 9, an Xterm-specific escape sequence used to send terminal
+# notifications (https://iterm2.com/documentation-escape-codes.html).
 #
 # Usage:
 #       notify <message>
@@ -274,19 +276,16 @@ notify() {
 }
 
 
-# Upload contents to @mkaczanowski's Pastebin, an open-source Rust pastebin. If no input is
-# passed, then the contents of the clipboard will be used.
+# Upload text to @mkaczanowski's Pastebin, a self-hosted pastebin. If no
+# input is passed, then the contents of the clipboard will be used.
 #
 # Usage:
+#       pb
 #       echo "text message" | pb
 #
 # Environment variables:
-#       export PASTEBIN_URL="<url-of-pastebin>"
-#       export PASTEBIN_AUTH_BASIC="user:pass"
-#
-# Dependencies:
-#       error()
-#       validate-env()
+#       export PASTEBIN_URL="<pastebin_url>"
+#       export PASTEBIN_AUTH_BASIC="<user>:<pass>"
 #
 # shellcheck disable=SC2086,SC2181
 pb() {
@@ -316,7 +315,7 @@ pb() {
 }
 
 
-# Copies data from STDIN to the clipboard. It removes trailing newlines.
+# Copy data from STDIN to the clipboard. It removes trailing newlines.
 #
 # Both iTerm and Tmux are supported. For the former, you'll have to enable "Preferences >
 # General > Selection > Applications in terminal may access clipboard". It works using
@@ -348,14 +347,13 @@ pipp() {
         | command sed 's/"//g;/^;;/d;/^$/d'
 }
 
-# Upload contents to Sprunge, a public pastebin. If no input is passed, then the
+
+# Upload text to Sprunge, a public pastebin. If no input is passed, then the
 # contents of the clipboard will be used.
 #
 # Usage:
+#       ppb
 #       echo "text message" | ppb
-#
-# Dependencies:
-#       error()
 #
 # shellcheck disable=SC2181
 ppb() {
@@ -370,7 +368,8 @@ ppb() {
         error "please pass the text to upload via STDIN" 2 ; return
     fi
     response="$(
-        command curl -qsS --connect-timeout 2 --max-time 5 -F 'sprunge=<-' $SPRUNGE_URL <<< "$content"
+        command curl -qsS --connect-timeout 2 --max-time 5 \
+            -F 'sprunge=<-' $SPRUNGE_URL <<< "$content"
     )"
     if [[ $? -ne 0 ]] ; then
         error "unable to connect to $SPRUNGE_URL" ; return
@@ -383,37 +382,40 @@ ppb() {
 }
 
 
-# Sends a push notification using Pushover (https://pushover.net/). The user and token can
-# be generated over here (https://pushover.net/apps/build).
+# Send a push notification using Pushover (https://pushover.net), a push
+# notification service. The user and token can be generated over here
+# (https://pushover.net/apps/build).
 #
 # Usage:
-#       push [-p] <message>
+#       push [options] <message>
 #
 # Options:
-#       -p      High priority.
+#       -p      Send message with high priority.
+#       -h      Print help.
+#
+# Example:
+#       ./long_script.sh && push "Script1 is done!" || push -p "Script1 failed!"
 #
 # Environment variables:
 #       export PUSHOVER_USER="<user>"
 #       export PUSHOVER_TOKEN="<token>"
 #
-# Dependencies:
-#       error()
-#       validate-env()
-#
 # shellcheck disable=SC2155,SC2181,SC2199
 push() {
     help() {
         echo "Usage: ${FUNCNAME[1]} [options] <message>
-Sends a push notification using Pushover (https://pushover.net/). The user and token can
-be obtained by registering your app over here (https://pushover.net/apps/build).
+
+Send a push notification using Pushover (https://pushover.net), a push
+notification serice. The user and token can be generated over here
+(https://pushover.net/apps/build).
+
+Options:
+  -p    Send message with high priority.
+  -h    Print help.
 
 Environment variables:
   export PUSHOVER_USER=\"<user>\"
-  export PUSHOVER_TOKEN=\"<token>\"
-
-Options:
-  -h    Print this help message.
-  -p    Send the message with high priority."
+  export PUSHOVER_TOKEN=\"<token>\""
     }
 
     local columns OPTIND
@@ -460,7 +462,8 @@ Options:
 }
 
 
-# Shorten the given URL using Shlink (https://shlink.io), an open-source URL Shortener.
+# Shorten the URL using Shlink (https://shlink.io), a self-hosted URL Shortener.
+#
 # The API key can be generated from by running `bin/cli api-key:generate`. If the slug
 # isn't specified, then it uses a randomized 4-letter slug. If it already exists, then
 # it overwrites it.
@@ -471,10 +474,6 @@ Options:
 # Environment variables:
 #       export URL_SHORTENER_API_KEY="<generated-api-key>"
 #       export URL_SHORTENER_URL="<url-of-endpoint>"
-#
-# Dependencies:
-#       error()
-#       validate-env()
 #
 # shellcheck disable=SC2015,SC2181
 url-shorten() {
