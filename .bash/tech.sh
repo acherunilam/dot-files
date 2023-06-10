@@ -1,38 +1,38 @@
 # shellcheck shell=bash
 
 
-# Load ACME client settings (https://github.com/acmesh-official/acme.sh).
-#
-# Dependencies:
-#       curl https://get.acme.sh | sh -s email=my@example.com
+# Load ACME (https://github.com/acmesh-official/acme.sh), an ACME protocol client.
 include "$HOME/.acme.sh/acme.sh.env"
 
 
-# Load BCC tools (https://github.com/iovisor/bcc/).
+# Load BCC (https://github.com/iovisor/bcc), a toolkit for creating efficient
+# kernel tracing and manipulation programs.
 #
 # Dependencies:
 #       dnf install bcc-tools
 export PATH="/usr/share/bcc/tools:$PATH"
 
 
-alias scl='sudo systemctl'                                                                  # Systemd inspection.
-alias tor-curl='curl -qsS --location --proxy socks5://localhost:9050'                       # Curl through Tor.
-alias tor-cycle='sudo killall -HUP tor'                                                     # Change the Tor exit node.
-alias tor-ip='curl-time --proxy socks5://localhost:9050 "https://checkip.amazonaws.com"'    # Check the outbound IP for your Tor setup.
+# Configure helpers for Tor (https://www.torproject.org), an anonymous overlay network.
+alias tor-curl='curl -qsS --location --proxy socks5://localhost:9050'                       # curl through Tor
+alias tor-cycle='sudo killall -HUP tor'                                                     # change the Tor exit node
+alias tor-ip='curl-time --proxy socks5://localhost:9050 "https://checkip.amazonaws.com"'    # check the outbound IP for your Tor setup
 
 
-# Prints the AS details for the given IP or ASN.
+# Print the AS details for an IP or ASN using Team Cymru's IP to ASN mapping
+# service (https://www.team-cymru.com/ip-asn-mapping).
 #
 # Usage:
 #       asn <ip_address>
 #       asn <as_number> [-p]
+#       asn -h
 #
 # Options:
 #       -p      List all prefixes for the ASN.
+#       -h      Print help.
 #
 # Dependencies:
 #       dnf install coreutils jq netmask
-#       error()
 #
 # shellcheck disable=SC2046,SC2155,SC2199
 asn() {
@@ -55,12 +55,14 @@ asn() {
 
     help() {
         echo "Usage: ${FUNCNAME[1]} <ip_address>
-       ${FUNCNAME[1]} [-p] <asn>
-Prints the AS details of an IP or ASN.
+       ${FUNCNAME[1]} <as_number> [-p]
+       ${FUNCNAME[1]} -h
+
+Print the AS details for an IP or ASN.
 
 Options:
-  -p    Print all prefixes belonging to the ASN.
-  -h    Print this help message."
+  -p    List all prefixes for the ASN.
+  -h    Print help."
     }
 
     local OPTIND prefix output hextets exploded_ip
@@ -158,18 +160,15 @@ last byte   %{time_total} (%{num_connects} connect(s), rx: %{size_download} byte
 #
 # Usage:
 #       curly [<options>...] <url>
-#
-# Dependencies:
-#       curl-time()
 curly() {
     curl-time --output /dev/null "$@" | command sed '/^$/d'
 }
 
 
-# Flushes the OS-level DNS cache.
+# Flush the OS-level DNS cache.
 #
-# Dependencies:
-#       error()
+# Usage:
+#       dns-flush
 #
 # shellcheck disable=SC2155
 dns-flush() {
@@ -188,18 +187,21 @@ dns-flush() {
 }
 
 
-# Prints geolocation information for an IP address using IPinfo (https://ipinfo.io).
-# The API token can be viewed over here (https://ipinfo.io/account/token).
+# Print geolocation information for an IP address using IPinfo
+# (https://ipinfo.io), an IP geolocation service. The API token can be generated
+# over here (https://ipinfo.io/account/token).
 #
 # Usage:
 #       geo <ip_address> [-l]
 #       geo (-i | -s)
+#       geo -h
 #
 # Options:
-#       -l      Reads from the local MMDB instead of malking external API call.
+#       -l      Read from the local MMDB instead of malking an external API call.
 #               This omits extra info like city, hostname, is_anycast, etc.
-#       -i      Installs a cron job to periodically update the MMDB.
-#       -s      Syncs the local MMDB to the latest version.
+#       -i      Install a cron job to periodically update the MMDB.
+#       -s      Sync the local MMDB to the latest version.
+#       -h      Print help.
 #
 # Environment variables:
 #       export IPINFO_API_TOKEN="<api_token>"
@@ -207,8 +209,6 @@ dns-flush() {
 # Dependencies:
 #       dnf install jq
 #       go install github.com/ipinfo/mmdbctl@latest
-#       error()
-#       validate-env()
 #
 # shellcheck disable=SC2015,SC2199
 geo() {
@@ -229,14 +229,16 @@ geo() {
     help() {
         echo "Usage: ${FUNCNAME[1]} <ip_address> [-l]
        ${FUNCNAME[1]} (-i | -s)
-Prints geolocation information for an IP address.
+       ${FUNCNAME[1]} -h
+
+Print geolocation information for an IP address.
 
 Options:
-  -l    Read from the local MMDB instead of malking external API call.
+  -l    Read from the local MMDB instead of malking an external API call.
         This omits extra info like city, hostname, is_anycast, etc.
   -i    Install a cron job to periodically update the MMDB.
   -s    Sync the local MMDB to the latest version.
-  -h    Print this help message."
+  -h    Print help."
     }
 
     local OPTIND
@@ -294,8 +296,8 @@ Options:
 }
 
 
-# Prints the details of the IATA airport code or country code using Team
-# Cymru (https://www.team-cymru.com/ip-asn-mapping).
+# Print the details of the IATA airport code or country code using data from
+# OurAirports (https://ourairports.com/about.html).
 #
 # Usage:
 #       iata <airport_code> [-v]
@@ -303,16 +305,17 @@ Options:
 #       iata <country_code>
 #       iata <country_name> -c
 #       iata (-i | -s)
+#       iata -h
 #
 # Options:
-#       -v      Prints verbose details of the airport.
-#       -c      Looks up country code by the country name.
-#       -i      Installs a cron job to periodically update the DB.
-#       -s      Syncs the local IATA DB to the latest version.
+#       -v      Print verbose details of the airport.
+#       -c      Look up country code by the country name.
+#       -i      Install a cron job to periodically update the DB.
+#       -s      Sync the local IATA DB to the latest version.
+#       -h      Print help.
 #
 # Dependencies:
 #       dnf install util-linux
-#       error()
 #
 # shellcheck disable=SC2015,SC2016,SC2086,SC2199
 iata() {
@@ -348,6 +351,8 @@ iata() {
        ${FUNCNAME[1]} <country_code>
        ${FUNCNAME[1]} <country_name> -c
        ${FUNCNAME[1]} (-i | -s)
+       ${FUNCNAME[1]} -h
+
 Prints the details of the IATA airport code or country code.
 
 Options:
@@ -355,7 +360,7 @@ Options:
   -c    Look up the ISO 3166 two-letter country code by country name.
   -i    Install a cron job to periodically update the DB.
   -s    Sync the local DB to the latest version.
-  -h    Print this help message."
+  -h    Print help."
     }
 
     local OPTIND info result country iata city continent country_code name latitude longitude wiki
@@ -456,13 +461,10 @@ wiki|$wiki" \
 }
 
 
-# Looks up the vendor for the given MAC ID.
+# Look up the vendor for a MAC ID.
 #
 # Usage:
 #       mac-lookup <mac_id>
-#
-# Dependencies:
-#       error()
 #
 # shellcheck disable=SC2181
 mac-lookup() {
@@ -490,14 +492,11 @@ mac-lookup() {
 }
 
 
-# Identifies the bottleneck in the shell startup time by profiling your dot files. If the
+# Identify the bottleneck in the shell startup time by profiling your dot files. If the
 # dot file isn't specified, it defaults to sourcing both /etc/profile and ~/.bashrc.
 #
 # Usage:
 #       profile [<dot_file>]
-#
-# Dependencies:
-#       error()
 #
 # shellcheck disable=SC2155
 profile() {
@@ -544,8 +543,8 @@ EOF
 }
 
 
-# Counts the number of active RIPE Atlas probes (https://atlas.ripe.net/about/) for the
-# given country or ASN. The API key can generated over here (https://atlas.ripe.net/keys/).
+# Count the number of active RIPE Atlas probes (https://atlas.ripe.net/about)
+# for a country or ASN. The API key can generated over here (https://atlas.ripe.net/keys).
 #
 # Usage:
 #       ripe-atlas-probe (<country>|<asn>)
@@ -555,8 +554,6 @@ EOF
 #
 # Dependencies:
 #       pip install ripe.atlas.tools
-#       error()
-#       validate-env()
 ripe-atlas-probe() {
     local INPUT="${1,,}"
     local FILTER_BY="country"
@@ -579,7 +576,7 @@ ripe-atlas-probe() {
 }
 
 
-# Fetches the RIPE Atlas (https://atlas.ripe.net/about/) report for the given measurement ID.
+# Fetch the RIPE Atlas (https://atlas.ripe.net/about) report for the measurement ID.
 #
 # Usage:
 #       ripe-atlas-report <id>
@@ -589,8 +586,6 @@ ripe-atlas-probe() {
 #
 # Dependencies:
 #       dnf install jq
-#       error()
-#       validate-env()
 ripe-atlas-report() {
     local RIPE_MEASUREMENT_ID="$1"
     if [[ $# -eq 0 ]] ; then
@@ -607,7 +602,8 @@ ripe-atlas-report() {
 }
 
 
-# Runs traceroute using RIPE Atlas probes (https://atlas.ripe.net/about/).
+# Run traceroute using RIPE Atlas (https://atlas.ripe.net/about), a global
+# internet measurement platform.
 #
 # Usage:
 #       ripe-atlas-trace <destination> [ww|<country>|<asn>] [<probe_count>]
@@ -616,8 +612,7 @@ ripe-atlas-report() {
 #       export ATLAS_CREATE_KEY="<api_key>"
 #
 # Dependencies:
-#       error()
-#       validate-env()
+#       pip install ripe.atlas.tools
 ripe-atlas-trace() {
     local DST="$1"
     local FILTER_BY="area"
@@ -646,15 +641,38 @@ ripe-atlas-trace() {
 }
 
 
+# Open a DNS tunnel using Iodine (https://github.com/yarrick/iodine).
+#
+# Environment variables:
+#       export TUNNEL_DNS_DOMAIN="<server-domain>"
+#       export TUNNEL_DNS_PASSWORD="<password>"
+tunnel-dns() {
+	validate-env "TUNNEL_DNS_DOMAIN" "TUNNEL_DNS_PASSWORD" || return
+	sudo iodine -f -P "$TUNNEL_DNS_PASSWORD" "$TUNNEL_DNS_DOMAIN"
+}
+
+
+# Open an ICMP tunnel using Hans (https://github.com/friedrich/hans).
+#
+# Environment variables:
+#       export TUNNEL_ICMP_IP="<server-ip>"
+#       export TUNNEL_ICMP_PASSWORD="<password>"
+tunnel-icmp() {
+	validate-env "TUNNEL_ICMP_IP" "TUNNEL_ICMP_PASSWORD" || return
+	sudo hans -f -c "$TUNNEL_ICMP_IP" -p "$TUNNEL_ICMP_PASSWORD"
+}
+
+
 # Switch Tailscale exit node.
 #
 # Usage:
 #		ts [<exit_node_alias>]
 #
 # Environment variables:
-#       declare -A TAILSCALE_EXIT_NODES=(["alias2"]="node1" ["alias2"]="node2")
+#       export TAILSCALE_EXIT_NODES='(["alias2"]="node1" ["alias2"]="node2")'
 ts() {
     local NODE
-    [[ -n "$1" ]] && NODE="${TAILSCALE_EXIT_NODES[$1]}"
+    declare -A tailscale_nodes=$TAILSCALE_EXIT_NODES
+    [[ -n "$1" ]] && NODE="${tailscale_nodes[$1]}"
 	sudo tailscale up --exit-node="$NODE"
 }
