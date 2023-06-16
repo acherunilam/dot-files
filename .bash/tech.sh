@@ -288,7 +288,7 @@ Options:
             validate-env "IPINFO_API_TOKEN" || return
             download_mmdb || return
         fi
-        echo "$ip_addr" | command mmdbctl read "$DB_PATH" | command jq '.'
+        echo "$ip_addr" | command mmdbctl read -f json "$DB_PATH" | command jq '.'
     else # external API
         command curl -qsS --connect-timeout 2 --max-time 5 "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN" \
             | command jq '.'
