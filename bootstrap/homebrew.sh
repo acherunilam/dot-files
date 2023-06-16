@@ -52,6 +52,7 @@ CLI_APPS=(
     git-extras
     gnu-sed
     gnu-tar
+    gnumeric
     go
     handbrake
     hping
