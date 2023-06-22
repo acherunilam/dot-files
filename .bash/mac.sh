@@ -228,6 +228,16 @@ mdownload() {
 }
 
 
+# Read the text from an image file using Tesseract
+# (https://github.com/tesseract-ocr/tesseract), an open-source OCR engine.
+#
+# Usage:
+#       ocr <file>
+ocr() {
+    command tesseract "$1" - --tessdata-dir "$HOMEBREW_PREFIX/share/tessdata"
+}
+
+
 # Generate OTP using the TOTP secret stored in Keychain. You can add it to the
 # Keychain using the pass() helper.
 #
