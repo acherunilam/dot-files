@@ -89,7 +89,7 @@ dns() {
     elif [[ $# -gt 1 ]] ; then
         error "invalid input, do not pass more than one keyword" 2 ; return
     fi
-    command dnf search -qC "$pkg" \
+    sudo dnf search -qC "$pkg" \
         | command grep -i "$pkg.* :" | command grep --color=always -i "$pkg"
 }
 
@@ -112,7 +112,7 @@ dnp() {
     else
         file_type="bin"
     fi
-    command dnf provides -qC "*/$file_type*/$file" \
+    sudo dnf provides -qC "*/$file_type*/$file" \
         | command grep -E --color=always "/.*$file_type.*/$file|"
 }
 
