@@ -159,6 +159,7 @@ GUI_APPS=(
     appcleaner
     audio-hijack
     balenaetcher
+    bartender
     bettertouchtool
     bit-slicer
     bricklink-studio
