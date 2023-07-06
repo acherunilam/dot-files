@@ -66,6 +66,7 @@ alias lck='pmset displaysleepnow'                                           # sw
 alias loc='mdfind -name 2>/dev/null'                                        # search globally by file name
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
+alias qr='zbarimg --quiet --raw'                                            # scan QR code
 
 
 # Shutdown or reboot immediately.
