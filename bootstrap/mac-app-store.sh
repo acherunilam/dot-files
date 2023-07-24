@@ -7,7 +7,9 @@ APPS="$(command awk '{print $1}' <<< "
     1569813296      # 1Password for Safari
     424390742       # Compressor
     424389933       # Final Cut Pro
+    363738376       # forScore
     1481302432      # Instapaper Save
+    409035833       # iReal Pro
     409183694       # Keynote
     634148309       # Logic Pro
     634159523       # MainStage
