@@ -5,6 +5,7 @@
 APPS="$(command awk '{print $1}' <<< "
     1365531024      # 1Blocker
     1569813296      # 1Password for Safari
+    937984704       # Amphetamine
     424390742       # Compressor
     424389933       # Final Cut Pro
     363738376       # forScore
