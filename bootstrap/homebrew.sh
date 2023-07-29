@@ -199,7 +199,7 @@ GUI_APPS=(
     pixelsnap
     qlvideo
     rar
-    rectangle
+    rectangle-pro
     roli-connect
     secretive
     spotify
