@@ -9,6 +9,7 @@ APPS="$(command awk '{print $1}' <<< "
     424390742       # Compressor
     424389933       # Final Cut Pro
     363738376       # forScore
+    1444383602      # Goodnotes
     1481302432      # Instapaper Save
     409035833       # iReal Pro
     409183694       # Keynote
