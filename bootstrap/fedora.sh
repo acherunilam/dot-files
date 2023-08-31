@@ -105,6 +105,7 @@ CLI_APPS=(
     python3-devel
     python3-pip
     qrencode
+    rclone
     ripgrep
     rust
     ShellCheck
