@@ -104,6 +104,7 @@ CLI_APPS=(
     pwgen
     python
     qrencode
+    rclone
     rename
     restic
     ripgrep
