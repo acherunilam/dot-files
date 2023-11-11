@@ -2,6 +2,7 @@
 
 
 PKGS=(
+    bashplotlib
     blaeu
     ffsubsync
     ripe.atlas.tools
