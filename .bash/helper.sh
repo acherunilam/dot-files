@@ -14,7 +14,6 @@ alias mv='mv -v'
 alias rm='rm -v'
 # Shorten frequently used commands.
 alias c='cat'
-alias dm="datamash --sort --header-out --round 2 mean 1 median 1 perc:90 1 perc:99 1 | command sed 's/(field-1)//g' | command column -t"
 alias dni='sudo dnf install -qy'
 alias dnu='sudo dnf remove -qy'
 alias g='grep -i'
@@ -76,6 +75,25 @@ aw() {
     done
     # The BSD seq's output will have a trailing comma which we need to remove.
     command awk $opts '{print '"${columns%,}"'}'
+}
+
+
+# Print stats about the numbers read from STDIN. Run `datamash --help` to see
+# various grouping operations available (perc:10, pstdev, etc.)
+#
+# Usage:
+#       dm [<grouping_operation>]...
+#
+# Dependencies:
+#       dnf install datamash
+#
+# shellcheck disable=SC2046,SC2048
+dm() {
+    local op
+    datamash --sort --header-out --round 2 mean 1 median 1 perc:90 1 perc:99 1 \
+            $(for op in $* ; do echo "$op 1" ; done | paste -sd' ') \
+        | command sed 's/(field-1)//g' \
+        | command column -t
 }
 
 
