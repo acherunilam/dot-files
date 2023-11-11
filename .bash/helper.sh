@@ -14,6 +14,7 @@ alias mv='mv -v'
 alias rm='rm -v'
 # Shorten frequently used commands.
 alias c='cat'
+alias dm="datamash --sort --header-out --round 2 mean 1 median 1 perc:90 1 perc:99 1 | command sed 's/(field-1)//g' | command column -t"
 alias dni='sudo dnf install -qy'
 alias dnu='sudo dnf remove -qy'
 alias g='grep -i'
