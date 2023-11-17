@@ -23,7 +23,6 @@ alias gd='git diff'
 alias gl='git lg'
 alias gs='git status'
 alias h='head -n'
-alias j='jq -C '.' | less -Ri'
 alias l='less'
 alias la='ls -A'                                                               # list all files
 alias ld='ls -d */ 2>/dev/null'                                                # list only directories
@@ -267,6 +266,18 @@ ipp() {
     echo -e "$result" | command column -t
 }
 
+
+# Intelligently parse the JSON.
+#
+# Usage:
+#       j <file.json>
+#       cat <file.json> | j
+j() {
+    local cmd="command jq -C '.'"
+    [[ -t 0 ]] && cmd+=" \"$*\""
+    [[ -t 1 ]] && cmd+=" | command less -Ri"
+    eval "$cmd"
+}
 
 # Like mv, but with a progress bar.
 #
