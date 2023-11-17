@@ -25,6 +25,7 @@ alias gs='git status'
 alias h='head -n'
 alias l='less'
 alias la='ls -A'                                                               # list all files
+alias lc='wc -l'                                                               # line count
 alias ld='ls -d */ 2>/dev/null'                                                # list only directories
 alias lh='ls -d .??* 2>/dev/null'                                              # list only hidden files
 alias ll='ls -alFh'                                                            # list all files with their details
