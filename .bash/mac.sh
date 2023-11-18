@@ -57,6 +57,7 @@ alias osv='sw_vers'                                                         # ou
 alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"'         # show all ports listening for connections
 alias tac='gtac'                                                            # BSD doesn't have tac
+alias wc='gwc'                                                              # `wc -l` should not having leading whitespace
 
 
 # Helpers.
