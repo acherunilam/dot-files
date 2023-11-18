@@ -25,13 +25,15 @@ alias gs='git status'
 alias h='head -n'
 alias l='less'
 alias la='ls -A'                                                               # list all files
-alias lc='wc -l'                                                               # line count
+alias lc='wc -l'
 alias ld='ls -d */ 2>/dev/null'                                                # list only directories
 alias lh='ls -d .??* 2>/dev/null'                                              # list only hidden files
 alias ll='ls -alFh'                                                            # list all files with their details
 alias p='pbcopy'                                                               # copy contents to clipboard
 alias py='python3'
+alias s='sort'
 alias t='tail -n'
+alias u='uniq'
 alias x='extract'                                                              # extract the contents of an archive
 # Inspect the system.
 alias osv='cat /etc/system-release'                                            # print the Linux distribution
