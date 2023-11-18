@@ -276,9 +276,9 @@ ipp() {
 #       j <file.json>
 #       cat <file.json> | j
 j() {
-    local cmd="command jq -C '.'"
+    local cmd="command jq '.'"
     [[ -t 0 ]] && cmd+=" \"$*\""
-    [[ -t 1 ]] && cmd+=" | command less -Ri"
+    [[ -t 1 ]] && cmd+=" -C | command less -Ri"
     eval "$cmd"
 }
 
