@@ -80,6 +80,19 @@ aw() {
 }
 
 
+# Intelligently columnate lists.
+#
+# Usage:
+#       col [<separator>]
+#
+# shellcheck disable=SC2086
+col() {
+    local arg="$1"
+    [[ -n "$arg" ]] && arg="-s $arg"
+    command column -t $arg
+}
+
+
 # Print stats about the numbers read from STDIN. Run `datamash --help` to see
 # various grouping operations available (perc:10, pstdev, etc.)
 #
