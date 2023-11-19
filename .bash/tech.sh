@@ -193,6 +193,7 @@ dns-flush() {
 #
 # Usage:
 #       geo <ip_address> [-l]
+#       cat <ip_address.list> | geo -l
 #       geo (-i | -s)
 #       geo -h
 #
@@ -228,6 +229,7 @@ geo() {
 
     help() {
         echo "Usage: ${FUNCNAME[1]} <ip_address> [-l]
+       cat <ip_address.list> | ${FUNCNAME[1]}  -l
        ${FUNCNAME[1]} (-i | -s)
        ${FUNCNAME[1]} -h
 
@@ -275,7 +277,10 @@ Options:
         local=1
         set -- "${@:1:$(($#-1))}"
     fi
-    if [[ $# -eq 0 ]] ; then
+    if [[ -p /dev/stdin ]] && [[ $local -eq 0 ]] ; then
+        error "reading from STDIN only allowed in local mode" 2
+        return
+    elif [[ $# -eq 0 ]] && ! [[ -p /dev/stdin ]] ; then
         error "missing input, please pass an IP address" 2
         return
     elif [[ $# -gt 1 ]] ; then
@@ -288,7 +293,8 @@ Options:
             validate-env "IPINFO_API_TOKEN" || return
             download_mmdb || return
         fi
-        echo "$ip_addr" | command mmdbctl read -f json "$DB_PATH" | command jq '.'
+        [[ -p /dev/stdin ]] && ip_addr="$(</dev/stdin)"
+        echo "$ip_addr" | command mmdbctl read "$DB_PATH" | command jq '.'
     else # external API
         command curl -qsS --connect-timeout 2 --max-time 5 "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN" \
             | command jq '.'
