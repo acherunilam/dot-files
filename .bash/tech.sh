@@ -211,7 +211,7 @@ dns-flush() {
 #       dnf install jq
 #       go install github.com/ipinfo/mmdbctl@latest
 #
-# shellcheck disable=SC2015,SC2199
+# shellcheck disable=SC2015,SC2086,SC2199
 geo() {
     local CRON_SCHEDULE="0 5 * * 1"  # every Mon 5 AM
     local DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
@@ -293,8 +293,8 @@ Options:
             validate-env "IPINFO_API_TOKEN" || return
             download_mmdb || return
         fi
-        [[ -p /dev/stdin ]] && ip_addr="$(</dev/stdin)"
-        echo "$ip_addr" | command mmdbctl read "$DB_PATH" | command jq '.'
+        [[ -p /dev/stdin ]] && ip_addr="$(</dev/stdin)" && jq_arg="-c"
+        echo "$ip_addr" | command mmdbctl read "$DB_PATH" | command jq $jq_arg '.'
     else # external API
         command curl -qsS --connect-timeout 2 --max-time 5 "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN" \
             | command jq '.'
