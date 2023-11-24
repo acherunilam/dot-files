@@ -214,6 +214,7 @@ GUI_APPS=(
     tuxera-ntfs
     visual-studio-code
     vlc
+    waves-central
     whatsapp
     wifi-explorer-pro
     wifispoof
