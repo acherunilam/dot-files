@@ -171,6 +171,7 @@ GUI_APPS=(
     chromedriver
     cleanshot
     contexts
+    copilot
     daisydisk
     discord
     docker
