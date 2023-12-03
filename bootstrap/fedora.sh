@@ -116,6 +116,7 @@ CLI_APPS=(
     thefuck
     tmux
     tor
+    transmission-common
     tree
     unrar
     vim
