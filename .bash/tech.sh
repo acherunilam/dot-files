@@ -113,7 +113,7 @@ Options:
                     | command sort -n
             )"
             # Combine CIDRs if the `netmask` tool (https://github.com/tlby/netmask) is available.
-            command -v netmask 1>/dev/null \
+            [[ -n "$output" ]] && command -v netmask 1>/dev/null \
                 && output="$(command netmask -c $(paste -sd' ' <<< "$output"))"
         else
             output="$(query_cymru "AS$prefix.$AS_CYMRU_NS")"
