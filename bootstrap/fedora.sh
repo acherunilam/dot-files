@@ -51,6 +51,7 @@ sudo dnf upgrade -y
 CLI_APPS=(
     aircrack-ng
     aria2
+    bat
     bcc-tools
     bind-utils
     calibre
