@@ -43,6 +43,15 @@ done
 # Tailscale
 sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 sudo rpm --import "https://pkgs.tailscale.com/stable/fedora/repo.gpg"
+# TICK stack
+sudo tee /etc/yum.repos.d/influxdb.repo << EOF
+[influxdb]
+name = InfluxData Repository - Stable
+baseurl = https://repos.influxdata.com/stable/\$basearch/main
+enabled = 1
+gpgcheck = 1
+gpgkey = https://repos.influxdata.com/influxdata-archive_compat.key
+EOF
 # Update all installed packages.
 sudo dnf upgrade -y
 
@@ -114,6 +123,7 @@ CLI_APPS=(
     shfmt
     socat
     speedtest-cli
+    telegraf
     telnet
     thefuck
     tmux
@@ -151,6 +161,7 @@ SERVICES=(
     docker
     et
     tailscaled
+    telegraf
     tor
 )
 sudo systemctl enable --now "${SERVICES[@]}"
