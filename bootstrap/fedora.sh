@@ -52,6 +52,7 @@ CLI_APPS=(
     aircrack-ng
     aria2
     bat
+    bc
     bcc-tools
     bind-utils
     calibre
