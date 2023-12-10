@@ -15,19 +15,19 @@ _git_ru() {
 
 
 _otp() {
-  local cur="${COMP_WORDS[COMP_CWORD]}"
-  local pos=${COMP_CWORD}
-  COMPREPLY=()
-  [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${OTP_KEYS[*]}" "$cur") )
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local pos=${COMP_CWORD}
+    COMPREPLY=()
+    [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${OTP_KEYS[*]}" "$cur") )
 }
 complete -F _otp otp
 
 
 _pass() {
-  local cur="${COMP_WORDS[COMP_CWORD]}"
-  local pos=${COMP_CWORD}
-  COMPREPLY=()
-  [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "get set del help" "$cur") )
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local pos=${COMP_CWORD}
+    COMPREPLY=()
+    [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "get set del help" "$cur") )
 }
 complete -F _pass pass
 
@@ -37,10 +37,10 @@ complete -F _systemctl scl
 
 
 _ts() {
-  local cur="${COMP_WORDS[COMP_CWORD]}"
-  local pos=${COMP_CWORD}
-  declare -A tailscale_nodes=$TAILSCALE_EXIT_NODES
-  COMPREPLY=()
-  [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${!tailscale_nodes[*]}" "$cur") )
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local pos=${COMP_CWORD}
+    declare -A tailscale_nodes=$TAILSCALE_EXIT_NODES
+    COMPREPLY=()
+    [[ pos -eq 1 ]] && COMPREPLY=( $(compgen -W "${!tailscale_nodes[*]}" "$cur") )
 }
 complete -F _ts ts
