@@ -20,6 +20,7 @@ CLI_APPS=(
     aria2
     bash
     bash-completion@2
+    bat
     bind
     blueutil
     brightness
