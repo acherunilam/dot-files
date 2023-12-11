@@ -336,6 +336,7 @@ notify() {
 # shellcheck disable=SC2086,SC2181
 pb() {
     local content curl_auth_arg response
+    local SKIP_HTTP_PREFIX='true'
     validate-env "PASTEBIN_URL" || return
     if [[ -p /dev/stdin ]] ; then
         content="$(</dev/stdin)"
@@ -356,6 +357,8 @@ pb() {
     if [[ -z "$response" ]] ; then
         error "unknown error, missing output" ; return
     fi
+    [[ -n "$SKIP_HTTP_PREFIX" ]] \
+	    && response="$(command sed -E 's|https?://||g' <<< "$response")"
     echo "$response"
     echo -n "$response" | pbcopy
 }
@@ -523,13 +526,14 @@ Environment variables:
 #
 # shellcheck disable=SC2015,SC2181
 url-shorten() {
-    local custom_slug response result
+    local custom_slug response
+    local SKIP_HTTP_PREFIX='true'
     local url="$1"
     validate-env "URL_SHORTENER_URL" "URL_SHORTENER_API_KEY" || return
     if [[ -z $url ]] ; then
-        error "please pass the URL as the first argument" 2
+        error "please pass the URL as the first argument" 2 ; return
     elif [[ ! $url =~ ^https?://[^\.]+\..+$ ]] ; then
-        error "'$url' is not a valid URL" 2
+        error "'$url' is not a valid URL" 2 ; return
     fi
     [[ -n "$2" ]] && custom_slug=", \"customSlug\": \"$2\""
     response="$(
@@ -551,10 +555,12 @@ url-shorten() {
             && response="{\"shortUrl\": \"$URL_SHORTENER_URL/$2\"}" \
             || { error "unable to connect to $URL_SHORTENER_URL" ; return ;}
     fi
-    result="$(echo "$response" | command tr ',' '\n' | command sed -En 's/.*"shortUrl":"(.*)"/\1/p')"
-    if [[ -z "$result" ]] ; then
+    response="$(echo "$response" | command tr ',' '\n' | command sed -En 's/.*"shortUrl":"(.*)"/\1/p')"
+    if [[ -z "$response" ]] ; then
         error "unknown error, missing output" ; return
     fi
-    echo "$result"
-    echo -n "$result" | pbcopy
+    [[ -n "$SKIP_HTTP_PREFIX" ]] \
+	    && response="$(command sed -E 's|https?://||g' <<< "$response")"
+    echo "$response"
+    echo -n "$response" | pbcopy
 }
