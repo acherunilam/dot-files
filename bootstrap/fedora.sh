@@ -102,6 +102,7 @@ CLI_APPS=(
     netcat
     nethogs
     netmask
+    newt
     ngrep
     nmap
     nodejs
