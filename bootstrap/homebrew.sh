@@ -85,6 +85,7 @@ CLI_APPS=(
     ncdu
     nethogs
     netmask
+    newt
     nginx-full
     ngrep
     nmap
