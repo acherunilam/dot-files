@@ -293,7 +293,7 @@ Options:
             validate-env "IPINFO_API_TOKEN" || return
             download_mmdb || return
         fi
-        [[ -p /dev/stdin ]] && ip_addr="$(</dev/stdin)" && jq_arg="-c"
+        [[ -z "$ip_addr" ]] && [[ -p /dev/stdin ]] && ip_addr="$(</dev/stdin)" && jq_arg="-c"
         echo "$ip_addr" | command mmdbctl read "$DB_PATH" | command jq $jq_arg '.'
     else # external API
         command curl -qsS --connect-timeout 2 --max-time 5 "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN" \
