@@ -52,12 +52,16 @@ alias awk='gawk'                                                            # `a
 alias base64='gbase64'                                                      # `base64 -w0` should work
 alias date='gdate'                                                          # `date -I` should work
 alias head='ghead'                                                          # `head -n0` should work
-alias mtr="sudo mtr"                                                        # run with elevated privileges by default
 alias osv='sw_vers'                                                         # output macOS system version
 alias paste='gpaste'                                                        # `paste -sd' '` should work
 alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"'         # show all ports listening for connections
 alias tac='gtac'                                                            # BSD doesn't have tac
 alias wc='gwc'                                                              # `wc -l` should not having leading whitespace
+
+
+# Run with elevated privileges by default.
+alias dtruss='sudo dtruss'
+alias mtr='sudo mtr'
 
 
 # Helpers.
