@@ -2,6 +2,21 @@
 # shellcheck disable=SC1090
 
 
+# Safely enter a directory.
+#
+# Usage:
+#       cd_dir <dir> || return
+cd_dir() {
+    local target_dir="$1"
+    local exit_code=0
+    if ! cd "$target_dir" 2>/dev/null ; then
+        echo "${FUNCNAME[-1]}: unable to cd into '$target_dir'" >&2
+        exit_code=1
+    fi
+    return "$exit_code"
+}
+
+
 # Print the error message. Unless specified otherwise, it returns
 # a code of 1.
 #
@@ -34,7 +49,7 @@ validate-env() {
     local exit_code=0
     for env_var in "$@" ; do
         if [[ -z "${!env_var}" ]] ; then
-            echo "${FUNCNAME[1]}: please set the environment variable \$$env_var"
+            echo "${FUNCNAME[-1]}: please set the environment variable \$$env_var" >&2
             exit_code=1
         fi
     done
