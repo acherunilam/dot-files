@@ -37,6 +37,7 @@ alias u='uniq'
 alias x='extract'                                                              # extract the contents of an archive
 # Inspect the system.
 alias osv='cat /etc/system-release'                                            # print the Linux distribution
+alias perf='sudo perf'                                                         # performance analysis
 alias port='sudo ss -tulpn'                                                    # show all listening ports
 alias scl='sudo systemctl'                                                     # systemd inspection
 # Run with specific settings.
