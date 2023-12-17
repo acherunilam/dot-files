@@ -110,6 +110,7 @@ CLI_APPS=(
     p7zip
     p7zip-plugins
     parallel
+    perf
     poppler
     prename
     pv
