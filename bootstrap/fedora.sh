@@ -103,6 +103,7 @@ CLI_APPS=(
     nethogs
     netmask
     newt
+    nfs-utils
     ngrep
     nmap
     nodejs
