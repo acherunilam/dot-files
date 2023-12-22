@@ -341,10 +341,16 @@ pbc() {
 #       pngpaste [<filename>]
 pngpaste() {
     local filename="${1:-screenshot.png}"
-    [[ $filename == *.png ]] || filename+=".png"
+    [[ $filename == *".png" ]] || filename+=".png"
+    local tmp_dir="$(command mktemp -d)"
     osascript -e "tell application \"System Events\" to write (the clipboard \
-        as «class PNGf») to (make new file at folder \"$PWD\" with properties \
+        as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
         {name:\"$filename\"})" 2>/dev/null
+    if [[ -s "$tmp_dir/$filename" ]] ; then
+        command mv "$tmp_dir/$filename" "$filename"
+    else
+        error "no image found in clipboard" ; return
+    fi
 }
 
 
