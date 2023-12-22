@@ -4,9 +4,9 @@
 PKGS=(
     bashplotlib
     blaeu
+    censys
     ffsubsync
     ripe.atlas.tools
     xkcdpass
-    yq
 )
 pip3 install "${PKGS[@]}"
