@@ -136,6 +136,7 @@ CLI_APPS=(
     vim
     wireguard-tools
     wireshark-cli
+    xq
 )
 sudo dnf install -y "${CLI_APPS[@]}"
 
