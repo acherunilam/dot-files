@@ -121,6 +121,7 @@ CLI_APPS=(
     qrencode
     rclone
     ripgrep
+    rsyslog
     rust
     ShellCheck
     shfmt
@@ -164,6 +165,7 @@ SERVICES=(
     dnf-automatic.timer
     docker
     et
+    rsyslog
     tailscaled
     telegraf
     tor
