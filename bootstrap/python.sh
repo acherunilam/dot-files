@@ -6,6 +6,7 @@ PKGS=(
     blaeu
     censys
     ffsubsync
+    hashid
     ripe.atlas.tools
     xkcdpass
 )
