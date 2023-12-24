@@ -3,6 +3,7 @@
 
 PKGS=(
     bashplotlib
+    black
     blaeu
     censys
     cinemagoer
