@@ -23,6 +23,7 @@ existing dot files will be taken prior to copying this over.
 --git               install the git config file
 --help              print this help
 --mitmproxy         install the mitmproxy config file
+--python            install the python config file
 --readline          install the readline config file
 --ripgrep           install the ripgrep config file
 --screen            install the screen config file
@@ -71,6 +72,9 @@ for arg in "$@"; do
     --mitmproxy)
         INSTALL_MITMPROXY=1
         ;;
+    --python)
+        INSTALL_PYTHON=1
+        ;;
     --readline)
         INSTALL_READLINE=1
         ;;
@@ -112,6 +116,7 @@ if [[ $INSTALL_ALL == 1 ]] ; then
     INSTALL_FASD=1
     INSTALL_GIT=1
     INSTALL_MITMPROXY=1
+    INSTALL_PYTHON=1
     INSTALL_READLINE=1
     INSTALL_RIPGREP=1
     INSTALL_SCREEN=1
@@ -125,6 +130,7 @@ fi
 [[ $INSTALL_FASD == 1 ]] && SOURCE+=" ./.fasdrc"
 [[ $INSTALL_GIT == 1 ]] && SOURCE+=" ./.gitconfig"
 [[ $INSTALL_MITMPROXY == 1 ]] && SOURCE+=" ./.mitmproxy/*.yaml"
+[[ $INSTALL_PYTHON == 1 ]] && SOURCE+=" ./.pythonrc"
 [[ $INSTALL_READLINE == 1 ]] && SOURCE+=" ./.inputrc"
 [[ $INSTALL_RIPGREP == 1 ]] && SOURCE+=" ./.ripgreprc"
 [[ $INSTALL_SCREEN == 1 ]] && SOURCE+=" ./.screenrc"
