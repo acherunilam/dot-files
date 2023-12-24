@@ -5,6 +5,7 @@ PKGS=(
     bashplotlib
     blaeu
     censys
+    cinemagoer
     ffsubsync
     hashid
     ripe.atlas.tools
