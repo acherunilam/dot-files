@@ -9,6 +9,7 @@ PKGS=(
     cinemagoer
     ffsubsync
     hashid
+    Pillow
     ripe.atlas.tools
     xkcdpass
 )
