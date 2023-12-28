@@ -9,7 +9,7 @@ include "$HOME/.acme.sh/acme.sh.env"
 # kernel tracing and manipulation programs.
 #
 # Dependencies:
-#       dnf install bcc-tools
+#       dnf install bcc
 export PATH="/usr/share/bcc/tools:$PATH"
 
 
