@@ -62,7 +62,7 @@ CLI_APPS=(
     aria2
     bat
     bc
-    bcc-tools
+    bcc
     bind-utils
     calibre
     cargo
