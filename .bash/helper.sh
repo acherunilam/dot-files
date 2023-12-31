@@ -327,8 +327,11 @@ notify() {
 # input is passed, then the contents of the clipboard will be used.
 #
 # Usage:
-#       pb
-#       echo "text message" | pb
+#       pb [options]
+#       echo "text message" | pb [options]
+#
+# Options:
+#       -b      Burn the paste after it's opened once.
 #
 # Environment variables:
 #       export PASTEBIN_URL="<pastebin_url>"
@@ -336,7 +339,7 @@ notify() {
 #
 # shellcheck disable=SC2086,SC2181
 pb() {
-    local content curl_auth_arg response
+    local content curl_auth_arg curl_query response
     local SKIP_HTTP_PREFIX='true'
     validate-env "PASTEBIN_URL" || return
     if [[ -p /dev/stdin ]] ; then
@@ -348,9 +351,10 @@ pb() {
         error "please pass the text to upload via STDIN" 2 ; return
     fi
     [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_arg="-u $PASTEBIN_AUTH_BASIC"
+    [[ "$1" == "-b" ]] && curl_query="?burn=true"
     response="$(
         command curl -qsS --connect-timeout 2 --max-time 5 \
-            -XPOST $curl_auth_arg --data-binary @- "$PASTEBIN_URL" <<< "$content"
+            -XPOST $curl_auth_arg --data-binary @- "${PASTEBIN_URL%/}$curl_query" <<< "$content"
     )"
     if [[ $? -ne 0 ]] ; then
         error "unable to connect to $PASTEBIN_URL" ; return
