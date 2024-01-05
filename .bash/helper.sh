@@ -36,6 +36,7 @@ alias t='tail -n'
 alias u='uniq'
 alias x='extract'                                                              # extract the contents of an archive
 # Inspect the system.
+alias jcl='journalctl -f -u'                                                   # tail systemd service logs
 alias osv='cat /etc/system-release'                                            # print the Linux distribution
 alias perf='sudo perf'                                                         # performance analysis
 alias port='sudo ss -tulpn'                                                    # show all listening ports
