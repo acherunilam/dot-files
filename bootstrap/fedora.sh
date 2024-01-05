@@ -127,7 +127,6 @@ CLI_APPS=(
     shfmt
     socat
     speedtest-cli
-    telegraf
     telnet
     thefuck
     tmux
@@ -167,7 +166,6 @@ SERVICES=(
     et
     rsyslog
     tailscaled
-    telegraf
     tor
 )
 sudo systemctl enable --now "${SERVICES[@]}"
