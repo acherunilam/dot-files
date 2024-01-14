@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Global variables.
+################################################################################
+
+_NAME="$(command basename "$0")"
+CURL_ARGS="--connect-timeout 2 --max-time 30"
+HELP_DOC="Print the AS details of an IP or ASN.
+
+Usage:
+  $_NAME <ip_address>
+  $_NAME <as_number> [-p]
+  $_NAME -h
+
+Options:
+  -p    List all prefixes for the ASN.
+  -h    Print help."
+
+################################################################################
+# Helper methods.
+################################################################################
+
+# Usage:
+#       check_if_installed <binary>
+check_if_installed() {
+	builtin hash "$1" 2>/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
+}
+
+# Usage:
+#       error <message> [<exit_code>]
+error() {
+	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	exit "${2:-1}"
+}
+
+# Usage:
+#       query_cymru <domain>
+query_cymru() {
+	command dig +short TXT "$1" | command sed -E 's/"//g'
+}
+
+# Usage:
+#       query_cymru_and_append_asn_info <ip_reversed> <domain>
+query_cymru_and_append_asn_info() {
+	ip_info="$(query_cymru "$1.$2")"
+	# TODO: Add support for MOAS (https://bgp.he.net/report/multi-origin-routes).
+	[[ $(command wc -l <<<"$ip_info") -gt 1 ]] &&
+		error "MOAS not yet supported" 70 # EX_SOFTWARE
+	[[ -z "$ip_info" ]] && exit 1
+	asn=$(command awk '{print $1}' <<<"$ip_info")
+	asn_info="$(
+		query_cymru "AS$asn.asn.cymru.com" | command awk -F'|' '{print $5}'
+	)"
+	builtin echo "$ip_info |$asn_info"
+}
+
+################################################################################
+# Validate input.
+################################################################################
+
+set -o pipefail
+all_prefixes=0
+while getopts ":ph" arg; do
+	case $arg in
+	p) # prefixes
+		all_prefixes=1
+		;;
+	h) # help
+		builtin echo "$HELP_DOC" && exit
+		;;
+	*)
+		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		;;
+	esac
+done
+shift $((OPTIND - 1))
+[[ "${!#}" == "-p" ]] && all_prefixes=1 && set -- "${@:1:$#-1}"
+
+[[ $# -eq 0 ]] && error "missing input, please pass an IP or ASN" 64             # EX_USAGE
+[[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64 # EX_USAGE
+# If a prefix is passed, only the first IP is considered.
+input="$(command sed -E 's/\/[0-9]+$//g' <<<"${1,,}")"
+
+################################################################################
+# Execute.
+################################################################################
+
+if [[ $input =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then # IPv4
+	reversed_ip="$(
+		builtin echo "$input" |
+			command tr '.' '\n' |
+			command tac |
+			command tr '\n' '.' |
+			command sed 's/\.$//g'
+	)"
+	query_cymru_and_append_asn_info "$reversed_ip" origin.asn.cymru.com
+elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
+	hextets=$(
+		builtin echo "$input" |
+			command sed 's/::/:/g;s/:/\n/g;/^$/d' |
+			command wc -l
+	)
+	exploded_ip="$(
+		builtin echo "$input" |
+			command sed -E "s/::/:$(command yes "0:" |
+				command head -n $((8 - hextets)) |
+				command tr -d '\n')/g;s/^://g;s/:$//g"
+	)"
+	reversed_ip="$(
+		builtin echo "$exploded_ip" |
+			command tr ':' '\n' |
+			while read -r line; do printf "%04x\n" "0x$line" 2>/dev/null; done |
+			command tac |
+			command rev |
+			command sed -E 's/./&\./g' |
+			command tr -d '\n' |
+			command sed -E 's/\.$//g'
+	)"
+	query_cymru_and_append_asn_info "$reversed_ip" origin6.asn.cymru.com
+elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
+	asn="$(builtin echo "$input" | command sed -E 's/^asn?//g')"
+	if [[ $all_prefixes -eq 1 ]]; then
+		check_if_installed "jq" "https://github.com/stedolan/jq"
+		# Use RIPE's API (https://stat.ripe.net/docs/data_api) to fetch prefixes
+		# seen by at least 10 RIS peers over the last 2 weeks.
+		# shellcheck disable=SC2086
+		output="$(
+			command curl -qsS $CURL_ARGS \
+				"https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS$asn" |
+				command jq -r '.data.prefixes[].prefix' |
+				command sort -n || error "unable to reach stat.ripe.net"
+		)"
+		# Combine CIDRs only if the `netmask` CLI is available.
+		# check_if_installed "netmask" "https://github.com/tlby/netmask"
+		# shellcheck disable=SC2046
+		[[ -n "$output" ]] && builtin hash netmask 2>/dev/null &&
+			output="$(command netmask -c $(command tr '\n' ' ' <<<"$output"))"
+	else
+		output="$(query_cymru "AS$asn.asn.cymru.com")"
+	fi
+	[[ -n "$output" ]] && builtin echo "$output"
+else
+	error "invalid input, please pass an IP or ASN" 65 # EX_DATAERR
+fi

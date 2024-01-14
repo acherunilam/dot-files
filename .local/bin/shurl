@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Global variables.
+################################################################################
+
+_NAME="$(command basename "$0")"
+CURL_ARGS="--connect-timeout 2 --max-time 5"
+HELP_DOC="Shorten the URL using Shlink (https://shlink.io), a self-hosted URL Shortener.
+The API key can be generate over here (https://shlink.io/documentation/api-docs/authentication).
+
+Usage:
+  $_NAME [options] <url>
+
+Options:
+  -h	Print help.
+
+Environment variables:
+  URL_SHORTENER_API_KEY
+  URL_SHORTENER_URL"
+SKIP_HTTP_PREFIX='true'
+
+################################################################################
+# Helper methods.
+################################################################################
+
+# Usage:
+#       error <message> [<exit_code>]
+error() {
+	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	exit "${2:-1}"
+}
+
+# Usage:
+#       echo "text message" | pbcopy
+pbcopy() {
+	content="$(</dev/stdin)"
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		builtin echo -n "$content" | command pbcopy
+		return
+	fi
+	output="$(builtin printf '\e]52;c;%s\a' "$(builtin echo -n "$content" | command base64 -w0)")"
+	# shellcheck disable=SC1003
+	[[ -n "$TMUX" ]] && output="$(builtin printf '\ePtmux;\e%s\e\\' "$output")"
+	builtin printf "%s" "$output"
+}
+
+################################################################################
+# Validate input.
+################################################################################
+
+while getopts ":h" arg; do
+	case $arg in
+	h) # help
+		builtin echo "$HELP_DOC" && exit
+		;;
+	*)
+		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		;;
+	esac
+done
+shift $((OPTIND - 1))
+
+[[ -z "$URL_SHORTENER_URL" ]] && error "missing environment variable, please set URL_SHORTENER_URL" 78         # EX_CONFIG
+[[ -z "$URL_SHORTENER_API_KEY" ]] && error "missing environment variable, please set URL_SHORTENER_API_KEY" 78 # EX_CONFIG
+[[ $# -eq 0 ]] && error "missing input, please pass a URL" 64                                                  # EX_USAGE
+[[ $# -gt 1 ]] && error "invalid input, do not pass more than one URL" 64                                      # EX_USAGE
+url="$1"
+[[ ! $url =~ ^https?://[^\.]+\..+$ ]] && error "invalid input, please pass a URL" 65 # EX_DATAERR
+
+################################################################################
+# Execute.
+################################################################################
+
+# shellcheck disable=SC2086
+response="$(
+	command curl -qsS $CURL_ARGS \
+		-X POST "$URL_SHORTENER_URL/rest/v3/short-urls" \
+		-H "X-Api-Key: $URL_SHORTENER_API_KEY" \
+		--json '{"longUrl": "'"$url"'", "findIfExists": true}' ||
+		error "unable to reach $URL_SHORTENER_URL"
+)"
+command grep -q '"type":"INVALID_API_KEY"' <<<"$response" &&
+	error "invalid API key, please check the environment variable URL_SHORTENER_API_KEY"
+response="$(echo "$response" | command tr ',' '\n' | command sed -En 's/.*"shortUrl":"(.*)"/\1/p')"
+[[ -z "$response" ]] && error "unknown error, missing repsonse"
+[[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(command sed -E 's|https?://||g' <<<"$response")"
+echo "$response"
+echo -n "$response" | pbcopy
