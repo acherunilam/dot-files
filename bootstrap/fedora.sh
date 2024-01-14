@@ -112,6 +112,7 @@ CLI_APPS=(
     p7zip-plugins
     parallel
     perf
+    plocate
     poppler
     prename
     pv
