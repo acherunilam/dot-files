@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Global variables.
+################################################################################
+
+_NAME="$(command basename "$0")"
+CURL_ARGS="--connect-timeout 2 --max-time 5"
+HELP_DOC="Run various RIPE Atlas (https://atlas.ripe.net/about) operations - run
+traceroute, count probes, get report, etc. The API key can be generated over
+here (https://atlas.ripe.net/keys).
+
+Usage:
+  $_NAME <destination> [ww|<country>|<asn>] [<probe_count>]
+  $_NAME (<country>|<asn>)
+  $_NAME <measurement_id>
+  $_NAME -h
+
+Options:
+  -h    Print help.
+
+Environment variables:
+  ATLAS_CREATE_KEY"
+PROBE_SEARCH_LIMIT=10000
+
+################################################################################
+# Helper methods.
+################################################################################
+
+# Usage:
+#       check_if_installed <binary>
+check_if_installed() {
+	builtin hash "$1" 2>/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
+}
+
+# Usage:
+#       error <message> [<exit_code>]
+error() {
+	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	exit "${2:-1}"
+}
+
+################################################################################
+# Validate input.
+################################################################################
+
+while getopts ":h" arg; do
+	case $arg in
+	h) # help
+		builtin echo "$HELP_DOC" && exit
+		;;
+	*)
+		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		;;
+	esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -eq 0 ]] && error "missing input, please pass a destination, country, ASN, or measurement ID" 64 # EX_USAGE
+target="$(command sed -E 's/^asn?([0-9]+)$/\1/g' <<<"${1,,}")"
+check_if_installed "jq" "https://github.com/stedolan/jq"
+check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
+[[ -z "$ATLAS_CREATE_KEY" ]] && error "missing environment variable, please set ATLAS_CREATE_KEY" 78 # EX_CONFIG
+
+################################################################################
+# Execute.
+################################################################################
+
+if [[ "$target" =~ ^[a-z]{2}$ || "$target" =~ ^[0-9]{1,5}$ ]]; then # count probes
+	[[ "$target" =~ ^[a-z]{2}$ ]] && filter_by="country" || filter_by="asn"
+	command ripe-atlas probe-search --limit "$PROBE_SEARCH_LIMIT" --"$filter_by" \
+		"$target" --status 1 --ids-only |
+		command wc -l |
+		command awk '{print $1}'
+elif [[ "$target" =~ ^[0-9]+$ ]]; then # fetch report
+	# shellcheck disable=SC2086
+	command curl -qsS $CURL_ARGS -H "Authorization: Key $ATLAS_CREATE_KEY" \
+		"https://atlas.ripe.net/api/v2/measurements/$target/results" |
+		command jq -e '.' ||
+		error "unable to reach atlas.ripe.net"
+else # run traceroute
+	filter_by="area"
+	filter_value="$(
+		echo "${2:-WW}" | command tr '[:lower:]' '[:upper:]' | command sed -E 's/^ASN?//g'
+	)"
+	if [[ "$filter_value" =~ ^[0-9]+$ ]]; then
+		filter_by="asn"
+	elif [[ "$filter_value" =~ ^[A-Z]{2}$ ]] && [[ "$filter_value" != "WW" ]]; then
+		filter_by="country"
+	elif [[ "$filter_value" != "WW" ]]; then
+		error "'$filter_value' is not a valid country or ASN" 65 # EX_DATAERR
+	fi
+	probe_count="${3:-10}"
+	command ripe-atlas measure traceroute "$target" \
+		--description "[traceroute] [$filter_value] $target" \
+		--from-"$filter_by" "$filter_value" \
+		--probes "$probe_count" \
+		--resolve-on-probe \
+		--no-report
+fi

@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Global variables.
+################################################################################
+
+_NAME="$(command basename "$0")"
+CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
+CURL_ARGS="--connect-timeout 2 --max-time 30"
+DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
+HELP_DOC="Print geolocation information for an IP address. The API token can be
+obtained over here (https://ipinfo.io/account/token).
+
+Usage:
+  $_NAME <ip_address>
+  cat <ip_address.list> | $_NAME
+  $_NAME (-i | -s)
+  $_NAME -h
+
+Options:
+  -i    Install a cron job to periodically update the MMDB.
+  -s    Sync the local MMDB to the latest version.
+  -h    Print help.
+
+Environment variables:
+  IPINFO_API_TOKEN"
+
+################################################################################
+# Helper methods.
+################################################################################
+
+# Usage:
+#       check_if_installed <binary>
+check_if_installed() {
+	builtin hash "$1" 2>/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
+}
+
+# Usage:
+#       download_mmdb
+download_mmdb() {
+	[[ -z "$IPINFO_API_TOKEN" ]] &&
+		error "missing environment variable, please set IPINFO_API_TOKEN" 78 # EX_CONFIG
+	# shellcheck disable=SC2086
+	command curl -qsS $CURL_ARGS -L \
+		"https://ipinfo.io/data/free/country_asn.mmdb?token=$IPINFO_API_TOKEN" \
+		--create-dirs -o "$DB_PATH.new" || error "unable to reach ipinfo.io"
+	if command grep -aq "per day limit" "$DB_PATH.new" 2>/dev/null; then
+		command rm "$DB_PATH.new"
+		error "download failed, per day limit reached"
+	else
+		command mv "$DB_PATH.new" "$DB_PATH" 2>/dev/null
+	fi
+}
+
+# Usage:
+#       error <message> [<exit_code>]
+error() {
+	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	exit "${2:-1}"
+}
+
+################################################################################
+# Validate input.
+################################################################################
+
+# shellcheck disable=SC2015
+while getopts ":ish" arg; do
+	case $arg in
+	i) # install
+		cron_entry=$'\n\n# Update geolocation MMDB.\n'"$CRON_SCHEDULE $(command realpath "$0") -s"
+		command crontab - <<<"$(command crontab -l)$cron_entry" &&
+			error "installed cron tab" 0 ||
+			error "installation failed"
+		;;
+	s) # sync
+		download_mmdb &&
+			error "synced DB" 0 ||
+			error "sync failed"
+		;;
+	h) # help
+		builtin echo "$HELP_DOC" && exit
+		;;
+	*)
+		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		;;
+	esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -eq 0 ]] && ! [[ -p /dev/stdin ]] && error "missing input, please pass an IP address" 64 # EX_USAGE
+[[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64               # EX_USAGE
+ip_addr="$1"
+check_if_installed "jq" "https://github.com/stedolan/jq"
+
+################################################################################
+# Execute.
+################################################################################
+
+if [[ -p /dev/stdin ]]; then # local MMDB
+	check_if_installed "mmdbctl" "https://github.com/ipinfo/mmdbctl"
+	[[ ! -f "$DB_PATH" ]] && download_mmdb
+	command mmdbctl read "$DB_PATH" </dev/stdin | command jq -c '.'
+else # external API
+	# shellcheck disable=SC2086
+	command curl -qsS $CURL_ARGS "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN" |
+		command jq -e '.' || error "unable to reach ipinfo.io"
+fi
