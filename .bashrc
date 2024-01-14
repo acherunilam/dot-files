@@ -14,7 +14,7 @@ path_list=(
     "/usr/sbin"
     "/usr/local/bin"
     "/usr/local/sbin"
-    "$HOME/bin"
+    "$HOME/.local/bin"
 )
 for p in "${path_list[@]}" ; do
     [[ ":$PATH:" != *":$p:"* ]] && PATH="$p:${PATH}"
