@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Global variables.
+################################################################################
+
+_NAME="$(command basename "$0")"
+CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
+CURL_ARGS="--connect-timeout 2 --max-time 30"
+DB_PATH="$HOME/.local/share/oui/oui.txt"
+HELP_DOC="Look up vendor by Organizationally Unique Identifier (OUI).
+
+Usage:
+  $_NAME [options] <oui>
+
+Options:
+  -i    Install a cron job to periodically update the DB.
+  -s    Sync the local DB to the latest version.
+  -h    Print help."
+
+################################################################################
+# Helper methods.
+################################################################################
+
+# Usage:
+#       download_oui_db
+download_oui_db() {
+	# shellcheck disable=SC2086
+	command curl -qsS $CURL_ARGS "https://standards-oui.ieee.org/oui/oui.txt" --create-dirs -o "$DB_PATH" ||
+		error "unable to reach standards-oui.ieee.org"
+}
+
+# Usage:
+#       error <message> [<exit_code>]
+error() {
+	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	exit "${2:-1}"
+}
+
+################################################################################
+# Validate input.
+################################################################################
+
+# shellcheck disable=SC2015
+while getopts ":ish" arg; do
+	case $arg in
+	i) # install
+		command crontab - <<<"$(command crontab -l)"$'\n\n# Update OUI DB.\n'"$CRON_SCHEDULE $(command realpath "$0") -s" &&
+			error "installed cron tab" 0 ||
+			error "installation failed"
+		;;
+	s) # sync
+		download_oui_db &&
+			error "synced DB" 0 ||
+			error "sync failed"
+		;;
+	h) # help
+		builtin echo "$HELP_DOC" && exit
+		;;
+	*)
+		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		;;
+	esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -eq 0 ]] && error "missing input, please pass an OUI" 64            # EX_USAGE
+[[ $# -gt 1 ]] && error "invalid input, do not pass more than one OUI" 64 # EX_USAGE
+mac_id="${1^^}"
+[[ ! "$mac_id" =~ ^([0-9A-F]{2}[:-]?){5}([0-9A-F]{2})$ ]] && error "invalid input, please pass an OUI" 65 # EX_DATAERR
+[[ ! -f "$DB_PATH" ]] && download_oui_db
+
+################################################################################
+# Execute.
+################################################################################
+
+mac_prefix="$(echo "$mac_id" | command sed -E 's/(-|:)//g' | command cut -c1-6)"
+command grep "$mac_prefix" "$DB_PATH" |
+	command sed -E 's/.*\(base 16\)\s+(.*)/\1/g' |
+	command grep .
