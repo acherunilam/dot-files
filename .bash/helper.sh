@@ -42,6 +42,7 @@ alias perf='sudo perf'                                                         #
 alias port='sudo ss -tulpn'                                                    # show all listening ports
 alias scl='sudo systemctl'                                                     # systemd inspection
 # Run with specific settings.
+alias bc='sed "s/^/scale=2;/g" | bc -l'                                        # floating-point precision of 2
 alias mkdir='mkdir -p'                                                         # create parent directory if it doesn't exist
 alias pls='sudo $(history -p \!\!)'                                            # re-execute last command with elevated privileges
 alias rsync='rsync -avzhPLK --partial-dir=.rsync-partial'                      # enable compression and partial synchronization
