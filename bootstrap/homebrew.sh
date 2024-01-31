@@ -56,6 +56,7 @@ CLI_APPS=(
     gnumeric
     go
     handbrake
+    hivemq/mqtt-cli/mqtt-cli
     hping
     htmlq
     htop
