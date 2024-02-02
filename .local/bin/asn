@@ -6,6 +6,7 @@
 
 _NAME="$(command basename "$0")"
 CURL_ARGS="--connect-timeout 2 --max-time 30"
+DIG_ARGS=""
 HELP_DOC="Print the AS details of an IP or ASN.
 
 Usage:
@@ -38,7 +39,7 @@ error() {
 # Usage:
 #       query_cymru <domain>
 query_cymru() {
-	command dig +short TXT "$1" | command sed -E 's/"//g'
+	command dig +short $DIG_ARGS TXT "$1" | command sed -E 's/"//g'
 }
 
 # Usage:
