@@ -130,8 +130,8 @@ elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
 			command curl -qsS $CURL_ARGS \
 				"https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS$asn" |
 				command jq -r '.data.prefixes[].prefix' |
-				command sort -n || error "unable to reach stat.ripe.net"
-		)"
+				command sort -n
+		)" || error "unable to reach stat.ripe.net"
 		# Combine CIDRs only if the `netmask` CLI is available.
 		# check_if_installed "netmask" "https://github.com/tlby/netmask"
 		# shellcheck disable=SC2046
