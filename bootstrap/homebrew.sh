@@ -3,7 +3,7 @@
 
 # Load third-party repositories.
 TAPS=(
-    caffix/amass
+    owasp-amass/amass
     denji/nginx
     homebrew/autoupdate
     homebrew/cask-drivers
@@ -47,7 +47,6 @@ CLI_APPS=(
     fzf
     gawk
     gcc
-    gcc-c++
     gdrive
     git
     git-extras
