@@ -6,8 +6,7 @@
 
 _NAME="$(command basename "$0")"
 CURL_ARGS="--connect-timeout 2 --max-time 5"
-HELP_DOC="Send a push notification using Pushover (https://pushover.net), a push notification
-service. The user and token can be generated over here (https://pushover.net/apps/build).
+HELP_DOC="Send a push notification using Pushover, a push notification service.
 
 Usage:
   $_NAME [options] <text_message>
@@ -17,8 +16,8 @@ Options:
   -h    Print help.
 
 Environment variables:
-  PUSHOVER_USER
-  PUSHOVER_TOKEN"
+  PUSHOVER_USER		https://pushover.net
+  PUSHOVER_TOKEN	https://pushover.net/apps/build"
 
 ################################################################################
 # Helper methods.

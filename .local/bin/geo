@@ -8,8 +8,7 @@ _NAME="$(command basename "$0")"
 CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
 CURL_ARGS="--connect-timeout 2 --max-time 30"
 DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
-HELP_DOC="Print geolocation information for an IP address. The API token can be
-obtained over here (https://ipinfo.io/account/token).
+HELP_DOC="Print geolocation information for an IP address.
 
 Usage:
   $_NAME <ip_address>
@@ -23,7 +22,7 @@ Options:
   -h    Print help.
 
 Environment variables:
-  IPINFO_API_TOKEN"
+  IPINFO_API_TOKEN	https://ipinfo.io/account/token"
 
 ################################################################################
 # Helper methods.
