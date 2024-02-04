@@ -147,7 +147,7 @@ elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
 	asn="$(builtin echo "$input" | command sed -E 's/^asn?//g')"
 	if [[ $all_prefixes -gt 0 ]]; then
 		check_if_installed "jq" "https://github.com/stedolan/jq"
-		# Use RIPE's API (https://stat.ripe.net/docs/data_api) to fetch prefixes
+		# Use RIPEstat Data API (https://stat.ripe.net/docs/02.data-api) to fetch prefixes
 		# seen by at least 10 RIS peers over the last 2 weeks.
 		# shellcheck disable=SC2086
 		output="$(
