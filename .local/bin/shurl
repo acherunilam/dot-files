@@ -6,8 +6,7 @@
 
 _NAME="$(command basename "$0")"
 CURL_ARGS="--connect-timeout 2 --max-time 5"
-HELP_DOC="Shorten the URL using Shlink (https://shlink.io), a self-hosted URL Shortener.
-The API key can be generate over here (https://shlink.io/documentation/api-docs/authentication).
+HELP_DOC="Shorten the URL using Shlink, a self-hosted URL Shortener.
 
 Usage:
   $_NAME [options] <url>
@@ -16,7 +15,7 @@ Options:
   -h	Print help.
 
 Environment variables:
-  URL_SHORTENER_API_KEY
+  URL_SHORTENER_API_KEY	https://shlink.io/documentation/api-docs/authentication
   URL_SHORTENER_URL"
 SKIP_HTTP_PREFIX='true'
 

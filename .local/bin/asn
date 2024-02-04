@@ -11,12 +11,16 @@ HELP_DOC="Print the AS details of an IP or ASN.
 
 Usage:
   $_NAME <ip_address>
-  $_NAME <as_number> [-p]
+  $_NAME <as_number> [-g|-p]
   $_NAME -h
 
 Options:
+  -g    List all ASNs belonging to the given ASN's ISP.
   -p    List all prefixes for the ASN.
-  -h    Print help."
+  -h    Print help.
+
+Environment Variables:
+  PEERINGDB_API_KEY	https://docs.peeringdb.com/howto/api_keys"
 
 ################################################################################
 # Helper methods.
@@ -38,6 +42,7 @@ error() {
 
 # Usage:
 #       query_cymru <domain>
+# shellcheck disable=SC2086
 query_cymru() {
 	command dig +short $DIG_ARGS TXT "$1" | command sed -E 's/"//g'
 }
@@ -57,14 +62,31 @@ query_cymru_and_append_asn_info() {
 	builtin echo "$ip_info |$asn_info"
 }
 
+# Usage:
+#		query_peeringdb <api_endpoint> <jq_op>
+# shellcheck disable=SC2086
+query_peeringdb() {
+	output="$(
+		command curl -qsS $CURL_ARGS -H "Authorization: Api-Key $PEERINGDB_API_KEY" \
+			"https://www.peeringdb.com/api/${1#/}"
+	)"
+	err_status="$(command jq -r '.meta.error // empty' <<<"$output")"
+	[[ -n "$err_status" ]] && builtin echo "[PeeringDB] $err_status" && exit 1
+	command jq -r ".${2#.}" <<<"$output"
+}
+
 ################################################################################
 # Validate input.
 ################################################################################
 
 set -o pipefail
 all_prefixes=0
-while getopts ":ph" arg; do
+as_group=0
+while getopts ":gph" arg; do
 	case $arg in
+	g) # group
+		as_group=1
+		;;
 	p) # prefixes
 		all_prefixes=1
 		;;
@@ -77,6 +99,7 @@ while getopts ":ph" arg; do
 	esac
 done
 shift $((OPTIND - 1))
+[[ "${!#}" == "-g" ]] && as_group=1 && set -- "${@:1:$#-1}"
 [[ "${!#}" == "-p" ]] && all_prefixes=1 && set -- "${@:1:$#-1}"
 
 [[ $# -eq 0 ]] && error "missing input, please pass an IP or ASN" 64             # EX_USAGE
@@ -138,6 +161,13 @@ elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
 		# shellcheck disable=SC2046
 		[[ -n "$output" ]] && builtin hash netmask 2>/dev/null &&
 			output="$(command netmask -c $(command tr '\n' ' ' <<<"$output"))"
+	elif [[ $as_group -eq 1 ]]; then
+		[[ -z "$PEERINGDB_API_KEY" ]] && error "missing environment variable, please set PEERINGDB_API_KEY" 78 # EX_CONFIG
+		asn_org="$(query_peeringdb "/org?asn=$asn" ".data[0].id")" || error "$asn_org"
+		output="$(query_peeringdb "/net?org=$asn_org" ".data[].asn" | command sort -n)" || error "$output"
+		[[ -t 1 ]] && color="always" || color="never"
+		command grep -E --color="$color" "^$asn$|$" <<<"$output"
+		exit
 	else
 		output="$(query_cymru "AS$asn.asn.cymru.com")"
 	fi
