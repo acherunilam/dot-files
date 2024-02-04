@@ -20,6 +20,7 @@ Options:
 Environment variables:
   ATLAS_CREATE_KEY	https://atlas.ripe.net/keys"
 PROBE_SEARCH_LIMIT=10000
+PROBE_COUNT_DEFAULT=10
 
 ################################################################################
 # Helper methods.
@@ -89,7 +90,7 @@ else # run traceroute
 	elif [[ "$filter_value" != "WW" ]]; then
 		error "'$filter_value' is not a valid country or ASN" 65 # EX_DATAERR
 	fi
-	probe_count="${3:-10}"
+	probe_count="${3:-$PROBE_COUNT_DEFAULT}"
 	command ripe-atlas measure traceroute "$target" \
 		--description "[traceroute] [$filter_value] $target" \
 		--from-"$filter_by" "$filter_value" \
