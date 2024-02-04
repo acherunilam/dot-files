@@ -14,6 +14,7 @@ alias mv='mv -v'
 alias rm='rm -v'
 # Shorten frequently used commands.
 alias c='cat'
+alias cnt='sort | uniq -c | sort -nr'
 alias dni='sudo dnf install -qy'
 alias dnu='sudo dnf remove -qy'
 alias g='grep -Ei'
