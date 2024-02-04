@@ -6,9 +6,7 @@
 
 _NAME="$(command basename "$0")"
 CURL_ARGS="--connect-timeout 2 --max-time 5"
-HELP_DOC="Run various RIPE Atlas (https://atlas.ripe.net/about) operations - run
-traceroute, count probes, get report, etc. The API key can be generated over
-here (https://atlas.ripe.net/keys).
+HELP_DOC="Run various RIPE Atlas operations - run traceroute, count probes, get report, etc.
 
 Usage:
   $_NAME <destination> [ww|<country>|<asn>] [<probe_count>]
@@ -20,7 +18,7 @@ Options:
   -h    Print help.
 
 Environment variables:
-  ATLAS_CREATE_KEY"
+  ATLAS_CREATE_KEY	https://atlas.ripe.net/keys"
 PROBE_SEARCH_LIMIT=10000
 
 ################################################################################
