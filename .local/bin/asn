@@ -50,10 +50,8 @@ query_cymru() {
 # Usage:
 #       query_cymru_and_append_asn_info <ip_reversed> <domain>
 query_cymru_and_append_asn_info() {
-	ip_info="$(query_cymru "$1.$2")"
-	# TODO: Add support for MOAS (https://bgp.he.net/report/multi-origin-routes).
-	[[ $(command wc -l <<<"$ip_info") -gt 1 ]] &&
-		error "MOAS not yet supported" 70 # EX_SOFTWARE
+	# Longest prefix matching in case IP is reachable through multiple prefixes.
+	ip_info="$(query_cymru "$1.$2" | command sort -V | command tail -n1)"
 	[[ -z "$ip_info" ]] && exit 1
 	asn=$(command awk '{print $1}' <<<"$ip_info")
 	asn_info="$(
