@@ -349,9 +349,18 @@ pbcopy() {
 
 # Show the public IP.
 #
+# Usage:
+#       pipp
+#
 # shellcheck disable=SC2086
 pipp() {
     local DIG_OPTS="+short +timeout=1 +retry=1 TXT o-o.myaddr.l.google.com @ns1.google.com"
     { command dig -4 $DIG_OPTS ; command dig -6 $DIG_OPTS ; } \
         | command sed 's/"//g;/^;;/d;/^$/d'
+}
+
+
+# Simplifed version of xargs.
+xarg() {
+    command xargs -P"$1" -I{} sh -c "${*:2}"
 }
