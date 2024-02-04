@@ -123,7 +123,7 @@ check_if_installed "rsync" "https://github.com/WayneD/rsync"
 
 builtin cd "$(dirname "$0")" || error "unable to cd into $(dirname "$0")"
 SOURCE=""
-EXCLUDE_FILES=""
+EXCLUDE_FILES="--exclude=README.md"
 [[ $SKIP_EXISTING == 1 ]] && OVERWRITE_SETTINGS="--ignore-existing" || OVERWRITE_SETTINGS="--backup --suffix=.bak"
 if [[ $INSTALL_ALL == 1 ]]; then
 	INSTALL_BASH=1
