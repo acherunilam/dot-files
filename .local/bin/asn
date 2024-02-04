@@ -11,12 +11,13 @@ HELP_DOC="Print the AS details of an IP or ASN.
 
 Usage:
   $_NAME <ip_address>
-  $_NAME <as_number> [-g|-p]
+  $_NAME <as_number> [-g]
+  $_NAME <as_number> [-p]...
   $_NAME -h
 
 Options:
-  -g    List all ASNs belonging to the given ASN's ISP.
-  -p    List all prefixes for the ASN.
+  -g    List all ASNs belonging to the ASN's ISP.
+  -p    List all prefixes for the ASN. Use twice to aggregate.
   -h    Print help.
 
 Environment Variables:
@@ -70,7 +71,7 @@ query_peeringdb() {
 	)"
 	err_status="$(command jq -r '.meta.error // empty' <<<"$output")"
 	[[ -n "$err_status" ]] && builtin echo "[PeeringDB] $err_status" && exit 1
-	command jq -r ".${2#.}" <<<"$output"
+	command jq -r ".${2#.} // empty" <<<"$output"
 }
 
 ################################################################################
@@ -86,7 +87,7 @@ while getopts ":gph" arg; do
 		as_group=1
 		;;
 	p) # prefixes
-		all_prefixes=1
+		all_prefixes=$((all_prefixes + 1))
 		;;
 	h) # help
 		builtin echo "$HELP_DOC" && exit
@@ -98,7 +99,8 @@ while getopts ":gph" arg; do
 done
 shift $((OPTIND - 1))
 [[ "${!#}" == "-g" ]] && as_group=1 && set -- "${@:1:$#-1}"
-[[ "${!#}" == "-p" ]] && all_prefixes=1 && set -- "${@:1:$#-1}"
+[[ "${!#}" == "-p" ]] && all_prefixes=$((all_prefixes + 1)) && set -- "${@:1:$#-1}"
+[[ "${!#}" == "-pp" ]] && all_prefixes=2 && set -- "${@:1:$#-1}"
 
 [[ $# -eq 0 ]] && error "missing input, please pass an IP or ASN" 64             # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64 # EX_USAGE
@@ -143,7 +145,7 @@ elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
 	query_cymru_and_append_asn_info "$reversed_ip" origin6.asn.cymru.com
 elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
 	asn="$(builtin echo "$input" | command sed -E 's/^asn?//g')"
-	if [[ $all_prefixes -eq 1 ]]; then
+	if [[ $all_prefixes -gt 0 ]]; then
 		check_if_installed "jq" "https://github.com/stedolan/jq"
 		# Use RIPE's API (https://stat.ripe.net/docs/data_api) to fetch prefixes
 		# seen by at least 10 RIS peers over the last 2 weeks.
@@ -152,17 +154,24 @@ elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
 			command curl -qsS $CURL_ARGS \
 				"https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS$asn" |
 				command jq -r '.data.prefixes[].prefix' |
-				command sort -n
+				command sort -V
 		)" || error "unable to reach stat.ripe.net"
-		# Combine CIDRs only if the `netmask` CLI is available.
-		# check_if_installed "netmask" "https://github.com/tlby/netmask"
-		# shellcheck disable=SC2046
-		[[ -n "$output" ]] && builtin hash netmask 2>/dev/null &&
-			output="$(command netmask -c $(command tr '\n' ' ' <<<"$output"))"
+		if [[ -n "$output" ]] && [[ $all_prefixes -gt 1 ]]; then
+			check_if_installed "netmask" "https://github.com/tlby/netmask"
+			# shellcheck disable=SC2046
+			output="$(echo "$output" | command netmask -f - | command sed -E 's/^\s+//g')"
+		fi
+		output="$(
+			builtin echo "$output" |
+				command column -tR1 -s'/' |
+				command sed -E 's/([0-9a-f.:]+)\s+([0-9]+)/\1\/\2/g'
+		)"
 	elif [[ $as_group -eq 1 ]]; then
 		[[ -z "$PEERINGDB_API_KEY" ]] && error "missing environment variable, please set PEERINGDB_API_KEY" 78 # EX_CONFIG
 		asn_org="$(query_peeringdb "/org?asn=$asn" ".data[0].id")" || error "$asn_org"
+		[[ -z "$asn_org" ]] && exit
 		output="$(query_peeringdb "/net?org=$asn_org" ".data[].asn" | command sort -n)" || error "$output"
+		[[ "$output" == "$asn" ]] && exit
 		[[ -t 1 ]] && color="always" || color="never"
 		command grep -E --color="$color" "^$asn$|$" <<<"$output"
 		exit
