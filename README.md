@@ -1,8 +1,11 @@
 # Dot Files
-My collection of dot files for Bash, Git, Vim, etc.
+My collection of dot files (Bash, Git, Vim, etc), bootstrap scripts (Fedora, macOS, etc.), and [helper binaries](./.local/bin) (IP geolocation, URL shortening, etc.).
 
 ## Setup
 ```bash
 git clone git@github.com:acherunilam/dot-files.git
-./dot-files/setup.sh --all   # backs up the existing dot files and installs the ones in this repo
+
+cd dot-files
+# Set up all dot files. Existing ones will be backed up.
+./setup.sh --all
 ```
