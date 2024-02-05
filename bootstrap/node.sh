@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-
 PKGS=(
-    fast-cli
-    http-echo-server
-    lighthouse
+	fast-cli
+	http-echo-server
+	lighthouse
 )
-npm install --global "${PKGS[@]}"
+npm install --global --quiet "${PKGS[@]}"
