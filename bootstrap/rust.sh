@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-
 PKGS=(
-    htmlq
-    imdb-rename
+	htmlq
+	imdb-rename
 )
 cargo install "${PKGS[@]}"

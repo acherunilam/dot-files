@@ -22,6 +22,7 @@ Options:
   --git               Install Git config file.
   --help              Print help.
   --mitmproxy         Install Mitmproxy config file.
+  --node              Install NPM config file.
   --python            Install Python config file.
   --readline          Install Readline config file.
   --ripgrep           Install Ripgrep config file.
@@ -80,6 +81,9 @@ for arg in "$@"; do
 	--help)
 		HELP=1
 		;;
+	--node)
+		INSTALL_NODE=1
+		;;
 	--mitmproxy)
 		INSTALL_MITMPROXY=1
 		;;
@@ -132,6 +136,7 @@ if [[ $INSTALL_ALL == 1 ]]; then
 	INSTALL_EDITLINE=1
 	INSTALL_FASD=1
 	INSTALL_GIT=1
+	INSTALL_NODE=1
 	INSTALL_MITMPROXY=1
 	INSTALL_PYTHON=1
 	INSTALL_READLINE=1
@@ -162,6 +167,11 @@ if [[ $INSTALL_FASD == 1 ]]; then
 	check_if_installed "curl" "https://github.com/curl/curl"
 	command curl $CURL_ARGS -o "$HOME/.local/bin/fasd" --create-dirs "https://raw.githubusercontent.com/clvv/fasd/master/fasd" &&
 		command chmod 755 "$HOME/.local/bin/fasd"
+fi
+if [[ $INSTALL_NODE == 1 ]]; then
+	check_if_installed "npm" "https://github.com/npm/cli"
+	command npm config set fund false
+	command npm config set prefix "$HOME/.npm-packages"
 fi
 if [[ $INSTALL_VIM == 1 ]]; then
 	check_if_installed "curl" "https://github.com/curl/curl"
