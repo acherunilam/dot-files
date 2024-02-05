@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2086
 
-
-APPS="$(command awk '{print $1}' <<< "
+APPS="$(command awk '{print $1}' <<<"
     1365531024      # 1Blocker
     1569813296      # 1Password for Safari
     937984704       # Amphetamine
