@@ -126,12 +126,12 @@ elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
 			command sed 's/::/:/g;s/:/\n/g;/^$/d' |
 			command wc -l
 	)
-	exploded_ip="$(
-		builtin echo "$input" |
-			command sed -E "s/::/:$(command yes "0:" |
-				command head -n $((8 - hextets)) |
-				command tr -d '\n')/g;s/^://g;s/:$//g"
+	[[ $hextets -eq 8 ]] && extra_zeros="" || extra_zeros="$(
+		command yes "0:" |
+			command head -n $((8 - hextets)) |
+			command tr -d '\n'
 	)"
+	exploded_ip="$(command sed -E "s/::/:$extra_zeros/g;s/^://g;s/:$//g" <<<"$input")"
 	reversed_ip="$(
 		builtin echo "$exploded_ip" |
 			command tr ':' '\n' |
