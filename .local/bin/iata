@@ -74,11 +74,14 @@ error() {
 # Validate input.
 ################################################################################
 
-verbose=0
 country=0
+verbose=0
 # shellcheck disable=SC2015
-while getopts ":ishcv" arg; do
+while getopts ":cisvh" arg; do
 	case $arg in
+	c) # country
+		country=1
+		;;
 	i) # install
 		cron_entry=$'\n\n# Update IATA/country DB.\n'"$CRON_SCHEDULE $(command realpath "$0") -s"
 		command crontab - <<<"$(command crontab -l)$cron_entry" &&
@@ -91,14 +94,11 @@ while getopts ":ishcv" arg; do
 			error "synced DB" 0 ||
 			error "sync failed"
 		;;
-	h) # help
-		builtin echo "$HELP_DOC" && exit
-		;;
-	c) # country
-		country=1
-		;;
 	v) # verbose
 		verbose=1
+		;;
+	h) # help
+		builtin echo "$HELP_DOC" && exit
 		;;
 	*)
 		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
@@ -106,15 +106,8 @@ while getopts ":ishcv" arg; do
 	esac
 done
 shift $((OPTIND - 1))
-# Allow arguments to be passed after the input.
-while [[ "${!#}" =~ ^(-c|-v)$ ]]; do
-	if [[ "${!#}" == "-c" ]]; then
-		country=1
-	elif [[ "${!#}" == "-v" ]]; then
-		verbose=1
-	fi
-	set -- "${@:1:$#-1}"
-done
+[[ "${!#}" == "-c" ]] && country=1 && set -- "${@:1:$#-1}"
+[[ "${!#}" == "-v" ]] && verbose=1 && set -- "${@:1:$#-1}"
 
 [[ $# -eq 0 ]] &&
 	error "missing input, please pass an airport code, country code, or city" 64 # EX_USAGE
