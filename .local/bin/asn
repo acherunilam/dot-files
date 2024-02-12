@@ -79,8 +79,8 @@ query_peeringdb() {
 ################################################################################
 
 set -o pipefail
-all_prefixes=0
 as_group=0
+all_prefixes=0
 while getopts ":gph" arg; do
 	case $arg in
 	g) # group
@@ -100,7 +100,7 @@ done
 shift $((OPTIND - 1))
 [[ "${!#}" == "-g" ]] && as_group=1 && set -- "${@:1:$#-1}"
 [[ "${!#}" == "-p" ]] && all_prefixes=$((all_prefixes + 1)) && set -- "${@:1:$#-1}"
-[[ "${!#}" == "-pp" ]] && all_prefixes=2 && set -- "${@:1:$#-1}"
+[[ "${!#}" =~ ^-pp+ ]] && all_prefixes=2 && set -- "${@:1:$#-1}"
 
 [[ $# -eq 0 ]] && error "missing input, please pass an IP or ASN" 64             # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64 # EX_USAGE
