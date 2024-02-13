@@ -5,8 +5,7 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-CURL_ARGS="--connect-timeout 2 --max-time 5"
-HELP_DOC="Run various RIPE Atlas operations - run traceroute, count probes, get report, etc.
+_HELP_DOC="Run various RIPE Atlas operations - run traceroute, count probes, get report, etc.
 
 Usage:
   $_NAME <destination> [ww|<country>|<asn>] [<probe_count>]
@@ -19,6 +18,7 @@ Options:
 
 Environment variables:
   ATLAS_CREATE_KEY	https://atlas.ripe.net/keys"
+CURL_ARGS="--connect-timeout 2 --max-time 5"
 PROBE_SEARCH_LIMIT=10000
 PROBE_COUNT_DEFAULT=10
 
@@ -47,10 +47,10 @@ error() {
 while getopts ":h" arg; do
 	case $arg in
 	h) # help
-		builtin echo "$HELP_DOC" && exit
+		builtin echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done

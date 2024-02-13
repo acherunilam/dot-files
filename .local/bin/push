@@ -5,8 +5,7 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-CURL_ARGS="--connect-timeout 2 --max-time 5"
-HELP_DOC="Send a push notification using Pushover, a push notification service.
+_HELP_DOC="Send a push notification using Pushover, a push notification service.
 
 Usage:
   $_NAME [options] <text_message>
@@ -18,6 +17,7 @@ Options:
 Environment variables:
   PUSHOVER_USER		https://pushover.net
   PUSHOVER_TOKEN	https://pushover.net/apps/build"
+CURL_ARGS="--connect-timeout 2 --max-time 5"
 
 ################################################################################
 # Helper methods.
@@ -42,10 +42,10 @@ while getopts ":ph" arg; do
 		priority=1
 		;;
 	h) # help
-		builtin echo "$HELP_DOC" && exit
+		builtin echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done

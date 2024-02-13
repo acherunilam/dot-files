@@ -5,10 +5,7 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
-CURL_ARGS="--connect-timeout 2 --max-time 30"
-DB_PATH="$HOME/.local/share/iata"
-HELP_DOC="Print the details of the IATA airport code or country code.
+_HELP_DOC="Print the details of the IATA airport code or country code.
 
 Usage:
   $_NAME <airport_code> [-v]
@@ -24,6 +21,9 @@ Options:
   -i    Install a cron job to periodically update the DB.
   -s    Sync the local DB to the latest version.
   -h    Print help."
+CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
+CURL_ARGS="--connect-timeout 2 --max-time 30"
+DB_PATH="$HOME/.local/share/iata"
 
 ################################################################################
 # Helper methods.
@@ -98,10 +98,10 @@ while getopts ":cisvh" arg; do
 		verbose=1
 		;;
 	h) # help
-		builtin echo "$HELP_DOC" && exit
+		builtin echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
