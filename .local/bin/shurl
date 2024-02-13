@@ -5,8 +5,7 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-CURL_ARGS="--connect-timeout 2 --max-time 5"
-HELP_DOC="Shorten the URL using Shlink, a self-hosted URL Shortener.
+_HELP_DOC="Shorten the URL using Shlink, a self-hosted URL Shortener.
 
 Usage:
   $_NAME [options] <url>
@@ -17,6 +16,7 @@ Options:
 Environment variables:
   URL_SHORTENER_API_KEY	https://shlink.io/documentation/api-docs/authentication
   URL_SHORTENER_URL"
+CURL_ARGS="--connect-timeout 2 --max-time 5"
 SKIP_HTTP_PREFIX='true'
 
 ################################################################################
@@ -52,10 +52,10 @@ pbcopy() {
 while getopts ":h" arg; do
 	case $arg in
 	h) # help
-		builtin echo "$HELP_DOC" && exit
+		builtin echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done

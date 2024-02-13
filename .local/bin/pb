@@ -5,8 +5,7 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-CURL_ARGS="--connect-timeout 2 --max-time 5"
-HELP_DOC="Upload text to @mkaczanowski's Pastebin, a self-hosted pastebin. If no
+_HELP_DOC="Upload text to @mkaczanowski's Pastebin, a self-hosted pastebin. If no
 input is passed, then the contents of the clipboard will be used.
 
 Usage:
@@ -20,6 +19,7 @@ Options:
 Environment variables:
   PASTEBIN_AUTH_BASIC
   PASTEBIN_URL"
+CURL_ARGS="--connect-timeout 2 --max-time 5"
 SKIP_HTTP_PREFIX='true'
 
 ################################################################################
@@ -58,10 +58,10 @@ while getopts ":bh" arg; do
 		curl_query="?burn=true"
 		;;
 	h) # help
-		builtin echo "$HELP_DOC" && exit
+		builtin echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done

@@ -5,9 +5,7 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-CURL_ARGS="--connect-timeout 2 --max-time 30"
-DIG_ARGS=""
-HELP_DOC="Print the AS details of an IP or ASN.
+_HELP_DOC="Print the AS details of an IP or ASN.
 
 Usage:
   $_NAME <ip_address>
@@ -22,6 +20,8 @@ Options:
 
 Environment Variables:
   PEERINGDB_API_KEY	https://docs.peeringdb.com/howto/api_keys"
+CURL_ARGS="--connect-timeout 2 --max-time 30"
+DIG_ARGS=""
 
 ################################################################################
 # Helper methods.
@@ -90,10 +90,10 @@ while getopts ":gph" arg; do
 		all_prefixes=$((all_prefixes + 1))
 		;;
 	h) # help
-		builtin echo "$HELP_DOC" && exit
+		builtin echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
@@ -135,7 +135,7 @@ elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
 	reversed_ip="$(
 		builtin echo "$exploded_ip" |
 			command tr ':' '\n' |
-			while read -r line; do printf "%04x\n" "0x$line" 2>/dev/null; done |
+			while read -r line; do builtin printf "%04x\n" "0x$line" 2>/dev/null; done |
 			command tac |
 			command rev |
 			command sed -E 's/./&\./g' |
@@ -159,7 +159,7 @@ elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
 		if [[ -n "$output" ]] && [[ $all_prefixes -gt 1 ]]; then
 			check_if_installed "netmask" "https://github.com/tlby/netmask"
 			# shellcheck disable=SC2046
-			output="$(echo "$output" | command netmask -f - | command sed -E 's/^\s+//g')"
+			output="$(builtin echo "$output" | command netmask -f - | command sed -E 's/^\s+//g')"
 		fi
 		output="$(
 			builtin echo "$output" |
@@ -180,5 +180,5 @@ elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
 	fi
 	[[ -n "$output" ]] && builtin echo "$output"
 else
-	error "invalid input, please pass an IP or ASN" 65 # EX_DATAERR
+	error "invalid input, please pass an IP or ASN" 64 # EX_USAGE
 fi
