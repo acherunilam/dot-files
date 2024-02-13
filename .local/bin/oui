@@ -5,10 +5,7 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
-CURL_ARGS="--connect-timeout 2 --max-time 30"
-DB_PATH="$HOME/.local/share/oui/oui.txt"
-HELP_DOC="Look up vendor by Organizationally Unique Identifier (OUI).
+_HELP_DOC="Look up vendor by Organizationally Unique Identifier (OUI).
 
 Usage:
   $_NAME [options] <oui>
@@ -17,6 +14,9 @@ Options:
   -i    Install a cron job to periodically update the DB.
   -s    Sync the local DB to the latest version.
   -h    Print help."
+CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
+CURL_ARGS="--connect-timeout 2 --max-time 30"
+DB_PATH="$HOME/.local/share/oui/oui.txt"
 
 ################################################################################
 # Helper methods.
@@ -56,10 +56,10 @@ while getopts ":ish" arg; do
 			error "sync failed"
 		;;
 	h) # help
-		builtin echo "$HELP_DOC" && exit
+		builtin echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done

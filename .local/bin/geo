@@ -5,10 +5,7 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
-CURL_ARGS="--connect-timeout 2 --max-time 30"
-DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
-HELP_DOC="Print geolocation information for an IP address.
+_HELP_DOC="Print geolocation information for an IP address.
 
 Usage:
   $_NAME <ip_address>
@@ -23,6 +20,9 @@ Options:
 
 Environment variables:
   IPINFO_API_TOKEN	https://ipinfo.io/account/token"
+CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
+CURL_ARGS="--connect-timeout 2 --max-time 30"
+DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
 
 ################################################################################
 # Helper methods.
@@ -78,10 +78,10 @@ while getopts ":ish" arg; do
 			error "sync failed"
 		;;
 	h) # help
-		builtin echo "$HELP_DOC" && exit
+		builtin echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
