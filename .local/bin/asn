@@ -9,13 +9,13 @@ _HELP_DOC="Print the AS details of an IP or ASN.
 
 Usage:
   $_NAME <ip_address>
-  $_NAME <as_number> [-g]
   $_NAME <as_number> [-p]...
+  $_NAME <as_number> [-s]
   $_NAME -h
 
 Options:
-  -g    List all ASNs belonging to the ASN's ISP.
   -p    List all prefixes for the ASN. Use twice to aggregate.
+  -s    List all sibling ASNs owned by the same org.
   -h    Print help.
 
 Environment Variables:
@@ -79,15 +79,15 @@ query_peeringdb() {
 ################################################################################
 
 set -o pipefail
-as_group=0
+sibling_asn=0
 all_prefixes=0
-while getopts ":gph" arg; do
+while getopts ":psh" arg; do
 	case $arg in
-	g) # group
-		as_group=1
-		;;
 	p) # prefixes
 		all_prefixes=$((all_prefixes + 1))
+		;;
+	s) # sibling
+		sibling_asn=1
 		;;
 	h) # help
 		builtin echo "$_HELP_DOC" && exit
@@ -98,9 +98,9 @@ while getopts ":gph" arg; do
 	esac
 done
 shift $((OPTIND - 1))
-[[ "${!#}" == "-g" ]] && as_group=1 && set -- "${@:1:$#-1}"
 [[ "${!#}" == "-p" ]] && all_prefixes=$((all_prefixes + 1)) && set -- "${@:1:$#-1}"
 [[ "${!#}" =~ ^-pp+ ]] && all_prefixes=2 && set -- "${@:1:$#-1}"
+[[ "${!#}" == "-s" ]] && sibling_asn=1 && set -- "${@:1:$#-1}"
 
 [[ $# -eq 0 ]] && error "missing input, please pass an IP or ASN" 64             # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64 # EX_USAGE
@@ -166,7 +166,7 @@ elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
 				command column -tR1 -s'/' |
 				command sed -E 's/([0-9a-f.:]+)\s+([0-9]+)/\1\/\2/g'
 		)"
-	elif [[ $as_group -eq 1 ]]; then
+	elif [[ $sibling_asn -eq 1 ]]; then
 		[[ -z "$PEERINGDB_API_KEY" ]] && error "missing environment variable, please set PEERINGDB_API_KEY" 78 # EX_CONFIG
 		asn_org="$(query_peeringdb "/org?asn=$asn" ".data[0].id")" || error "$asn_org"
 		[[ -z "$asn_org" ]] && exit

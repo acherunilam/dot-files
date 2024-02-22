@@ -8,12 +8,12 @@ Uses [Team Cymru IP to ASN Mapping Service](https://www.team-cymru.com/ip-asn-ma
 asn 8.8.8.8
 # Print the AS info for the ASN.
 asn AS15169
-# List all ASNs belonging to the ASN's ISP.
-asn 32934 -g
 # List all prefixes announced for the ASN.
 asn 7014 -p
 # List all prefixes announced for the ASN and aggregate them.
 asn 7014 -pp
+# List all sibling ASNs owned by the same org.
+asn 32934 -s
 ```
 
 ## Geolocation
@@ -50,7 +50,7 @@ ripe 8.8.8.8 IN
 ripe 8.8.8.8 AS7018 100
 # Count the active probes in India.
 ripe IN
-# Count the active probes in AT&T. 
+# Count the active probes in AT&T.
 ripe AS7018
 # Get the report for measurement #67353375.
 ripe 67353375
