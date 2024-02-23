@@ -46,7 +46,6 @@ alias bc='sed "s/^/scale=2;/g" | bc -l'                     # floating-point pre
 alias mkdir='mkdir -p'                                      # create parent directory if it doesn't exist
 alias pls='sudo $(history -p \!\!)'                         # re-execute last command with elevated privileges
 alias rsync='rsync -avzhPLK --partial-dir=.rsync-partial'   # enable compression and partial synchronization
-alias sed='sed -E'                                          # extended regex
 # Colorize output.
 alias diff='diff --color'
 alias ls='ls --color=auto'
