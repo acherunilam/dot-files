@@ -10,6 +10,7 @@ PKGS=(
 	hashid
 	Pillow
 	ripe.atlas.tools
+	torf-cli
 	xkcdpass
 )
 pip3 install -Uq "${PKGS[@]}"
