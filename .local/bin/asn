@@ -127,7 +127,7 @@ elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
 			command wc -l
 	)
 	[[ $hextets -eq 8 ]] && extra_zeros="" || extra_zeros="$(
-		command yes "0:" |
+		command yes "0:" 2>/dev/null |
 			command head -n $((8 - hextets)) |
 			command tr -d '\n'
 	)"
