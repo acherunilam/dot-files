@@ -23,5 +23,6 @@ APPS="$(command awk '{print $1}' <<<"
     1376402589      # StopTheMadness
     1482490089      # Tampermonkey
     1451685025      # WireGuard
+    497799835       # Xcode
 ")"
 mas install $APPS
