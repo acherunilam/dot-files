@@ -95,6 +95,7 @@ CLI_APPS=(
 	p7zip
 	pandoc
 	parallel
+	pdfgrep
 	pdftk-java
 	php
 	pip-completion
