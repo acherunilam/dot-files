@@ -142,6 +142,7 @@ CLI_APPS=(
 	winetricks
 	xq
 	xz
+	ykman
 	youtube-dl
 	yq
 	zbar
