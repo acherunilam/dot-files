@@ -198,7 +198,6 @@ GUI_APPS=(
 	monodraw
 	notion
 	obs
-	obs-virtualcam
 	pixelsnap
 	qlvideo
 	rar
