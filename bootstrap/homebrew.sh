@@ -187,6 +187,7 @@ GUI_APPS=(
 	handbrake
 	istat-menus
 	iterm2
+	keycastr
 	kindle
 	knockknock
 	little-snitch
