@@ -80,7 +80,7 @@ response="$(
 		--json '{"longUrl": "'"$url"'", "findIfExists": true}' ||
 		error "unable to reach $URL_SHORTENER_URL"
 )"
-command grep -q '"type":"INVALID_API_KEY"' <<<"$response" &&
+command grep -q '"title":"Invalid API key"' <<<"$response" &&
 	error "invalid API key, please check the environment variable URL_SHORTENER_API_KEY"
 response="$(echo "$response" | command tr ',' '\n' | command sed -En 's/.*"shortUrl":"(.*)"/\1/p')"
 [[ -z "$response" ]] && error "unknown error, missing repsonse"
