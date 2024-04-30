@@ -61,6 +61,7 @@ CLI_APPS=(
 	icoutils
 	iftop
 	imagemagick
+	img2pdf
 	innoextract
 	iodine
 	iperf3
