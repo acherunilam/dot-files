@@ -128,6 +128,7 @@ CLI_APPS=(
 	tmux
 	tor
 	torsocks
+	translate-shell
 	trash
 	tree
 	tvnamer
