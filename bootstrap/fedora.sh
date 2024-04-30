@@ -130,6 +130,7 @@ CLI_APPS=(
 	thefuck
 	tmux
 	tor
+	translate-shell
 	transmission-common
 	tree
 	unrar
