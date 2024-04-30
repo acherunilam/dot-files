@@ -33,6 +33,7 @@ alias p='pbcopy'                                            # copy contents to c
 alias py='python3'
 alias s='sort'
 alias t='tail -n'
+alias trans='trans -brief -no-warn -'
 alias u='uniq'
 alias x='extract'                                           # extract the contents of an archive
 # Inspect the system.
