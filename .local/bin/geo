@@ -101,6 +101,8 @@ if [[ -p /dev/stdin ]]; then # local MMDB
 	[[ ! -f "$DB_PATH" ]] && download_mmdb
 	command mmdbctl read "$DB_PATH" </dev/stdin | command jq -c '.'
 else # external API
+	# If a prefix is passed, only the first IP is considered.
+	ip_addr="$(command sed -E 's/\/[0-9]+$//g' <<<"$ip_addr")"
 	# shellcheck disable=SC2086
 	command curl -qsS $CURL_ARGS "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN" |
 		command jq -e '.' || error "unable to reach ipinfo.io"
