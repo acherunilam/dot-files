@@ -126,8 +126,8 @@ elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
 			command sed 's/::/:/g;s/:/\n/g;/^$/d' |
 			command wc -l
 	)
-	[[ $hextets -eq 8 ]] && extra_zeros="" || extra_zeros="$(
-		command yes "0:" 2>/dev/null |
+	[[ $hextets -ge 8 ]] && extra_zeros="" || extra_zeros="$(
+		command yes "0:" |
 			command head -n $((8 - hextets)) |
 			command tr -d '\n'
 	)"
