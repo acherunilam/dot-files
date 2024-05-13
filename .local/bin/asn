@@ -74,6 +74,16 @@ query_peeringdb() {
 	command jq -r ".${2#.} // empty" <<<"$output"
 }
 
+# Usage:
+#		cat <file> | tac
+tac() {
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		command tail -r
+	else
+		command tac
+	fi
+}
+
 ################################################################################
 # Validate input.
 ################################################################################
@@ -115,7 +125,7 @@ if [[ $input =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then # IPv4
 	reversed_ip="$(
 		builtin echo "$input" |
 			command tr '.' '\n' |
-			command tac |
+			tac |
 			command tr '\n' '.' |
 			command sed 's/\.$//g'
 	)"
@@ -136,7 +146,7 @@ elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
 		builtin echo "$exploded_ip" |
 			command tr ':' '\n' |
 			while read -r line; do builtin printf "%04x\n" "0x$line" 2>/dev/null; done |
-			command tac |
+			tac |
 			command rev |
 			command sed -E 's/./&\./g' |
 			command tr -d '\n' |
