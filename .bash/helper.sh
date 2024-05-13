@@ -275,8 +275,8 @@ ipp() {
 				command grep -vE ' (127|169.254|::1|fe80::)' |
 				command grep 'inet' -B1 |
 				command grep -v '^--$' |
-				command sed -E 's/(.*): flags=.*/\1/g;s/\s+inet6?\ (\S*).*/+\1/g' |
-				command sed ':a;$!N;s/\n+/ /;ta;P;D'
+				command sed -E 's/(.*): flags=.*/\1/g;s/[[:space:]]+inet6?\ ([^[:space:]]*).*/+\1/g' |
+				command perl -p0e 's/\n\+/ /g'
 		)"
 	fi
 	echo -e "$result" | command column -t
