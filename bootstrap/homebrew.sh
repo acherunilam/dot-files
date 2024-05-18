@@ -219,7 +219,7 @@ GUI_APPS=(
 	visual-studio-code
 	vlc
 	waves-central
-	whatsapp
+	whatsapp@beta
 	wifi-explorer-pro
 	wifispoof
 	wireshark
