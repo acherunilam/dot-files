@@ -28,19 +28,37 @@ Options:
   --ripgrep           Install Ripgrep config file.
   --screen            Install Screen config file.
   --skip-existing     Skip installing the dot file if it already exists locally.
-  --ssh               Install Ssh config file.
+  --ssh               Install SSH config file.
   --tmux              Install Tmux config file.
   --vim               Install Vim config files."
 TARGET_DIR="$HOME"
+PKG_LINUX="npm=nodejs"
+PKG_OSX="npm=node"
 
 ################################################################################
 # Helper methods.
 ################################################################################
 
 # Usage:
-#       check_if_installed <binary>
-check_if_installed() {
-	builtin hash "$1" 2>/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
+#       install_if_missing <binary>
+install_if_missing() {
+	if ! builtin hash "$1" 2>/dev/null; then
+		[[ "$OSTYPE" == "darwin"* ]] && PKG_OS="$PKG_OSX" || PKG_OS="$PKG_LINUX"
+		pkg="$(
+			builtin echo "$PKG_OS" |
+				command sed 's/,/\n/g;s/=/ /g' |
+				command grep "^$1 " |
+				command awk '{print $2}'
+		)"
+		[[ -z "$pkg" ]] && pkg="$1"
+		if [[ "$OSTYPE" == "darwin"* ]]; then
+			brew install --quiet "$pkg"
+		else
+			sudo dnf install --quiet --assumeyes "$pkg"
+		fi
+		# shellcheck disable=SC2181
+		[[ $? -ne 0 ]] && error "unable to install $1"
+	fi
 }
 
 # Usage:
@@ -54,6 +72,9 @@ error() {
 ################################################################################
 # Validate input.
 ################################################################################
+
+install_if_missing "git"
+install_if_missing "rsync"
 
 for arg in "$@"; do
 	case "$arg" in
@@ -117,15 +138,26 @@ for arg in "$@"; do
 	esac
 done
 
-[[ $# -eq 0 ]] && builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	! command -v brew >/dev/null &&
+		env INTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+if [[ -p /dev/stdin ]]; then
+	[[ $# -eq 0 ]] && INSTALL_ALL=1
+	TMP_DIR="$(command mktemp -d)"
+	command git clone https://github.com/acherunilam/dot-files "$TMP_DIR"
+	builtin cd "$TMP_DIR" || error "unable to cd into $TMP_DIR"
+else
+	[[ $# -eq 0 ]] && builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+	builtin cd "$(dirname "$0")" || error "unable to cd into $(dirname "$0")"
+fi
 [[ $HELP == 1 ]] && builtin echo "$HELP_DOC" && exit
-check_if_installed "rsync" "https://github.com/WayneD/rsync"
 
 ################################################################################
 # Execute.
 ################################################################################
 
-builtin cd "$(dirname "$0")" || error "unable to cd into $(dirname "$0")"
 SOURCE=""
 EXCLUDE_FILES="--exclude=README.md"
 [[ $SKIP_EXISTING == 1 ]] && OVERWRITE_SETTINGS="--ignore-existing" || OVERWRITE_SETTINGS="--backup --suffix=.bak"
@@ -163,19 +195,21 @@ fi
 [[ "$OSTYPE" != "darwin"* ]] && EXCLUDE_FILES+=" --exclude=mac.sh"
 command rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
 
+if [[ $INSTALL_BASH == 1 ]] && [[ "$OSTYPE" == "darwin"* ]]; then
+	command brew list | command grep ^bash$ >/dev/null || command brew install bash
+fi
 if [[ $INSTALL_FASD == 1 ]]; then
-	check_if_installed "curl" "https://github.com/curl/curl"
+	install_if_missing "curl"
 	command curl $CURL_ARGS -o "$HOME/.local/bin/fasd" --create-dirs "https://raw.githubusercontent.com/clvv/fasd/master/fasd" &&
 		command chmod 755 "$HOME/.local/bin/fasd"
 fi
 if [[ $INSTALL_NODE == 1 ]]; then
-	check_if_installed "npm" "https://github.com/npm/cli"
-	command npm config set fund false
-	command npm config set prefix "$HOME/.npm-packages"
+	command sed -Ei '/^(fund|prefix)=/d' "$HOME/.npmrc" 2>/dev/null
+	builtin echo -e "fund=false\nprefix=$HOME/.npm-packages" >>"$HOME/.npmrc"
 fi
 if [[ $INSTALL_VIM == 1 ]]; then
-	check_if_installed "curl" "https://github.com/curl/curl"
-	check_if_installed "vim" "https://github.com/vim/vim"
+	install_if_missing "curl"
+	install_if_missing "vim"
 	command curl $CURL_ARGS -o "$TARGET_DIR/.vim/autoload/plug.vim" --create-dirs \
 		"https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
 	command vim +PlugInstall +qall
