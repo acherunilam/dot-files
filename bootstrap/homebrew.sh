@@ -199,6 +199,7 @@ GUI_APPS=(
 	meta
 	metasploit
 	monodraw
+	native-access
 	notion
 	obs
 	pixelsnap
