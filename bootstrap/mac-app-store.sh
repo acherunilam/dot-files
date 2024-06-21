@@ -20,7 +20,7 @@ APPS="$(command awk '{print $1}' <<<"
     1451552749      # Open In Webmail
     409201541       # Pages
     1529448980      # Reeder
-    1376402589      # StopTheMadness
+    6471380298      # StopTheMadness Pro
     1482490089      # Tampermonkey
     1451685025      # WireGuard
     497799835       # Xcode
