@@ -40,6 +40,7 @@ CLI_APPS=(
 	fd
 	ffmpeg
 	ffms2
+	findomain
 	findutils
 	flac
 	fzf
