@@ -66,7 +66,7 @@ check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
 # Execute.
 ################################################################################
 
-if [[ "$target" =~ ^[a-z]{2}$ || "$target" =~ ^[0-9]{1,5}$ ]]; then # count probes
+if [[ "$target" =~ ^[a-z]{2}$ || "$target" =~ ^[0-9]{1,10}$ ]]; then # count probes
 	[[ "$target" =~ ^[a-z]{2}$ ]] && filter_by="country" || filter_by="asn"
 	command ripe-atlas probe-search --limit "$PROBE_SEARCH_LIMIT" --"$filter_by" \
 		"$target" --status 1 --ids-only |
