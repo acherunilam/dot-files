@@ -188,6 +188,7 @@ GUI_APPS=(
 	google-cloud-sdk
 	guitar-pro
 	handbrake
+	inkscape
 	istat-menus
 	iterm2
 	keycastr
