@@ -212,6 +212,7 @@ GUI_APPS=(
 	roli-connect
 	secretive
 	soundsource
+	spitfire-audio
 	spotify
 	steam
 	synthesia
