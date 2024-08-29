@@ -171,6 +171,7 @@ GUI_APPS=(
 	burp-suite
 	calibre
 	charles
+	chatgpt
 	chrome-remote-desktop-host
 	chromedriver
 	cleanshot
