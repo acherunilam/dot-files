@@ -210,6 +210,7 @@ GUI_APPS=(
 	rectangle-pro
 	roli-connect
 	secretive
+	soundsource
 	spotify
 	steam
 	synthesia
