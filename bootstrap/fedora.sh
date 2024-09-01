@@ -158,7 +158,6 @@ sudo dnf install -y "${GUI_APPS[@]}"
 # Configure services.
 # Auto-start on booting up.
 SERVICES=(
-	containerd
 	dnf-automatic.timer
 	docker
 	et
