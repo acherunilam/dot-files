@@ -241,7 +241,21 @@ mdownload() {
 # Usage:
 #       ocr <file>
 ocr() {
+    if [[ -z "$1" ]] ; then
+        local tmp_dir="$(command mktemp -d)"
+        osascript -e "tell application \"System Events\" to write (the clipboard \
+            as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
+            {name:\"screenshot.png\"})" 2>/dev/null
+        if [[ -s "$tmp_dir/screenshot.png" ]] ; then
+            set -- "$tmp_dir/screenshot.png"
+        else
+            error "no image found in clipboard" ; return
+        fi
+    elif ! [[ -r "$1" ]] ; then
+        error "unable to open file '$1'" ; return
+    fi
     command tesseract "$1" - --tessdata-dir "$HOMEBREW_PREFIX/share/tessdata"
+    [[ -n "$tmp_dir" ]] && command rm "$tmp_dir/screenshot.png"
 }
 
 
