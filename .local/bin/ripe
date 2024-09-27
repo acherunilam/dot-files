@@ -10,7 +10,7 @@ _HELP_DOC="Run various RIPE Atlas operations - run traceroute, count probes, get
 Usage:
   $_NAME <destination> [ww|<country>|<asn>] [<probe_count>]
   $_NAME (<country>|<asn>)
-  $_NAME <measurement_id>
+  $_NAME <measurement_link>
   $_NAME -h
 
 Options:
@@ -72,8 +72,8 @@ if [[ "$target" =~ ^[a-z]{2}$ || "$target" =~ ^[0-9]{1,10}$ ]]; then # count pro
 		"$target" --status 1 --ids-only |
 		command wc -l |
 		command awk '{print $1}'
-elif [[ "$target" =~ ^[0-9]+$ ]]; then # fetch report
-	# shellcheck disable=SC2086
+elif [[ "$target" =~ ^https://atlas.ripe.net/measurements/[0-9]+/?$ ]]; then # fetch report
+	target="$(command sed -E 's/.*measurements\/([0-9]+)\/?/\1/g' <<<"$target")"
 	command curl -qsS $CURL_ARGS -H "Authorization: Key $ATLAS_CREATE_KEY" \
 		"https://atlas.ripe.net/api/v2/measurements/$target/results" |
 		command jq -e '.' ||
@@ -98,3 +98,5 @@ else # run traceroute
 		--resolve-on-probe \
 		--no-report
 fi
+
+# https://atlas.ripe.net/measurements/79403500/
