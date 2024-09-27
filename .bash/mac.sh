@@ -254,7 +254,7 @@ ocr() {
     elif ! [[ -r "$1" ]] ; then
         error "unable to open file '$1'" ; return
     fi
-    command tesseract "$1" - --tessdata-dir "$HOMEBREW_PREFIX/share/tessdata"
+    command tesseract "$1" - --tessdata-dir "$HOMEBREW_PREFIX/share/tessdata" 2>/dev/null
     [[ -n "$tmp_dir" ]] && command rm "$tmp_dir/screenshot.png"
 }
 
