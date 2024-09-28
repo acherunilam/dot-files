@@ -126,6 +126,7 @@ CLI_APPS=(
 	shfmt
 	socat
 	speedtest-cli
+	tailscale
 	telnet
 	thefuck
 	tmux
