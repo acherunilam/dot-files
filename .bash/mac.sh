@@ -71,7 +71,6 @@ alias lck='pmset displaysleepnow'                                           # sw
 alias loc='mdfind -name 2>/dev/null'                                        # search globally by file name
 alias shred='gshred -vfzu -n 10'                                            # securely erase the file
 alias slp='pmset sleepnow'                                                  # go to sleep
-alias qr='zbarimg --quiet --raw'                                            # scan QR code
 
 
 # Shutdown or reboot immediately.
@@ -365,6 +364,30 @@ pngpaste() {
     else
         error "no image found in clipboard" ; return
     fi
+}
+
+
+# Scan QR code from an image file using Zbar (https://github.com/mchehab/zbar),
+# an open-source bar code reader.
+#
+# Usage:
+#       qr <file>
+qr() {
+    if [[ -z "$1" ]] ; then
+        local tmp_dir="$(command mktemp -d)"
+        osascript -e "tell application \"System Events\" to write (the clipboard \
+            as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
+            {name:\"screenshot.png\"})" 2>/dev/null
+        if [[ -s "$tmp_dir/screenshot.png" ]] ; then
+            set -- "$tmp_dir/screenshot.png"
+        else
+            error "no image found in clipboard" ; return
+        fi
+    elif ! [[ -r "$1" ]] ; then
+        error "unable to open file '$1'" ; return
+    fi
+    command zbarimg --quiet --raw "$1"
+    [[ -n "$tmp_dir" ]] && command rm "$tmp_dir/screenshot.png"
 }
 
 
