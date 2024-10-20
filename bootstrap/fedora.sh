@@ -62,6 +62,7 @@ CLI_APPS=(
 	bc
 	bcc
 	bind-utils
+	binwalk
 	calibre
 	cargo
 	cmake
