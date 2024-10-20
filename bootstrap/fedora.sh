@@ -135,6 +135,7 @@ CLI_APPS=(
 	translate-shell
 	transmission-common
 	tree
+	uboot-tools
 	unrar
 	vim
 	wireguard-tools

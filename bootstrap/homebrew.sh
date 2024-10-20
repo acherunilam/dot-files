@@ -223,6 +223,7 @@ GUI_APPS=(
 	the-unarchiver
 	tor-browser
 	tuxera-ntfs
+	u-boot-tools
 	visual-studio-code
 	vlc
 	waves-central
