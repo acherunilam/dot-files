@@ -20,6 +20,7 @@ CLI_APPS=(
 	bash-completion@2
 	bat
 	bind
+	binwalk
 	blueutil
 	brightness
 	cabextract
