@@ -10,7 +10,7 @@ if command ps -e | command grep -Eq "Xorg|wayland"; then
 else
 	HAS_GUI=0
 fi
-if command lspci | grep -iq nvidia; then
+if command lspci 2>/dev/null | grep -iq nvidia; then
 	HAS_NVIDIA=1
 else
 	HAS_NVIDIA=0
