@@ -5,10 +5,15 @@
 ################################################################################
 
 # TODO: Ensure that it's not running as root.
-if command ps -e | command grep -Eq "Xorg|wayland" ; then
+if command ps -e | command grep -Eq "Xorg|wayland"; then
 	HAS_GUI=1
 else
 	HAS_GUI=0
+fi
+if command lspci | grep -iq nvidia; then
+	HAS_NVIDIA=1
+else
+	HAS_NVIDIA=0
 fi
 
 ################################################################################
@@ -154,9 +159,10 @@ sudo usermod -aG docker "$USER"
 # GUI
 ################################################################################
 
-# 1Password
-sudo rpm --import https://downloads.1password.com/linux/keys/1password.asc
-sudo tee "/etc/yum.repos.d/1password.repo" >/dev/null <<EOF
+if [[ $HAS_GUI -eq 1 ]]; then
+	# 1Password
+	sudo rpm --import https://downloads.1password.com/linux/keys/1password.asc
+	sudo tee "/etc/yum.repos.d/1password.repo" >/dev/null <<EOF
 [1password]
 name="1Password Stable Channel"
 baseurl=https://downloads.1password.com/linux/rpm/stable/x86_64
@@ -166,25 +172,43 @@ repo_gpgcheck=1
 gpgkey=https://downloads.1password.com/linux/keys/1password.asc
 EOF
 
-GUI_APPS=(
-	1password
-	akmod-nvidia
-	gnome-tweaks
-	google-chrome-stable
-	kitty
-	piper
-	vlc
-	wireshark
-	xorg-x11-drv-nvidia-cuda
-)
-sudo dnf install -y "${GUI_APPS[@]}"
+	GUI_APPS=(
+		1password
+		gnome-tweaks
+		google-chrome-stable
+		kitty
+		piper
+		vlc
+		wireshark
+	)
+	sudo dnf install -y "${GUI_APPS[@]}"
+fi
+
+################################################################################
+# Nvidia
+################################################################################
+
+if [[ $HAS_NVIDIA -eq 1 ]]; then
+	NVIDIA_APPS=(
+		akmod-nvidia
+		libva-utils
+		nvidia-vaapi-driver
+		vdpauinfo
+		xorg-x11-drv-nvidia
+		xorg-x11-drv-nvidia-cuda
+		xorg-x11-drv-nvidia-cuda-libs
+	)
+	sudo dnf install -y "${NVIDIA_APPS[@]}"
+	# To account for a bug where autoremove might wrongly remove the package.
+	sudo dnf mark install akmod-nvidia
+fi
 
 ################################################################################
 # Config
 ################################################################################
 
 # sudo hostnamectl set-hostname "$HOST_NAME"
-if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc/sudoers ; then
+if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc/sudoers; then
 	sudo sed -i 's/^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/g' /etc/sudoers
 	sudo sed -i 's/^%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+ALL/# %wheel ALL=(ALL) ALL/g' /etc/sudoers
 fi
