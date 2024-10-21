@@ -5,6 +5,7 @@ APPS="$(command awk '{print $1}' <<<"
     1365531024      # 1Blocker
     1569813296      # 1Password for Safari
     937984704       # Amphetamine
+    996933579       # AirTurn Manager
     424390742       # Compressor
     424389933       # Final Cut Pro
     363738376       # forScore
@@ -19,10 +20,10 @@ APPS="$(command awk '{print $1}' <<<"
     409203825       # Numbers
     1451552749      # Open In Webmail
     409201541       # Pages
+    639968404       # Parcel
     1529448980      # Reeder
     6471380298      # StopTheMadness Pro
     1482490089      # Tampermonkey
-    1451685025      # WireGuard
     497799835       # Xcode
 ")"
 mas install $APPS
