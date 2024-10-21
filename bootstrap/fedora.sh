@@ -1,60 +1,53 @@
 #!/usr/bin/env bash
 
-# Load third-party repositories.
-# 1Password
-sudo tee "/etc/yum.repos.d/1password.repo" >/dev/null <<EOF
-[1password]
-name="1Password Stable Channel"
-baseurl=https://downloads.1password.com/linux/rpm/stable/x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://downloads.1password.com/linux/keys/1password.asc
-EOF
+################################################################################
+# Global variables
+################################################################################
+
+if command ps -e | command grep -Eq "Xorg|wayland" ; then
+	HAS_GUI=1
+else
+	HAS_GUI=0
+fi
+
+################################################################################
+# CLI
+################################################################################
+
 # Docker
-sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/docker-ce.repo"
 sudo rpm --import "https://download.docker.com/linux/fedora/gpg"
+sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/docker-ce.repo"
 # Google Cloud CLI
+sudo rpm --import "https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
 sudo tee -a /etc/yum.repos.d/google-cloud-sdk.repo <<EOF
 [google-cloud-cli]
 name=Google Cloud CLI
-baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el8-x86_64
+baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
-       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-EOF
-# Google Chrome
-sudo tee "/etc/yum.repos.d/google-chrome.repo" >/dev/null <<EOF
-[google-chrome]
-name=Google Chrome
-baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
 # RPM Fusion
 for repo in free nonfree; do
 	sudo dnf install -y "https://mirrors.rpmfusion.org/$repo/fedora/rpmfusion-$repo-release-$(rpm -E %fedora).noarch.rpm"
 done
 # Tailscale
-sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 sudo rpm --import "https://pkgs.tailscale.com/stable/fedora/repo.gpg"
+sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 # TICK stack
-sudo tee /etc/yum.repos.d/influxdb.repo <<EOF
-[influxdb]
+sudo rpm --import "https://repos.influxdata.com/influxdata-archive.key"
+sudo tee /etc/yum.repos.d/influxdata.repo <<EOF
+[influxdata]
 name = InfluxData Repository - Stable
 baseurl = https://repos.influxdata.com/stable/\$basearch/main
 enabled = 1
 gpgcheck = 1
-gpgkey = https://repos.influxdata.com/influxdata-archive_compat.key
+gpgkey = https://repos.influxdata.com/influxdata-archive.key
 EOF
-# Update all installed packages.
+
 sudo dnf upgrade -y
 
-# Install CLI apps.
 CLI_APPS=(
 	aircrack-ng
 	aria2
@@ -144,7 +137,34 @@ CLI_APPS=(
 )
 sudo dnf install -y "${CLI_APPS[@]}"
 
-# Install GUI apps.
+SERVICES=(
+	dnf-automatic.timer
+	docker
+	et
+	fwupd-refresh.timer
+	rsyslog
+	tailscaled
+	tor
+)
+sudo systemctl enable --now "${SERVICES[@]}"
+sudo usermod -aG docker "$USER"
+
+################################################################################
+# GUI
+################################################################################
+
+# 1Password
+sudo rpm --import https://downloads.1password.com/linux/keys/1password.asc
+sudo tee "/etc/yum.repos.d/1password.repo" >/dev/null <<EOF
+[1password]
+name="1Password Stable Channel"
+baseurl=https://downloads.1password.com/linux/rpm/stable/x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://downloads.1password.com/linux/keys/1password.asc
+EOF
+
 GUI_APPS=(
 	1password
 	akmod-nvidia
@@ -158,16 +178,6 @@ GUI_APPS=(
 )
 sudo dnf install -y "${GUI_APPS[@]}"
 
-# Configure services.
-# Auto-start on booting up.
-SERVICES=(
-	dnf-automatic.timer
-	docker
-	et
-	rsyslog
-	tailscaled
-	tor
-)
-sudo systemctl enable --now "${SERVICES[@]}"
-# Interact with Docker daemon without sudo.
-sudo usermod -aG docker "$USER"
+################################################################################
+# Config
+################################################################################
