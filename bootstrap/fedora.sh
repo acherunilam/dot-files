@@ -10,7 +10,7 @@ if command ps -e | command grep -Eq "Xorg|wayland"; then
 else
 	HAS_GUI=0
 fi
-if command lspci 2>/dev/null | grep -iq nvidia; then
+if command lspci 2>/dev/null | command grep -iq nvidia; then
 	HAS_NVIDIA=1
 else
 	HAS_NVIDIA=0
@@ -212,7 +212,7 @@ if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc
 fi
 sudo systemctl disable firewalld
 sudo dnf remove cockpit*
-sudo command sed -i 's/^PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
+sudo sed -i 's/^PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
 echo "PrintLastLog No" | sudo tee /etc/ssh/sshd_config.d/silent-login.conf
 sudo systemctl daemon-reload
 sudo systemctl reload sshd
