@@ -4,6 +4,7 @@
 # Global variables
 ################################################################################
 
+# TODO: Ensure that it's not running as root.
 if command ps -e | command grep -Eq "Xorg|wayland" ; then
 	HAS_GUI=1
 else
@@ -181,3 +182,17 @@ sudo dnf install -y "${GUI_APPS[@]}"
 ################################################################################
 # Config
 ################################################################################
+
+# sudo hostnamectl set-hostname "$HOST_NAME"
+if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc/sudoers ; then
+	sudo sed -i 's/^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/g' /etc/sudoers
+	sudo sed -i 's/^%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+ALL/# %wheel ALL=(ALL) ALL/g' /etc/sudoers
+fi
+sudo systemctl disable firewalld
+sudo dnf remove cockpit*
+sudo command sed -i 's/^PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
+echo "PrintLastLog No" | sudo tee /etc/ssh/sshd_config.d/silent-login.conf
+sudo systemctl daemon-reload
+sudo systemctl reload sshd
+# sudo useradd -m -G wheel "$USER_NAME"
+# sudo passwd -d root
