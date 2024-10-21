@@ -32,8 +32,6 @@ Options:
   --tmux              Install Tmux config file.
   --vim               Install Vim config files."
 TARGET_DIR="$HOME"
-PKG_LINUX="npm=nodejs"
-PKG_OSX="npm=node"
 
 ################################################################################
 # Helper methods
@@ -43,18 +41,10 @@ PKG_OSX="npm=node"
 #       install_if_missing <binary>
 install_if_missing() {
 	if ! builtin hash "$1" 2>/dev/null; then
-		[[ "$OSTYPE" == "darwin"* ]] && PKG_OS="$PKG_OSX" || PKG_OS="$PKG_LINUX"
-		pkg="$(
-			builtin echo "$PKG_OS" |
-				command sed 's/,/\n/g;s/=/ /g' |
-				command grep "^$1 " |
-				command awk '{print $2}'
-		)"
-		[[ -z "$pkg" ]] && pkg="$1"
 		if [[ "$OSTYPE" == "darwin"* ]]; then
-			brew install --quiet "$pkg"
+			brew install "$1"
 		else
-			sudo dnf install --quiet --assumeyes "$pkg"
+			sudo dnf install --assumeyes "$1"
 		fi
 		# shellcheck disable=SC2181
 		[[ $? -ne 0 ]] && error "unable to install $1"
