@@ -120,7 +120,6 @@ CLI_APPS=(
 	qrencode
 	rclone
 	ripgrep
-	rsyslog
 	rust
 	ShellCheck
 	shfmt
@@ -148,7 +147,6 @@ SERVICES=(
 	docker
 	et
 	fwupd-refresh.timer
-	rsyslog
 	tailscaled
 	tor
 )
