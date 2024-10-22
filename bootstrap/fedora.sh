@@ -4,6 +4,7 @@
 # Global variables
 ################################################################################
 
+_NAME=$(command basename "$0")
 if command ps -e | command grep -Eq "Xorg|wayland"; then
 	HAS_GUI=1
 else
@@ -14,18 +15,85 @@ if command lspci 2>/dev/null | command grep -iq nvidia; then
 else
 	HAS_NVIDIA=0
 fi
+if [[ $UID -eq 0 ]]; then
+	HELP_ARG_USER=""
+else
+	HELP_ARG_USER=" [default: $USER]"
+fi
+HELP_DOC="Bootstrap machine.
+
+Usage:
+  $_NAME [options]
+
+Options:
+  --help                    Print help.
+  --hostname <hostname>     Hostname to set the machine to. Optional.
+  --keys <file>             SSH authorized keys file. Optional.
+  --user <user>             Which user to initialize$HELP_ARG_USER."
+
+################################################################################
+# Helper methods
+################################################################################
+
+# Usage:
+#       error <message> [<exit_code>]
+error() {
+	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	echo "$_NAME: $1" >&"$std_err_or_out"
+	exit "${2:-1}"
+}
+
+################################################################################
+# Validate input
+################################################################################
+
+for arg in "$@"; do
+	case "$arg" in
+	--help)
+		echo "$HELP_DOC" && exit
+		;;
+	--hostname)
+		HOST_NAME="$arg"
+		;;
+	--keys)
+		KEYS_FILE="$arg"
+		[[ ! -r "$KEYS_FILE" ]] && error "file '$KEYS_FILE' not found"
+		[[ ! -s "$KEYS_FILE" ]] && error "file '$KEYS_FILE' empty"
+		;;
+	--user)
+		USER_NAME="$arg"
+		;;
+	*)
+		echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		;;
+	esac
+done
+if [[ $UID -eq 0 ]]; then
+	[[ -z "$USER_NAME" ]] && error "please pass the user name with --user"
+else
+	[[ -z "$USER_NAME" ]] && USER_NAME="$USER"
+fi
 
 ################################################################################
 # Config before
 ################################################################################
 
 # Host
-# sudo hostnamectl set-hostname "$HOST_NAME"
-# sudo useradd -m -G wheel "$USER_NAME"
-# sudo passwd -d root
+[[ -n "$HOST_NAME" ]] && sudo hostnamectl set-hostname "$HOST_NAME"
+[[ -n "$USER_NAME" ]] && sudo useradd -m -G wheel "$USER_NAME"
 if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc/sudoers; then
-	sudo sed -i 's/^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/g' /etc/sudoers
+	sudo sed -i 's/^#\+[[:space:]]*%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/g' /etc/sudoers
 	sudo sed -i 's/^%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+ALL/# %wheel ALL=(ALL) ALL/g' /etc/sudoers
+fi
+[[ "$USER_NAME" != "$USER" ]] && command su "$USER_NAME"
+if [[ -n "$KEYS_FILE" ]]; then
+	command chmod 700 "$HOME"
+	command mkdir "$HOME/.ssh"
+	command chmod 700 "$HOME/.ssh"
+	sudo cp "$KEYS_FILE" "$HOME/.ssh/authorized_keys"
+	sudo chown "$USER_NAME": "$HOME/.ssh/authorized_keys"
+	command chmod 600 "$HOME/.ssh/authorized_keys"
+	sudo passwd -d root
 fi
 
 # Cockpit
@@ -283,7 +351,11 @@ sudo systemctl reload docker
 echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
-printf '#!/bin/sh\n\nethtool -K %s rx-udp-gro-forwarding on rx-gro-list off \n' "$(ip -o route get 8.8.8.8 | cut -f 5 -d " ")" | sudo tee /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
+printf '#!/bin/sh\n\nethtool -K %s rx-udp-gro-forwarding on rx-gro-list off \n' "$(
+	command ip -o route get 8.8.8.8 |
+		command cut -f 5 -d " "
+)" |
+	sudo tee /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
 sudo chmod 755 /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
 sudo /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
 if grep -q '^FLAGS=""' /etc/default/tailscaled; then
