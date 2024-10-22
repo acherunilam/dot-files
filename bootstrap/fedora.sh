@@ -90,7 +90,7 @@ sudo rpm --import "https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 sudo tee /etc/yum.repos.d/google-cloud-sdk.repo <<EOF
 [google-cloud-cli]
 name=Google Cloud CLI
-baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64
+baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-\$basearch
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0
@@ -224,7 +224,7 @@ if [[ $HAS_GUI -eq 1 ]]; then
 	sudo tee "/etc/yum.repos.d/1password.repo" >/dev/null <<EOF
 [1password]
 name="1Password Stable Channel"
-baseurl=https://downloads.1password.com/linux/rpm/stable/x86_64
+baseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch
 enabled=1
 gpgcheck=1
 repo_gpgcheck=1
