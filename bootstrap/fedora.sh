@@ -16,7 +16,7 @@ else
 fi
 
 ################################################################################
-# Config
+# Config before
 ################################################################################
 
 # Host
@@ -76,22 +76,6 @@ net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
 EOF
 sudo sysctl -p /etc/sysctl.d/98-tcp.conf
-
-# Docker
-[[ $UID -ne 0 ]] && sudo usermod -aG docker "$USER"
-[[ ! -r /etc/docker/daemon.json ]] && echo "{}" | sudo tee /etc/docker/daemon.json
-command jq '.["metrics-addr"] = "0.0.0.0:9323"' /etc/docker/daemon.json | sudo tee /etc/docker/daemon.json
-sudo systemctl reload docker
-# Tailscale
-echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
-echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
-sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
-printf '#!/bin/sh\n\nethtool -K %s rx-udp-gro-forwarding on rx-gro-list off \n' "$(ip -o route get 8.8.8.8 | cut -f 5 -d " ")" | sudo tee /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
-sudo chmod 755 /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
-sudo /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
-if grep -q '^FLAGS=""' /etc/default/tailscaled; then
-	sudo sed -i 's/^FLAGS=""/FLAGS="--debug=0.0.0.0:1234"/g' /etc/default/tailscaled
-fi
 
 ################################################################################
 # CLI
@@ -275,4 +259,24 @@ if [[ $HAS_NVIDIA -eq 1 ]]; then
 	sudo dnf install -y "${NVIDIA_APPS[@]}"
 	# To account for a bug where autoremove might wrongly remove the package.
 	sudo dnf mark install akmod-nvidia
+fi
+
+################################################################################
+# Config after
+################################################################################
+
+# Docker
+[[ $UID -ne 0 ]] && sudo usermod -aG docker "$USER"
+[[ ! -r /etc/docker/daemon.json ]] && echo "{}" | sudo tee /etc/docker/daemon.json
+command jq '.["metrics-addr"] = "0.0.0.0:9323"' /etc/docker/daemon.json | sudo tee /etc/docker/daemon.json
+sudo systemctl reload docker
+# Tailscale
+echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
+printf '#!/bin/sh\n\nethtool -K %s rx-udp-gro-forwarding on rx-gro-list off \n' "$(ip -o route get 8.8.8.8 | cut -f 5 -d " ")" | sudo tee /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
+sudo chmod 755 /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
+sudo /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
+if grep -q '^FLAGS=""' /etc/default/tailscaled; then
+	sudo sed -i 's/^FLAGS=""/FLAGS="--debug=0.0.0.0:1234"/g' /etc/default/tailscaled
 fi
