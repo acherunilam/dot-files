@@ -218,3 +218,9 @@ sudo systemctl daemon-reload
 sudo systemctl reload sshd
 # sudo useradd -m -G wheel "$USER_NAME"
 # sudo passwd -d root
+echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
+printf '#!/bin/sh\n\nethtool -K %s rx-udp-gro-forwarding on rx-gro-list off \n' "$(ip -o route get 8.8.8.8 | cut -f 5 -d " ")" | sudo tee /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
+sudo chmod 755 /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
+sudo /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
