@@ -140,7 +140,7 @@ CLI_APPS=(
 	wireshark-cli
 	xq
 )
-sudo dnf install -y "${CLI_APPS[@]}"
+sudo dnf install -y "${CLI_APPS[@]}" --allowerasing
 
 SERVICES=(
 	dnf-automatic.timer
