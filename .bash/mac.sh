@@ -127,8 +127,7 @@ clean() {
 #       clear-history
 #
 # Environment variables:
-#       export CLEAR_HISTORY_BASH_KEYWORDS="<keyword1>:<keyword2>"
-#       export CLEAR_HISTORY_FASD_PATH="<path1>:<path2>"
+#       export CLEAR_HISTORY_KEYWORDS="<keyword1>:<keyword2>"
 #
 # shellcheck disable=SC2015
 clear-history() {
@@ -157,20 +156,18 @@ clear-history() {
             bar item \"File\" of menu bar 1 of process \"VLC\"" 1>/dev/null \
         && killall "VLC" \
         || error "unable to clear recent VLC files"
-    # Clear Bash history lines containing any of the specified keywords.
-    if [[ -n "$CLEAR_HISTORY_BASH_KEYWORDS" ]] ; then
+    if [[ -n "$CLEAR_HISTORY_KEYWORDS" ]] ; then
+        # Clear Bash history lines containing any of the specified keywords.
         local hist_file="${HISTFILE:-$HOME/.bash_history}"
         local tmp_file="$(command mktemp)"
-        echo -e "${CLEAR_HISTORY_BASH_KEYWORDS//:/\\n}" | while read -r k ; do
+        echo -e "${CLEAR_HISTORY_KEYWORDS//:/\\n}" | while read -r k ; do
             command tail -r "$hist_file" \
                     | command sed "/${k//\//\\/}/,+1d" \
                     | command tail -r >"$tmp_file" \
                 && command cp -f "$tmp_file" "$hist_file"
         done || error "unable to clear Bash history keywords"
-    fi
-    # Clear Fasd paths containing any of the specified paths.
-    if [[ -n "$CLEAR_HISTORY_FASD_PATH" ]] ; then
-        echo -e "${CLEAR_HISTORY_FASD_PATH//:/\\n}" | while read -r p ; do
+        # Clear Fasd paths containing any of the specified paths.
+        echo -e "${CLEAR_HISTORY_KEYWORDS//:/\\n}" | while read -r p ; do
             command sed -i "/${p//\//\\/}/d" "${_FASD_DATA:-$HOME/.fasd}"
         done || error "unable to clear Fasd paths"
     fi
