@@ -270,3 +270,11 @@ APP_STORE_APPS="$(command awk '{print $1}' <<<"
 ")"
 # shellcheck disable=SC2086
 mas install $APP_STORE_APPS
+
+################################################################################
+# Languages
+################################################################################
+
+for lang in golang node python rust; do
+	command bash "$(command dirname "$0")/lib/$lang.sh"
+done
