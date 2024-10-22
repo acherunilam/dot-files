@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PKGS=(
+MODULES=(
 	github.com/cemulus/crt
 	github.com/danielgatis/imgcat
 	github.com/hakluke/haktrails
@@ -9,4 +9,6 @@ PKGS=(
 	github.com/mikefarah/yq/v4
 	mvdan.cc/sh/v3/cmd/shfmt
 )
-go install "${PKGS[@]/%/@latest}"
+for module in "${MODULES[@]}"; do
+	go install "${module/%/@latest}"
+done
