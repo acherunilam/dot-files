@@ -13,4 +13,4 @@ PKGS=(
 	torf-cli
 	xkcdpass
 )
-pip3 install -Uq "${PKGS[@]}"
+pip3 install -U "${PKGS[@]}"

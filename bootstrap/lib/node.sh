@@ -5,4 +5,4 @@ PKGS=(
 	http-echo-server
 	lighthouse
 )
-npm install --global --quiet "${PKGS[@]}"
+npm install --global "${PKGS[@]}"
