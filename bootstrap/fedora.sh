@@ -29,7 +29,7 @@ if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc
 fi
 
 # Cockpit
-sudo dnf remove cockpit*
+sudo dnf remove -y cockpit*
 # DNF
 if ! grep -q '^max_parallel_downloads' /etc/dnf/dnf.conf; then
 	echo "max_parallel_downloads=20" | sudo tee -a /etc/dnf/dnf.conf
