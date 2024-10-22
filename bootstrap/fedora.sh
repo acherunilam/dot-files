@@ -53,6 +53,7 @@ Cache=yes
 #ResolveUnicastSingleLabel=no
 #StaleRetentionSec=0
 EOF
+sudo systemctl daemon-reload
 sudo systemctl restart systemd-resolved
 # Firewall
 sudo systemctl disable firewalld
