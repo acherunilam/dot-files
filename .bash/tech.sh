@@ -128,26 +128,6 @@ EOF
 	command rm "$script_file"
 }
 
-# Open a DNS tunnel using Iodine (https://github.com/yarrick/iodine).
-#
-# Environment variables:
-#       export TUNNEL_DNS_DOMAIN="<server-domain>"
-#       export TUNNEL_DNS_PASSWORD="<password>"
-tunnel-dns() {
-	validate-env "TUNNEL_DNS_DOMAIN" "TUNNEL_DNS_PASSWORD" || return
-	sudo iodine -f -P "$TUNNEL_DNS_PASSWORD" "$TUNNEL_DNS_DOMAIN"
-}
-
-# Open an ICMP tunnel using Hans (https://github.com/friedrich/hans).
-#
-# Environment variables:
-#       export TUNNEL_ICMP_IP="<server-ip>"
-#       export TUNNEL_ICMP_PASSWORD="<password>"
-tunnel-icmp() {
-	validate-env "TUNNEL_ICMP_IP" "TUNNEL_ICMP_PASSWORD" || return
-	sudo hans -f -c "$TUNNEL_ICMP_IP" -p "$TUNNEL_ICMP_PASSWORD"
-}
-
 # Switch Tailscale exit node.
 #
 # Usage:
