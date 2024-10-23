@@ -196,6 +196,7 @@ CLI_APPS=(
 	binwalk
 	calibre
 	cargo
+	certbot
 	cmake
 	containerd.io
 	cronie
@@ -247,6 +248,7 @@ CLI_APPS=(
 	prename
 	pv
 	pwgen
+	python3-certbot-dns-google
 	python3-devel
 	python3-pip
 	qrencode
