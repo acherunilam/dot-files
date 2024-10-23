@@ -239,6 +239,7 @@ CLI_APPS=(
 	nmap
 	nodejs
 	oathtool
+	openssl
 	p7zip
 	p7zip-plugins
 	parallel
