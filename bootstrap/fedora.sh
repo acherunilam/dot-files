@@ -30,6 +30,7 @@ Options:
   --hostname <hostname>     Hostname to set the machine to. Optional.
   --keys <file>             SSH authorized keys file. Optional.
   --user <user>             Which user to initialize$HELP_ARG_USER."
+TIME_ZONE="America/Los_Angeles"
 
 ################################################################################
 # Helper methods
@@ -95,6 +96,7 @@ if [[ -n "$KEYS_FILE" ]]; then
 	command chmod 600 "$HOME/.ssh/authorized_keys"
 	sudo passwd -d root
 fi
+sudo timedatectl set-timezone "$TIME_ZONE"
 
 # Cockpit
 sudo dnf remove -y cockpit*
