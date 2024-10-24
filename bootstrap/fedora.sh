@@ -238,6 +238,7 @@ CLI_APPS=(
 	ngrep
 	nmap
 	nodejs
+	nut
 	oathtool
 	openssl
 	p7zip
