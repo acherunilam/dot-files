@@ -126,7 +126,7 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl restart systemd-resolved
 # Firewall
-sudo systemctl disable firewalld
+sudo systemctl disable --now firewalld
 # SSH
 sudo sed -i 's/^PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
 echo "PrintLastLog No" | sudo tee /etc/ssh/sshd_config.d/silent-login.conf
