@@ -228,6 +228,7 @@ CLI_APPS=(
 	mediainfo
 	miller
 	moreutils
+	mtd-utils-ubi
 	mtr
 	ncdu
 	netcat
