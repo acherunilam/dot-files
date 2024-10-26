@@ -173,16 +173,6 @@ done
 # Tailscale
 sudo rpm --import "https://pkgs.tailscale.com/stable/fedora/repo.gpg"
 sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
-# TICK stack
-sudo rpm --import "https://repos.influxdata.com/influxdata-archive.key"
-sudo tee /etc/yum.repos.d/influxdata.repo <<EOF
-[influxdata]
-name = InfluxData Repository - Stable
-baseurl = https://repos.influxdata.com/stable/\$basearch/main
-enabled = 1
-gpgcheck = 1
-gpgkey = https://repos.influxdata.com/influxdata-archive.key
-EOF
 
 sudo dnf upgrade -y
 
