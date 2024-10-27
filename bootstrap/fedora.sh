@@ -252,6 +252,7 @@ CLI_APPS=(
 	shfmt
 	socat
 	speedtest-cli
+	sshpass
 	tailscale
 	telnet
 	thefuck
