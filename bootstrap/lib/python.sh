@@ -11,6 +11,7 @@ PKGS=(
 	Pillow
 	ripe.atlas.tools
 	torf-cli
+	tvnamer
 	xkcdpass
 )
 pip3 install -U "${PKGS[@]}"
