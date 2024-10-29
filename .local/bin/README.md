@@ -75,7 +75,7 @@ push "Script has finished"
 ```
 
 ## Pastebin
-Uses [@mkaczanowski's Pastebin](https://github.com/mkaczanowski/pastebin), a self-hosted pastebin.
+Uses [Pastebin](https://github.com/mkaczanowski/pastebin), a self-hosted pastebin.
 ```bash
 # Upload file to pastebin.
 cat file.txt | pb
@@ -84,7 +84,7 @@ pb -b
 ```
 
 ## URL Shortener
-Uses [Shlink](https://shlink.io), a self-hosted URL Shortener.
+Uses [Chhoto URL](https://github.com/SinTan1729/chhoto-url), a self-hosted URL Shortener.
 ```bash
 # Shorten the URL.
 shurl https://en.wikipedia.org/wiki/Computer_network
