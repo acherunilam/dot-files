@@ -220,6 +220,7 @@ CLI_APPS=(
 	moreutils
 	mtd-utils-ubi
 	mtr
+	mysql
 	ncdu
 	netcat
 	nethogs
