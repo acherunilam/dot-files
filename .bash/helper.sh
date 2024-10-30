@@ -366,7 +366,7 @@ pst() {
 	local paste_arg=""
 	[[ "$OSTYPE" == "darwin"* ]] && paste_arg="-"
 	local paste_delimiter="${1:0:1}"
-	command paste -s -d "${paste_delimiter:-\0}" "$paste_arg"
+	command paste -s -d "${paste_delimiter:-\0}" $paste_arg
 }
 
 # Simplifed version of xargs.
