@@ -26,29 +26,29 @@ alias gl='git lg'
 alias gs='git status'
 alias h='head -n'
 alias l='less'
-alias la='ls -A'                                            # list all files
-alias lc='wc -l'                                            # count the number of lines
-alias ld='ls -d */ 2>/dev/null'                             # list only directories
-alias lh='ls -d .??* 2>/dev/null'                           # list only hidden files
-alias ll='ls -alFh'                                         # list all files with their details
-alias p='pbcopy'                                            # copy contents to clipboard
+alias la='ls -A'                  # list all files
+alias lc='wc -l'                  # count the number of lines
+alias ld='ls -d */ 2>/dev/null'   # list only directories
+alias lh='ls -d .??* 2>/dev/null' # list only hidden files
+alias ll='ls -alFh'               # list all files with their details
+alias p='pbcopy'                  # copy contents to clipboard
 alias py='python3'
 alias s='sort -b'
 alias t='tail -n'
 alias trans='trans -brief -no-warn -'
 alias u='uniq'
-alias x='extract'                                           # extract the contents of an archive
+alias x='extract' # extract the contents of an archive
 # Inspect the system.
-alias jcl='journalctl -f -u'                                # tail systemd service logs
-alias osv='cat /etc/system-release'                         # print the Linux distribution
-alias perf='sudo perf'                                      # performance analysis
-alias port='sudo ss -tulpn'                                 # show all listening ports
-alias scl='sudo systemctl'                                  # systemd inspection
+alias jcl='journalctl -f -u'        # tail systemd service logs
+alias osv='cat /etc/system-release' # print the Linux distribution
+alias perf='sudo perf'              # performance analysis
+alias port='sudo ss -tulpn'         # show all listening ports
+alias scl='sudo systemctl'          # systemd inspection
 # Run with specific settings.
-alias bc='sed "s/^/scale=2;/g" | bc -l'                     # floating-point precision of 2
-alias mkdir='mkdir -p'                                      # create parent directory if it doesn't exist
-alias pls='sudo $(history -p \!\!)'                         # re-execute last command with elevated privileges
-alias rsync='rsync -avhPLK --partial-dir=.rsync-partial'    # enable partial synchronization
+alias bc='sed "s/^/scale=2;/g" | bc -l'                  # floating-point precision of 2
+alias mkdir='mkdir -p'                                   # create parent directory if it doesn't exist
+alias pls='sudo $(history -p \!\!)'                      # re-execute last command with elevated privileges
+alias rsync='rsync -avhPLK --partial-dir=.rsync-partial' # enable partial synchronization
 # Colorize output.
 alias diff='diff --color'
 alias ls='ls --color=auto'
@@ -356,6 +356,15 @@ pipp() {
 		command dig -6 $DIG_OPTS
 	} |
 		command sed 's/"//g;/^;;/d;/^$/d'
+}
+
+# Convert numbers to percentage.
+#
+# Usage:
+#		cat <numbers.txt> | pct
+pct() {
+	command awk '{ total += $1; numbers[NR] = $1 } END { for (i = 1; i <= NR; i++) printf "%d %.2f%%\n", numbers[i], (numbers[i] / total) * 100 }' |
+		command column -t
 }
 
 # Combine the lines from STDIN with an optional delimiter.
