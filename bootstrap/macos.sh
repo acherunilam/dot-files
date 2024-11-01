@@ -233,6 +233,7 @@ GUI_APPS=(
 	vlc
 	waves-central
 	whatsapp
+	whisky
 	wifi-explorer-pro
 	wifispoof
 	wireshark
