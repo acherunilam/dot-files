@@ -212,6 +212,7 @@ CLI_APPS=(
 	hydra
 	iftop
 	ImageMagick
+	innoextract
 	iperf3
 	libnotify
 	lynis
