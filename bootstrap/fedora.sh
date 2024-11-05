@@ -79,25 +79,6 @@ fi
 # Config before
 ################################################################################
 
-# Host
-[[ -n "$HOST_NAME" ]] && sudo hostnamectl set-hostname "$HOST_NAME"
-[[ -n "$USER_NAME" ]] && sudo useradd -m -G wheel "$USER_NAME"
-if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc/sudoers; then
-	sudo sed -i 's/^#\+[[:space:]]*%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/g' /etc/sudoers
-	sudo sed -i 's/^%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+ALL/# %wheel ALL=(ALL) ALL/g' /etc/sudoers
-fi
-[[ "$USER_NAME" != "$USER" ]] && command su "$USER_NAME"
-if [[ -n "$KEYS_FILE" ]]; then
-	command chmod 700 "$HOME"
-	command mkdir "$HOME/.ssh"
-	command chmod 700 "$HOME/.ssh"
-	sudo cp "$KEYS_FILE" "$HOME/.ssh/authorized_keys"
-	sudo chown "$USER_NAME": "$HOME/.ssh/authorized_keys"
-	command chmod 600 "$HOME/.ssh/authorized_keys"
-	sudo passwd -d root
-fi
-sudo timedatectl set-timezone "$TIME_ZONE"
-
 # Cockpit
 sudo dnf remove -y cockpit*
 # DNF
@@ -125,10 +106,36 @@ Cache=yes
 EOF
 sudo systemctl daemon-reload
 sudo systemctl restart systemd-resolved
+# Expand root partition
+free_space="$(
+	sudo vgs --rows |
+		command grep 'VFree' |
+		command awk '{print $2}'
+)"
+if [[ "$free_space" != "0" ]]; then
+	logical_volume="$(
+		command df -h |
+			command grep /$ |
+			command awk '{print $1}'
+	)"
+	sudo lvextend -r -l +100%FREE "$logical_volume"
+fi
 # Firewall
 sudo systemctl disable --now firewalld
+# Hostname
+[[ -n "$HOST_NAME" ]] && sudo hostnamectl set-hostname "$HOST_NAME"
 # SSH
-sudo sed -i 's/^PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
+[[ "$USER_NAME" != "$USER" ]] && command su "$USER_NAME"
+if [[ -n "$KEYS_FILE" ]]; then
+	command chmod 700 "$HOME"
+	command mkdir "$HOME/.ssh"
+	command chmod 700 "$HOME/.ssh"
+	sudo cp "$KEYS_FILE" "$HOME/.ssh/authorized_keys"
+	sudo chown "$USER_NAME": "$HOME/.ssh/authorized_keys"
+	command chmod 600 "$HOME/.ssh/authorized_keys"
+	sudo passwd -d root
+	sudo sed -i 's/^PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
+fi
 echo "PrintLastLog No" | sudo tee /etc/ssh/sshd_config.d/silent-login.conf
 sudo systemctl daemon-reload
 sudo systemctl reload sshd
@@ -147,6 +154,14 @@ net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
 EOF
 sudo sysctl -p /etc/sysctl.d/98-tcp.conf
+# Time zone
+sudo timedatectl set-timezone "$TIME_ZONE"
+# User
+[[ -n "$USER_NAME" ]] && sudo useradd -m -G wheel "$USER_NAME"
+if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc/sudoers; then
+	sudo sed -i 's/^#\+[[:space:]]*%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/g' /etc/sudoers
+	sudo sed -i 's/^%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+ALL/# %wheel ALL=(ALL) ALL/g' /etc/sudoers
+fi
 
 ################################################################################
 # CLI
