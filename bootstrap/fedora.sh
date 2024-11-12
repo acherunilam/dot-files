@@ -202,6 +202,7 @@ CLI_APPS=(
 	calibre
 	cargo
 	certbot
+	cksfv
 	cmake
 	containerd.io
 	cronie
