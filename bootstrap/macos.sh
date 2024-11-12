@@ -131,7 +131,6 @@ CLI_APPS=(
 	translate-shell
 	trash
 	tree
-	tvnamer
 	uni
 	util-linux
 	vapoursynth

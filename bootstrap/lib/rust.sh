@@ -2,6 +2,5 @@
 
 PKGS=(
 	htmlq
-	imdb-rename
 )
 cargo install "${PKGS[@]}"
