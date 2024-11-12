@@ -38,7 +38,6 @@ CLI_APPS=(
 	ettercap
 	exiftool
 	expect
-	fasd
 	fd
 	ffmpeg
 	ffms2
@@ -112,7 +111,7 @@ CLI_APPS=(
 	rename
 	restic
 	ripgrep
-	rustup-init
+	rustup
 	shellcheck
 	shfmt
 	socat
@@ -212,7 +211,6 @@ GUI_APPS=(
 	qlvideo
 	rar
 	rectangle-pro
-	roli-connect
 	secretive
 	soundsource
 	spitfire-audio
