@@ -6,9 +6,6 @@
 
 TAPS=(
 	owasp-amass/amass
-	denji/nginx
-	homebrew/autoupdate
-	homebrew/cask-drivers
 )
 for tap in "${TAPS[@]}"; do
 	brew tap "$tap"
@@ -89,7 +86,6 @@ CLI_APPS=(
 	nethogs
 	netmask
 	newt
-	nginx-full
 	ngrep
 	nmap
 	node
