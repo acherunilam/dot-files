@@ -56,7 +56,6 @@ CLI_APPS=(
 	go
 	handbrake
 	hivemq/mqtt-cli/mqtt-cli
-	hping
 	htmlq
 	htop
 	hydra
@@ -132,6 +131,7 @@ CLI_APPS=(
 	translate-shell
 	trash
 	tree
+	u-boot-tools
 	uni
 	util-linux
 	vapoursynth
@@ -223,7 +223,6 @@ GUI_APPS=(
 	the-unarchiver
 	tor-browser
 	tuxera-ntfs
-	u-boot-tools
 	visual-studio-code
 	vlc
 	waves-central
