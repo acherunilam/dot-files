@@ -145,8 +145,8 @@ CLI_APPS=(
 	xq
 	xz
 	ykman
-	youtube-dl
 	yq
+	yt-dlp
 	zbar
 	zsh
 	zsh-completions
