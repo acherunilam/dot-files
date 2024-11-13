@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ################################################################################
-# Config
+# Config before
 ################################################################################
 
 if ! sudo grep -q "^$USER ALL=(ALL) NOPASSWD: ALL" /etc/sudoers; then
@@ -15,6 +15,7 @@ fi
 ################################################################################
 
 TAPS=(
+	domt4/autoupdate
 	owasp-amass/amass
 )
 for tap in "${TAPS[@]}"; do
@@ -280,3 +281,11 @@ mas install $APP_STORE_APPS
 for lang in golang node python rust; do
 	command bash "$(command dirname "$0")/lib/$lang.sh"
 done
+
+################################################################################
+# Config after
+################################################################################
+
+if ! command brew autoupdate status 2>/dev/null | command grep -q 'installed and running'; then
+	command mkdir -p ~/Library/LaunchAgents && command brew autoupdate start --upgrade
+fi
