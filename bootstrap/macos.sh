@@ -200,6 +200,7 @@ GUI_APPS=(
 	google-cloud-sdk
 	guitar-pro
 	handbrake
+	ilok-license-manager
 	inkscape
 	istat-menus
 	iterm2
