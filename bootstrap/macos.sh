@@ -192,6 +192,10 @@ GUI_APPS=(
 	discord
 	docker
 	dropbox
+	elgato-control-center
+	fabfilter-pro-c
+	fabfilter-pro-q
+	fabfilter-pro-r
 	fantastical
 	firefox
 	garmin-basecamp
@@ -201,9 +205,11 @@ GUI_APPS=(
 	guitar-pro
 	handbrake
 	ilok-license-manager
+	imaging-edge
 	inkscape
 	istat-menus
 	iterm2
+	izotope-product-portal
 	keycastr
 	kindle
 	loopback
