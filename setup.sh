@@ -42,7 +42,7 @@ TARGET_DIR="$HOME"
 install_if_missing() {
 	if ! builtin hash "$1" 2>/dev/null; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
-			brew install "$1"
+			command brew install "$1"
 		else
 			sudo dnf install --assumeyes "$1"
 		fi
@@ -62,6 +62,8 @@ error() {
 ################################################################################
 # Validate input
 ################################################################################
+
+export PATH="/opt/homebrew/bin:$PATH"
 
 install_if_missing "git"
 install_if_missing "rsync"
