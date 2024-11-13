@@ -197,8 +197,6 @@ GUI_APPS=(
 	keycastr
 	kindle
 	knockknock
-	little-snitch
-	logitech-g-hub
 	loopback
 	messenger
 	meta
