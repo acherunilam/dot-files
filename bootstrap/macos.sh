@@ -230,7 +230,6 @@ GUI_APPS=(
 	textual
 	the-unarchiver
 	tor-browser
-	tuxera-ntfs
 	visual-studio-code
 	vlc
 	waves-central
