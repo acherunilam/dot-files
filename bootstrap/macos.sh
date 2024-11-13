@@ -206,7 +206,6 @@ GUI_APPS=(
 	iterm2
 	keycastr
 	kindle
-	knockknock
 	loopback
 	messenger
 	meta
