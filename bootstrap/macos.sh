@@ -287,6 +287,9 @@ done
 # Config after
 ################################################################################
 
+# Homebrew
 if ! command brew autoupdate status 2>/dev/null | command grep -q 'installed and running'; then
 	command mkdir -p ~/Library/LaunchAgents && command brew autoupdate start --upgrade
 fi
+# Tor
+command brew services start tor
