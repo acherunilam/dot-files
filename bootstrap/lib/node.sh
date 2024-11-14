@@ -2,6 +2,7 @@
 
 PKGS=(
 	fast-cli
+  firebase-tools
 	http-echo-server
 	lighthouse
 )
