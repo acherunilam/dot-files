@@ -9,6 +9,7 @@ PKGS=(
 	hashid
 	mnamer
 	Pillow
+	pycookiecheat
 	ripe.atlas.tools
 	torf-cli
 	xkcdpass
