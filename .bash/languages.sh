@@ -11,7 +11,9 @@ export MANPATH="$NPM_PACKAGES/share/man:$MANPATH"
 
 # Python
 export PYTHONSTARTUP="$HOME/.pythonrc"
-export PATH="$HOME/.local/bin:$PATH"
+for dir in $(command find "$HOME/Library/Python" -maxdepth 2 -type d -name bin); do
+	export PATH="$dir:$PATH"
+done
 
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"
