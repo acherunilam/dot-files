@@ -109,10 +109,12 @@ CLI_APPS=(
 	pdftk-java
 	php
 	pip-completion
+	pipx
 	pnpm
 	poppler
 	pv
 	pwgen
+	pyenv
 	python
 	qrencode
 	rclone

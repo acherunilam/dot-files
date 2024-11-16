@@ -11,7 +11,7 @@ export MANPATH="$NPM_PACKAGES/share/man:$MANPATH"
 
 # Python
 export PYTHONSTARTUP="$HOME/.pythonrc"
-for dir in $(command find "$HOME/Library/Python" -maxdepth 2 -type d -name bin); do
+for dir in $(command find "$HOME/Library/Python" -maxdepth 2 -type d -name bin 2>/dev/null); do
 	export PATH="$dir:$PATH"
 done
 
