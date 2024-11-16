@@ -226,6 +226,7 @@ GUI_APPS=(
 	qlvideo
 	rar
 	rectangle-pro
+	signal
 	soundsource
 	spitfire-audio
 	spotify
