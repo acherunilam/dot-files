@@ -7,11 +7,11 @@ PKGS=(
 	cinemagoer
 	ffsubsync
 	hashid
-	mnamer
 	Pillow
 	pycookiecheat
 	ripe.atlas.tools
 	torf-cli
+	tvnamer
 	xkcdpass
 )
 if [[ "$OSTYPE" == "darwin"* ]]; then
