@@ -170,6 +170,18 @@ fi
 # Docker
 sudo rpm --import "https://download.docker.com/linux/fedora/gpg"
 sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/docker-ce.repo"
+# Filebot
+sudo rpm --import "https://raw.githubusercontent.com/filebot/plugins/master/gpg/maintainer.pub"
+sudo tee /etc/yum.repos.d/filebot.repo <<EOF
+[filebot]
+name=filebot
+baseurl=https://get.filebot.net/rpm/main/x86_64
+skip_if_unavailable=True
+gpgcheck=0
+gpgkey=https://raw.githubusercontent.com/filebot/plugins/master/gpg/maintainer.pub
+enabled=1
+enabled_metadata=1
+EOF
 # Google Cloud CLI
 sudo rpm --import "https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
 sudo tee /etc/yum.repos.d/google-cloud-sdk.repo <<EOF
@@ -217,6 +229,7 @@ CLI_APPS=(
 	expect
 	fd-find
 	ffmpeg
+	filebot
 	fzf
 	git
 	git-extras
