@@ -372,10 +372,7 @@ pct() {
 # Usage:
 #       pst [<delimiter>]
 pst() {
-	local paste_arg=""
-	[[ "$OSTYPE" == "darwin"* ]] && paste_arg="-"
-	local paste_delimiter="${1:0:1}"
-	command paste -s -d "${paste_delimiter:-\0}" $paste_arg
+	command sed ':a;N;$!ba;s/\n/'"$*"'/g'
 }
 
 # Simplifed version of xargs.
