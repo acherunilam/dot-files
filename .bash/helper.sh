@@ -375,7 +375,10 @@ pst() {
 	command sed ':a;N;$!ba;s/\n/'"$*"'/g'
 }
 
-# Simplifed version of xargs.
+# Simplified version of xargs.
+#
+# Usage:
+#       xarg <max_procs> <cmd>
 xarg() {
 	command xargs -P"$1" -I{} sh -c "${*:2}"
 }
