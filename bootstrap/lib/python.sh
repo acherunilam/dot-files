@@ -11,7 +11,6 @@ PKGS=(
 	pycookiecheat
 	ripe.atlas.tools
 	torf-cli
-	tvnamer
 	xkcdpass
 )
 if [[ "$OSTYPE" == "darwin"* ]]; then
