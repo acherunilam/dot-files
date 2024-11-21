@@ -242,8 +242,10 @@ CLI_APPS=(
 	iftop
 	ImageMagick
 	innoextract
+	intel-media-driver
 	iperf3
 	libnotify
+	libva-utils
 	lynis
 	mediainfo
 	miller
