@@ -90,4 +90,4 @@ response="$(
 [[ -z "$response" ]] && error "unknown error, missing repsonse"
 [[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(command sed -E 's|https?://||g' <<<"$response")"
 echo "$response"
-echo -n "$response" | pbcopy
+[[ -t 1 ]] && echo -n "$response" | pbcopy
