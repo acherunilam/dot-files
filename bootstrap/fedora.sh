@@ -301,6 +301,7 @@ CLI_APPS=(
 	wireguard-tools
 	wireshark-cli
 	xq
+	yt-dlp
 )
 sudo dnf install -y "${CLI_APPS[@]}" --allowerasing
 
