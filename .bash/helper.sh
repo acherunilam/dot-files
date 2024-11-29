@@ -301,8 +301,9 @@ j() {
 # Usage:
 #       msync <src> <dst>
 msync() {
-	rsync --remove-source-files "$@" &&
-		[[ -d "$1" ]] && command find "$1" -type d -empty -delete
+	rsync --remove-source-files "$@" && for arg in "${@:1:$#-1}"; do
+		command find "$(command dirname "$arg")" -type d -empty -delete
+	done
 }
 
 # Send a notification via the terminal.
