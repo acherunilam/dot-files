@@ -379,7 +379,9 @@ done
 [[ $UID -ne 0 ]] && sudo usermod -aG docker "$USER"
 [[ ! -r /etc/docker/daemon.json ]] && echo "{}" | sudo tee /etc/docker/daemon.json
 command jq '.["metrics-addr"] = "0.0.0.0:9323"' /etc/docker/daemon.json | sudo tee /etc/docker/daemon.json
-sudo systemctl reload docker
+if command ss -tulpn | command grep -q :9323; then
+	sudo systemctl restart docker
+fi
 # Tailscale
 echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
