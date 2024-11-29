@@ -273,6 +273,7 @@ CLI_APPS=(
 	plocate
 	poppler
 	prename
+	progress
 	pv
 	pwgen
 	python3-certbot-dns-google
