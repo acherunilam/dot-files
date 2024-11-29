@@ -213,7 +213,6 @@ GUI_APPS=(
 	iterm2
 	izotope-product-portal
 	keycastr
-	kindle
 	loopback
 	messenger
 	meta
@@ -265,6 +264,7 @@ APP_STORE_APPS="$(command awk '{print $1}' <<<"
     1481302432      # Instapaper Save
     409035833       # iReal Pro
     409183694       # Keynote
+    302584613       # Kindle
     634148309       # Logic Pro
     634159523       # MainStage
     1274495053      # Microsoft To Do
