@@ -43,6 +43,7 @@ CLI_APPS=(
 	datamash
 	diffutils
 	dnsperf
+	dos2unix
 	e2fsprogs
 	ettercap
 	exiftool
