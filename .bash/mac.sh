@@ -238,7 +238,7 @@ ocr() {
 	fi
 	local result="$(command tesseract "$1" - --tessdata-dir "$HOMEBREW_PREFIX/share/tessdata" 2>/dev/null)"
 	echo "$result"
-	echo -n "$result" | command pbcopy
+	[[ -t 1 ]] && echo -n "$result" | command pbcopy
 	[[ -n "$tmp_dir" ]] && command rm "$tmp_dir/screenshot.png"
 }
 
@@ -297,7 +297,7 @@ qr() {
 	fi
 	local result="$(command zbarimg --quiet --raw "$1")"
 	echo "$result"
-	echo -n "$result" | command pbcopy
+	[[ -t 1 ]] && echo -n "$result" | command pbcopy
 	[[ -n "$tmp_dir" ]] && command rm "$tmp_dir/screenshot.png"
 }
 
