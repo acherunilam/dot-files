@@ -81,7 +81,7 @@ elif [[ "$target" =~ ^https://atlas.ripe.net/measurements/[0-9]+/?$ ]]; then # f
 else # run traceroute
 	filter_by="area"
 	filter_value="$(
-		echo "${2:-WW}" | command tr '[:lower:]' '[:upper:]' | command sed -E 's/^ASN?//g'
+		builtin echo "${2:-WW}" | command tr '[:lower:]' '[:upper:]' | command sed -E 's/^ASN?//g'
 	)"
 	if [[ "$filter_value" =~ ^[0-9]+$ ]]; then
 		filter_by="asn"

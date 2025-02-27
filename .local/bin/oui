@@ -75,7 +75,7 @@ mac_id="${1^^}"
 # Execute.
 ################################################################################
 
-mac_prefix="$(echo "$mac_id" | command sed -E 's/(-|:)//g' | command cut -c1-6)"
+mac_prefix="$(builtin echo "$mac_id" | command sed -E 's/(-|:)//g' | command cut -c1-6)"
 command grep "$mac_prefix" "$DB_PATH" |
 	command sed -E 's/.*\(base 16\)\s+(.*)/\1/g' |
 	command grep .

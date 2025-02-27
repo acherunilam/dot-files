@@ -32,7 +32,7 @@ error() {
 }
 
 # Usage:
-#       echo "text message" | pbcopy
+#       builtin echo "text message" | pbcopy
 pbcopy() {
 	content="$(</dev/stdin)"
 	if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -82,5 +82,5 @@ response="$(
 response="$URL_SHORTENER_URL/$response"
 [[ -z "$response" ]] && error "unknown error, missing repsonse"
 [[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(command sed -E 's|https?://||g' <<<"$response")"
-echo "$response"
-[[ -t 1 ]] && echo -n "$response" | pbcopy
+builtin echo "$response"
+[[ -t 1 ]] && builtin echo -n "$response" | pbcopy
