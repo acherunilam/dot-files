@@ -362,10 +362,9 @@ pipp() {
 # Convert numbers to percentage.
 #
 # Usage:
-#		cat <numbers.txt> | pct
+#		cat <numbers.txt> | sort | uniq -c | sort -nr | pct
 pct() {
-	command awk '{ total += $1; numbers[NR] = $1 } END { for (i = 1; i <= NR; i++) printf "%d %.2f%%\n", numbers[i], (numbers[i] / total) * 100 }' |
-		command column -t
+	command awk '{ total += $1; lines[NR] = $0; values[NR] = $1 } END { for (i = 1; i <= NR; i++) printf "%6.2f%%\t%s\n", (values[i] / total) * 100, lines[i] }'
 }
 
 # Combine the lines from STDIN with an optional delimiter.
