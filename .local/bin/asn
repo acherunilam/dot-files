@@ -153,8 +153,8 @@ elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
 			command sed -E 's/\.$//g'
 	)"
 	query_cymru_and_append_asn_info "$reversed_ip" origin6.asn.cymru.com
-elif [[ $input =~ ^(asn?)?[0-9]+$ ]]; then # ASN
-	asn="$(builtin echo "$input" | command sed -E 's/^asn?//g')"
+elif [[ $input =~ ^(as)?[0-9]+$ ]]; then # ASN
+	asn="$(builtin echo "$input" | command sed -E 's/^as//g')"
 	if [[ $all_prefixes -gt 0 ]]; then
 		check_if_installed "jq" "https://github.com/stedolan/jq"
 		# Use RIPEstat Data API (https://stat.ripe.net/docs/02.data-api) to fetch prefixes
