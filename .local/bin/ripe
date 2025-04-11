@@ -57,7 +57,7 @@ done
 shift $((OPTIND - 1))
 
 [[ $# -eq 0 ]] && error "missing input, please pass a destination, country, ASN, or measurement ID" 64 # EX_USAGE
-target="$(command sed -E 's/^asn?([0-9]+)$/\1/g' <<<"${1,,}")"
+target="$(command sed -E 's/^as([0-9]+)$/\1/g' <<<"${1,,}")"
 check_if_installed "jq" "https://github.com/stedolan/jq"
 check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
 [[ -z "$ATLAS_CREATE_KEY" ]] && error "missing environment variable, please set ATLAS_CREATE_KEY" 78 # EX_CONFIG
@@ -81,7 +81,7 @@ elif [[ "$target" =~ ^https://atlas.ripe.net/measurements/[0-9]+/?$ ]]; then # f
 else # run traceroute
 	filter_by="area"
 	filter_value="$(
-		builtin echo "${2:-WW}" | command tr '[:lower:]' '[:upper:]' | command sed -E 's/^ASN?//g'
+		builtin echo "${2:-WW}" | command tr '[:lower:]' '[:upper:]' | command sed -E 's/^AS//g'
 	)"
 	if [[ "$filter_value" =~ ^[0-9]+$ ]]; then
 		filter_by="asn"
