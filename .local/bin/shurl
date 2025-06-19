@@ -76,7 +76,7 @@ url="$1"
 response="$(
 	command curl -qsS $CURL_ARGS \
 		-X POST $curl_auth_arg \
-		-d '{"shortlink": "", "longlink":"'"$url"'"}' "$URL_SHORTENER_URL/api/new" ||
+		-d '{"longlink":"'"$url"'"}' "$URL_SHORTENER_URL/api/new" ||
 		error "unable to reach $URL_SHORTENER_URL"
 )"
 response="$URL_SHORTENER_URL/$response"
