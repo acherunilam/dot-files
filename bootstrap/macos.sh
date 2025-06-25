@@ -77,6 +77,7 @@ CLI_APPS=(
 	iodine
 	iperf3
 	ipinfo-cli
+	insta360-link-controller
 	java
 	john-jumbo
 	jq
