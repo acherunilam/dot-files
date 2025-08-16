@@ -169,7 +169,7 @@ fi
 
 # Docker
 sudo rpm --import "https://download.docker.com/linux/fedora/gpg"
-sudo dnf config-manager --add-repo "https://download.docker.com/linux/fedora/docker-ce.repo"
+sudo dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
 # Filebot
 sudo rpm --import "https://raw.githubusercontent.com/filebot/plugins/master/gpg/maintainer.pub"
 sudo tee /etc/yum.repos.d/filebot.repo <<EOF
@@ -199,7 +199,7 @@ for repo in free nonfree; do
 done
 # Tailscale
 sudo rpm --import "https://pkgs.tailscale.com/stable/fedora/repo.gpg"
-sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+sudo dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 
 sudo dnf upgrade -y
 
@@ -221,6 +221,7 @@ CLI_APPS=(
 	datamash
 	dnf-automatic
 	dnsperf
+	docker-buildx-plugin
 	docker-ce
 	docker-ce-cli
 	docker-compose-plugin
