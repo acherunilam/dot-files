@@ -73,14 +73,16 @@ aw() {
 		for range in "${ranges[@]}"; do
 			IFS='-' read -r start end <<<"$range"
 			if [[ $start =~ ^[0-9]+$ ]] && [[ $end =~ ^[0-9]*$ ]]; then
-				columns+="$(command seq -s ',' -f '$%g' "$start" "${end:-$start}")"
+				columns+="$(
+					command seq -s ',' -f '$%g' "$start" "${end:-$start}" |
+						command sed 's/,*$/,/g'
+				)"
 			else
 				error "invalid input" 2
 				return
 			fi
 		done
 	done
-	# The BSD seq's output will have a trailing comma which we need to remove.
 	command awk $opts '{print '"${columns%,}"'}'
 }
 
