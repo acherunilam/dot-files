@@ -86,6 +86,7 @@ CLI_APPS=(
 	mariadb
 	mas
 	media-info
+	midicsv
 	miller
 	MisterTea/et/et
 	mitmproxy
