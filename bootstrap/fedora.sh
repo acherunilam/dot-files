@@ -300,6 +300,7 @@ CLI_APPS=(
 	uboot-tools
 	unrar
 	vim
+	whois
 	wireguard-tools
 	wireshark-cli
 	xq
