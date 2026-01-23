@@ -154,7 +154,6 @@ CLI_APPS=(
 	watch
 	wget
 	whois
-	wifi-password
 	winetricks
 	xq
 	xz
