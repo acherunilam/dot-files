@@ -130,6 +130,7 @@ for arg in "$@"; do
 	esac
 done
 
+[[ $HELP == 1 ]] && builtin echo "$HELP_DOC" && exit
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	! command -v brew >/dev/null &&
 		env INTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -144,7 +145,6 @@ else
 	[[ $# -eq 0 ]] && builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
 	builtin cd "$(dirname "$0")" || error "unable to cd into $(dirname "$0")"
 fi
-[[ $HELP == 1 ]] && builtin echo "$HELP_DOC" && exit
 
 ################################################################################
 # Execute
