@@ -19,13 +19,31 @@ alias tor-ip='curl-time --proxy socks5://localhost:9050 "https://checkip.amazona
 #
 # Usage:
 #       cert <host>[:<port>] [<sni>]
+#
+# Dependencies:
+#	   brew install coreutils
 cert() {
+	local calculate_expiry
+	# shellcheck disable=SC2015
+	[[ "$OSTYPE" == "darwin"* ]] && local date_bin="gdate" || local date_bin="date"
+	[[ "$1" == "-e" ]] && calculate_expiry=1 && shift
+	[[ "${!#}" == "-e" ]] && calculate_expiry=1 && set -- "${@:1:$(($#-1))}"
 	local DST="$1"
 	local SNI="${2:-${1%:*}}"
 	[[ "$DST" != *":"* ]] && DST="$DST:443"
-	echo |
-		command openssl s_client -showcerts -servername "$SNI" -connect "$DST" 2>/dev/null |
-		command openssl x509 -noout -text
+	result="$(
+		echo |
+			command openssl s_client -showcerts -servername "$SNI" -connect "$DST" 2>/dev/null |
+			command openssl x509 -noout -text 2>/dev/null
+	)"
+	[[ $calculate_expiry -eq 1 ]] && result="$(
+		echo "$result" |
+			command grep 'Not After' |
+			command sed 's/.* : //g' |
+			command xargs -I{} "$date_bin" -d "{}" +%s |
+			command awk -v now="$($date_bin +%s)" '{ printf "%.2f\n", ( $1 - now ) / 86400 }'
+	)"
+	[[ -n "$result" ]] && echo "$result"
 }
 
 # Benchmark how long it takes for your curl query to finish.
