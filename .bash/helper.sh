@@ -366,7 +366,7 @@ pipp() {
 # Usage:
 #		cat <numbers.txt> | sort | uniq -c | sort -nr | pct
 pct() {
-	command awk '{ total += $NF; lines[NR] = $0; numbers[NR] = $NF } END { for (i = 1; i <= NR; i++) printf "%5.2f%%\t%s\n", (numbers[i] / total) * 100, lines[i] }'
+	command awk '{ total += $1; lines[NR] = $0; numbers[NR] = $1 } END { for (i = 1; i <= NR; i++) printf "%5.2f%%\t%s\n", (numbers[i] / total) * 100, lines[i] }'
 }
 
 # Combine the lines from STDIN with an optional delimiter.
