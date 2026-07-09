@@ -177,6 +177,7 @@ GUI_APPS=(
 	alfred
 	android-platform-tools
 	appcleaner
+	arturia-software-center
 	audio-hijack
 	balenaetcher
 	bartender
@@ -197,6 +198,7 @@ GUI_APPS=(
 	docker
 	dropbox
 	elgato-control-center
+	elgato-stream-deck
 	fabfilter-pro-c
 	fabfilter-pro-q
 	fabfilter-pro-r
