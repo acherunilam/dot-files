@@ -46,28 +46,25 @@ cert() {
 	[[ -n "$result" ]] && echo "$result"
 }
 
-# Benchmark how long it takes for your curl query to finish.
-#
-# Usage:
-#       curl-time [<options>...] <url>
-curl-time() {
-	command curl -qsS --location --fail "$@" --write-out "
-dns         %{time_namelookup}
-tcp         %{time_connect}
-tls         %{time_appconnect} (fail=%{ssl_verify_result})
-req sent    %{time_pretransfer} (%{size_request} bytes)
-redir       %{time_redirect} (%{num_redirects} redirs)
-first byte  %{time_starttransfer} (HTTP %{response_code})
-last byte   %{time_total} (%{num_connects} connect(s), rx: %{size_download} bytes / tx: %{size_upload} bytes)
-"
-}
-
-# Silently benchmark Curl.
+# Silently benchmark how long it takes for your curl query to finish.
 #
 # Usage:
 #       curly [<options>...] <url>
 curly() {
-	curl-time --output /dev/null "$@" | command sed '/^$/d'
+	local format
+	IFS= read -r -d '' format <<-'EOF'
+		dns         %{time_namelookup}
+		tcp         %{time_connect}
+		tls         %{time_appconnect} (fail=%{ssl_verify_result})
+		req sent    %{time_pretransfer} (%{size_request} bytes)
+		redir       %{time_redirect} (%{num_redirects} redirs)
+		first byte  %{time_starttransfer} (HTTP %{response_code})
+		last byte   %{time_total} (%{num_connects} connect(s), rx: %{size_download} bytes / tx: %{size_upload} bytes)
+	EOF
+
+	command curl -qsS --location --fail "$@" \
+		--output /dev/null \
+		--write-out "$format"
 }
 
 # Flush the OS-level DNS cache.
