@@ -208,7 +208,6 @@ GUI_APPS=(
 	garmin-express
 	google-chrome
 	google-cloud-sdk
-	guitar-pro
 	handbrake
 	ilok-license-manager
 	imaging-edge
@@ -250,7 +249,6 @@ GUI_APPS=(
 	wireshark
 	yacreader
 	yubico-authenticator
-	yubico-yubikey-manager
 	zoom
 )
 brew install --cask "${GUI_APPS[@]}"
