@@ -56,6 +56,8 @@ CLI_APPS=(
 	flac
 	fzf
 	gawk
+	gbevin/tools/receivemidi
+	gbevin/tools/sendmidi
 	gcc
 	gdrive
 	git
