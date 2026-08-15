@@ -236,6 +236,7 @@ GUI_APPS=(
 	spotify
 	steam
 	synthesia
+	sysex-librarian
 	tailscale
 	telegram
 	textual
