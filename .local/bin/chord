@@ -201,9 +201,15 @@ resolve_chord() {
 }
 
 # Usage:
-#       all_notes_off
-all_notes_off() {
-	command sendmidi dev "$port" cc 123 0 2>/dev/null
+#       silence_chord
+silence_chord() {
+	# Not every receiver acts on an All Notes Off, so release each note by name
+	# and only fall back on the broadcast for anything already playing.
+	local args=() midi
+	for midi in "${chord[@]}"; do
+		args+=(off "$midi" 0)
+	done
+	command sendmidi dev "$port" "${args[@]}" cc 123 0 2>/dev/null
 	exit 130
 }
 
@@ -345,6 +351,6 @@ for midi in "${chord[@]}"; do
 done
 
 # Don't leave notes ringing if playback is cut short.
-trap all_notes_off INT TERM
+trap silence_chord INT TERM HUP
 
 command sendmidi dev "$port" "${args[@]}" || error "unable to send to '$port'"
