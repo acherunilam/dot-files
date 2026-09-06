@@ -24,6 +24,12 @@ const ALIASES = [
 	["m", "mi"], ["m7", "mi7"], ["m9", "mi9"], ["m11", "mi11"], ["m13", "mi13"],
 	["m7b5", "min7b5"], ["m7b5", "mi7b5"], ["m7b5", "m7-5"], ["mMaj7", "minmaj7"],
 	["m6", "mi6"], ["dim", "min(b5)"],
+	// The major seventh triangle, which each library spells with a different
+	// character. tonal carries only the Greek delta.
+	["maj7", "△"], ["maj7", "▵"], ["maj7", "∆"],
+	// The minor major seventh stacks a minus over that triangle, so it gets
+	// reached for as a triangle with an underbar.
+	["mMaj7", "⧋"],
 ];
 for (const [type, alias] of ALIASES) {
 	if (!ChordType.get(type).empty && ChordType.get(alias).empty) ChordType.addAlias(ChordType.get(type), alias);
@@ -86,22 +92,25 @@ const applyModifiers = (base, modifiers) => {
 	return intervals;
 };
 
+// tonal reads accidentals as ASCII, so fold the music signs in before parsing.
+const asciiAccidentals = (symbol) =>
+	symbol.replace(/𝄪/g, "##").replace(/𝄫/g, "bb").replace(/♯/g, "#").replace(/♭/g, "b");
+
+// Stacks a set of intervals upwards from a root, one note to a pitch.
+const fromIntervals = (rootMidi, intervals) =>
+	[...new Set(intervals.map((iv) => Interval.semitones(iv)))].sort((a, b) => a - b).map((s) => rootMidi + s);
+
 // Resolves a chord symbol to MIDI numbers, voiced upwards from the base octave.
 function chordMidi(symbol, baseOctave) {
-	const voice = (names) => {
-		const midis = [];
-		let octave = baseOctave, previous = -1;
-		for (const name of names) {
-			let midi = Note.midi(name + octave);
-			while (midi !== null && midi <= previous) { octave++; midi = Note.midi(name + octave); }
-			if (midi === null) return null;
-			midis.push(midi); previous = midi;
-		}
-		return midis;
-	};
-
+	// tonal spells a slash chord by rotating its note names, which only reads as
+	// a voicing when every step happens to ascend. Its intervals already carry
+	// the octave each tone belongs in, so build from those instead.
 	const built = Chord.get(symbol);
-	if (!built.empty) return voice(built.notes);
+	if (!built.empty && built.tonic) {
+		const builtRoot = Note.midi(built.tonic + baseOctave);
+		if (builtRoot === null) return null;
+		return fromIntervals(builtRoot, built.intervals);
+	}
 
 	const [root, type, bass] = Chord.tokenize(symbol);
 	const rootMidi = root ? Note.midi(root + baseOctave) : null;
@@ -116,8 +125,7 @@ function chordMidi(symbol, baseOctave) {
 	}
 	if (intervals === null) return null;
 
-	const semis = [...new Set(intervals.map((iv) => Interval.semitones(iv)))].sort((a, b) => a - b);
-	const midis = semis.map((s) => rootMidi + s);
+	const midis = fromIntervals(rootMidi, intervals);
 	if (bass) {
 		const bassMidi = Note.midi(bass + baseOctave);
 		if (bassMidi === null) return null;
@@ -129,7 +137,7 @@ function chordMidi(symbol, baseOctave) {
 
 const argv = process.argv.slice(1);
 // Middle C is C4 in tonal but C3 in SendMIDI, so shift an octave up.
-const midis = chordMidi(argv[1], parseInt(argv[0], 10) + 1);
+const midis = chordMidi(asciiAccidentals(argv[1]), parseInt(argv[0], 10) + 1);
 if (midis === null) console.log("-");
 else if (midis.some((m) => m < 0 || m > 127)) console.log("!");
 else console.log(midis.join(" "));
@@ -325,11 +333,12 @@ chord=($midis)
 ((inversion < ${#chord[@]})) ||
 	error "chord '$1' has ${#chord[@]} notes, so its highest inversion is $((${#chord[@]} - 1))" 64 # EX_USAGE
 
-# Each inversion lifts the lowest remaining note by an octave.
+# Each inversion lifts the lowest remaining note by an octave, which lands on a
+# note already sounding whenever the voicing doubles a pitch, so collapse those.
 for ((i = 0; i < inversion; i++)); do
 	chord[i]=$((chord[i] + 12))
 done
-readarray -t chord < <(printf "%s\n" "${chord[@]}" | command sort -n)
+readarray -t chord < <(printf "%s\n" "${chord[@]}" | command sort -n -u)
 
 for i in "${!chord[@]}"; do
 	chord[i]=$((chord[i] + octaves * 12))
