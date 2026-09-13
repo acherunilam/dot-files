@@ -69,9 +69,10 @@ shift $((OPTIND - 1))
 [[ "${!#}" == "-b" ]] && curl_query="?burn=true" && set -- "${@:1:$#-1}"
 
 [[ -z "$PASTEBIN_URL" ]] && error "missing environment variable, please set PASTEBIN_URL" 78 # EX_CONFIG
-if [[ -p /dev/stdin ]]; then
+if ! [[ -t 0 ]]; then
 	content="$(</dev/stdin)"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+fi
+if [[ -z "$content" ]] && [[ "$OSTYPE" == "darwin"* ]]; then
 	content="$(command pbpaste)"
 fi
 [[ -z "$content" ]] && error "missing input, please pass the text via STDIN" 64 # EX_USAGE

@@ -87,8 +87,8 @@ while getopts ":ish" arg; do
 done
 shift $((OPTIND - 1))
 
-[[ $# -eq 0 ]] && ! [[ -p /dev/stdin ]] && error "missing input, please pass an IP address" 64 # EX_USAGE
-[[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64               # EX_USAGE
+[[ $# -eq 0 ]] && [[ -t 0 ]] && error "missing input, please pass an IP address" 64 # EX_USAGE
+[[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64    # EX_USAGE
 ip_addr="$1"
 check_if_installed "jq" "https://github.com/stedolan/jq"
 
@@ -96,7 +96,7 @@ check_if_installed "jq" "https://github.com/stedolan/jq"
 # Execute.
 ################################################################################
 
-if [[ -p /dev/stdin ]]; then # local MMDB
+if [[ -z "$ip_addr" ]]; then # local MMDB
 	check_if_installed "mmdbctl" "https://github.com/ipinfo/mmdbctl"
 	[[ ! -f "$DB_PATH" ]] && download_mmdb
 	command mmdbctl read "$DB_PATH" </dev/stdin | command jq -c '.'
