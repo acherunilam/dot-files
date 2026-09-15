@@ -87,9 +87,15 @@ while getopts ":ish" arg; do
 done
 shift $((OPTIND - 1))
 
-[[ $# -eq 0 ]] && [[ -t 0 ]] && error "missing input, please pass an IP address" 64 # EX_USAGE
-[[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64    # EX_USAGE
+set -o pipefail
+[[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64 # EX_USAGE
 ip_addr="$1"
+# An empty argument counts as no argument, or `geo ""` would sit waiting on the
+# terminal. A closed STDIN has nothing to read either, and left alone its fd 0
+# gets reused by the pipes below.
+if [[ -z "$ip_addr" ]] && { [[ -t 0 ]] || ! { : </dev/stdin; } 2>/dev/null; }; then
+	error "missing input, please pass an IP address" 64 # EX_USAGE
+fi
 check_if_installed "jq" "https://github.com/stedolan/jq"
 
 ################################################################################
@@ -98,8 +104,22 @@ check_if_installed "jq" "https://github.com/stedolan/jq"
 
 if [[ -z "$ip_addr" ]]; then # local MMDB
 	check_if_installed "mmdbctl" "https://github.com/ipinfo/mmdbctl"
+	# mmdbctl expands a CIDR to every address in it, walks "A,B" and "A-B" as
+	# ranges, and silently skips anything it can't parse, so reduce each line to
+	# one bare IP (first address of a prefix, as with an argument) and refuse the
+	# rest up front.
+	ip_list="$(
+		command tr -d '\r' </dev/stdin |
+			command sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s#/[0-9]+$##; /^$/d'
+	)"
+	[[ -z "$ip_list" ]] && error "missing input, please pass an IP address" 64 # EX_USAGE
+	invalid="$(
+		command grep -Eiv '^([0-9]{1,3}(\.[0-9]{1,3}){3}|([0-9a-f]{0,4}:){1,7}([0-9a-f]{1,4}|[0-9]{1,3}(\.[0-9]{1,3}){3})?)$' <<<"$ip_list" |
+			command head -n1
+	)"
+	[[ -n "$invalid" ]] && error "invalid input '$invalid', please pass one IP address per line" 65 # EX_DATAERR
 	[[ ! -f "$DB_PATH" ]] && download_mmdb
-	command mmdbctl read "$DB_PATH" </dev/stdin | command jq -c '.'
+	command mmdbctl read "$DB_PATH" <<<"$ip_list" | command jq -c '.'
 else # external API
 	# If a prefix is passed, only the first IP is considered.
 	ip_addr="$(command sed -E 's/\/[0-9]+$//g' <<<"$ip_addr")"

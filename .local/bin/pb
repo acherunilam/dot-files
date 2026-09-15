@@ -5,8 +5,8 @@
 ################################################################################
 
 _NAME="$(command basename "$0")"
-_HELP_DOC="Upload text to @mkaczanowski's Pastebin, a self-hosted pastebin. If no
-input is passed, then the contents of the clipboard will be used.
+_HELP_DOC="Upload text to @mkaczanowski's Pastebin, a self-hosted pastebin. If
+nothing is piped in, then the contents of the clipboard will be used (macOS only).
 
 Usage:
   $_NAME [options]
@@ -69,13 +69,16 @@ shift $((OPTIND - 1))
 [[ "${!#}" == "-b" ]] && curl_query="?burn=true" && set -- "${@:1:$#-1}"
 
 [[ -z "$PASTEBIN_URL" ]] && error "missing environment variable, please set PASTEBIN_URL" 78 # EX_CONFIG
-if ! [[ -t 0 ]]; then
+[[ $# -gt 0 ]] && error "invalid input, please pass the text via STDIN rather than as an argument" 64 # EX_USAGE
+if [[ -t 0 ]] || ! { : </dev/stdin; } 2>/dev/null; then # nothing piped in, or STDIN is closed
+	[[ "$OSTYPE" == "darwin"* ]] && content="$(command pbpaste)"
+	[[ -z "$content" ]] && error "missing input, please pass the text via STDIN" 64 # EX_USAGE
+else
+	# Only fall back on the clipboard when nothing was piped at all, or an empty
+	# pipeline would quietly upload whatever happens to be on the clipboard.
 	content="$(</dev/stdin)"
+	[[ -z "$content" ]] && error "missing input, nothing was received on STDIN" 64 # EX_USAGE
 fi
-if [[ -z "$content" ]] && [[ "$OSTYPE" == "darwin"* ]]; then
-	content="$(command pbpaste)"
-fi
-[[ -z "$content" ]] && error "missing input, please pass the text via STDIN" 64 # EX_USAGE
 
 ################################################################################
 # Execute.
