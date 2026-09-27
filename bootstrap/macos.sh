@@ -230,6 +230,7 @@ GUI_APPS=(
 	qlvideo
 	rar
 	rectangle-pro
+	sf-symbols
 	signal
 	soundsource
 	spitfire-audio
