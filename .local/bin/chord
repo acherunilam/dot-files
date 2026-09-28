@@ -13,8 +13,9 @@ VELOCITY=100
 # Expands a chord symbol to MIDI numbers, voiced upwards from the base octave.
 # tonal matches symbols against a fixed dictionary rather than composing them, so
 # anything it does not carry is rebuilt from the longest chord type it does
-# recognize plus the modifiers left over. A symbol that cannot be read comes back
-# as "-", and one that runs past MIDI 127 as "!".
+# recognize plus the modifiers left over. A slash chord's bass follows the notes
+# after a "/". A symbol that cannot be read comes back as "-", and one that runs
+# past MIDI 127 as "!".
 _CHORD_SCRIPT='
 const { Chord, ChordType, Interval, Note } = require("tonal");
 
@@ -100,11 +101,9 @@ const asciiAccidentals = (symbol) =>
 const fromIntervals = (rootMidi, intervals) =>
 	[...new Set(intervals.map((iv) => Interval.semitones(iv)))].sort((a, b) => a - b).map((s) => rootMidi + s);
 
-// Resolves a chord symbol to MIDI numbers, voiced upwards from the base octave.
-function chordMidi(symbol, baseOctave) {
-	// tonal spells a slash chord by rotating its note names, which only reads as
-	// a voicing when every step happens to ascend. Its intervals already carry
-	// the octave each tone belongs in, so build from those instead.
+// Resolves a chord symbol without a bass to MIDI numbers in root position,
+// voiced upwards from the base octave.
+function rootPositionMidi(symbol, baseOctave) {
 	const built = Chord.get(symbol);
 	if (!built.empty && built.tonic) {
 		const builtRoot = Note.midi(built.tonic + baseOctave);
@@ -112,7 +111,7 @@ function chordMidi(symbol, baseOctave) {
 		return fromIntervals(builtRoot, built.intervals);
 	}
 
-	const [root, type, bass] = Chord.tokenize(symbol);
+	const [root, type] = Chord.tokenize(symbol);
 	const rootMidi = root ? Note.midi(root + baseOctave) : null;
 	if (rootMidi === null) return null;
 
@@ -124,23 +123,35 @@ function chordMidi(symbol, baseOctave) {
 		intervals = applyModifiers([...base.intervals], type.slice(i));
 	}
 	if (intervals === null) return null;
+	return fromIntervals(rootMidi, intervals);
+}
 
-	const midis = fromIntervals(rootMidi, intervals);
-	if (bass) {
-		const bassMidi = Note.midi(bass + baseOctave);
-		if (bassMidi === null) return null;
-		const below = rootMidi - ((((rootMidi - bassMidi) % 12) + 12) % 12);
-		if (below !== rootMidi) midis.unshift(below);
-	}
-	return midis;
+// Resolves a chord symbol to its MIDI numbers in root position, plus the MIDI
+// number of the bass for a slash chord (null otherwise). The bass is added
+// below the root rather than inverting the chord, as inversions are chosen
+// separately. It is read off here rather than by tonal, which inverts a slash
+// chord and misses the bass when the type has a slash of its own, as in C6/9/E.
+function chordMidi(symbol, baseOctave) {
+	const slash = symbol.match(/^(.+?)\/([A-Ga-g][#b]*)$/);
+	const name = slash ? slash[1] : symbol;
+	// A second bass, as in C/E/G, is not a chord.
+	if (/\/[A-Ga-g][#b]*$/.test(name)) return null;
+	const midis = rootPositionMidi(name, baseOctave);
+	if (midis === null || !slash) return midis && { midis, bass: null };
+
+	const rootMidi = midis[0];
+	const bassMidi = Note.midi(slash[2] + baseOctave);
+	if (bassMidi === null) return null;
+	const below = rootMidi - ((((rootMidi - bassMidi) % 12) + 12) % 12);
+	return { midis, bass: below === rootMidi ? null : below };
 }
 
 const argv = process.argv.slice(1);
 // Middle C is C4 in tonal but C3 in SendMIDI, so shift an octave up.
-const midis = chordMidi(asciiAccidentals(argv[1]), parseInt(argv[0], 10) + 1);
-if (midis === null) console.log("-");
-else if (midis.some((m) => m < 0 || m > 127)) console.log("!");
-else console.log(midis.join(" "));
+const chord = chordMidi(asciiAccidentals(argv[1]), parseInt(argv[0], 10) + 1);
+if (chord === null) console.log("-");
+else if ([...chord.midis, chord.bass ?? 0].some((m) => m < 0 || m > 127)) console.log("!");
+else console.log(chord.midis.join(" ") + (chord.bass === null ? "" : "/" + chord.bass));
 '
 _HELP_DOC="Play a chord.
 
@@ -164,7 +175,7 @@ Environment variables:
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
@@ -209,8 +220,10 @@ resolve_chord() {
 }
 
 # Usage:
-#       silence_chord
+#       silence_chord <exit_code>
 silence_chord() {
+	# Stop playback first, so its own note offs don't follow ours.
+	[[ -n "$sendmidi_pid" ]] && builtin kill "$sendmidi_pid" 2>/dev/null && builtin wait "$sendmidi_pid"
 	# Not every receiver acts on an All Notes Off, so release each note by name
 	# and only fall back on the broadcast for anything already playing.
 	local args=() midi
@@ -218,7 +231,7 @@ silence_chord() {
 		args+=(off "$midi" 0)
 	done
 	command sendmidi dev "$port" "${args[@]}" cc 123 0 2>/dev/null
-	exit 130
+	exit "$1"
 }
 
 ################################################################################
@@ -305,11 +318,14 @@ timestamp="$(seconds_to_timestamp "$duration")"
 [[ "$timestamp" == "+00:00:00.000" ]] &&
 	error "invalid duration '$duration', please pass at least 0.001 seconds" 64 # EX_USAGE
 
-[[ "$octaves" =~ ^[+-]?[0-9]+$ ]] ||
+[[ "$octaves" =~ ^([+-]?)([0-9]+)$ ]] ||
 	error "invalid transposition '$octaves', please pass a whole number of octaves" 64 # EX_USAGE
+# Force base 10, as bash reads a leading zero as octal.
+octaves=$((${BASH_REMATCH[1]}10#${BASH_REMATCH[2]}))
 
-[[ "$inversion" =~ ^\+?[0-9]+$ ]] ||
+[[ "$inversion" =~ ^\+?([0-9]+)$ ]] ||
 	error "invalid inversion '$inversion', please pass zero or a positive whole number" 64 # EX_USAGE
+inversion=$((10#${BASH_REMATCH[1]}))
 
 [[ $# -eq 0 ]] && error "missing input, please pass a chord" 64        # EX_USAGE
 [[ $# -gt 1 ]] && error "too many arguments, please pass one chord" 64 # EX_USAGE
@@ -328,6 +344,9 @@ fi
 [[ "$midis" == "!" ]] &&
 	error "chord '$1' runs past the top of the MIDI range" 65 # EX_DATAERR
 
+# A slash chord comes back as "<notes>/<bass>".
+bass=""
+[[ "$midis" == */* ]] && bass="${midis#*/}" && midis="${midis%/*}"
 # shellcheck disable=SC2206
 chord=($midis)
 ((inversion < ${#chord[@]})) ||
@@ -335,10 +354,12 @@ chord=($midis)
 
 # Each inversion lifts the lowest remaining note by an octave, which lands on a
 # note already sounding whenever the voicing doubles a pitch, so collapse those.
+# The bass stays below whichever inversion is played.
 for ((i = 0; i < inversion; i++)); do
 	chord[i]=$((chord[i] + 12))
 done
 readarray -t chord < <(printf "%s\n" "${chord[@]}" | command sort -n -u)
+[[ -n "$bass" ]] && chord=("$bass" "${chord[@]}")
 
 for i in "${!chord[@]}"; do
 	chord[i]=$((chord[i] + octaves * 12))
@@ -359,7 +380,13 @@ for midi in "${chord[@]}"; do
 	args+=(off "$midi" 0)
 done
 
-# Don't leave notes ringing if playback is cut short.
-trap silence_chord INT TERM HUP
+# Don't leave notes ringing if playback is cut short. Bash only runs a trap
+# once the foreground command returns, so play in the background and wait,
+# which a signal does interrupt.
+trap 'silence_chord 129' HUP
+trap 'silence_chord 130' INT
+trap 'silence_chord 143' TERM
 
-command sendmidi dev "$port" "${args[@]}" || error "unable to send to '$port'"
+command sendmidi dev "$port" "${args[@]}" &
+sendmidi_pid=$!
+builtin wait "$sendmidi_pid" || error "unable to send to '$port'"
