@@ -8,14 +8,18 @@ _NAME="$(command basename "$0")"
 _HELP_DOC="Look up vendor by Organizationally Unique Identifier (OUI).
 
 Usage:
-  $_NAME [options] <oui>
+  $_NAME <oui | mac_address>
+  $_NAME (-i | -s)
+  $_NAME -h
 
 Options:
   -i    Install a cron job to periodically update the DB.
   -s    Sync the local DB to the latest version.
   -h    Print help."
 CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
-CURL_ARGS="--connect-timeout 2 --max-time 30"
+CRON_COMMENT="# Update OUI DB."
+# The DB runs to several MB and has taken close to 30 seconds to download.
+CURL_ARGS="--connect-timeout 2 --max-time 300"
 DB_PATH="$HOME/.local/share/oui/oui.txt"
 
 ################################################################################
@@ -25,35 +29,76 @@ DB_PATH="$HOME/.local/share/oui/oui.txt"
 # Usage:
 #       download_oui_db
 download_oui_db() {
+	# Download next to the DB and only swap it in once complete, so a cut short
+	# transfer or an error page never replaces a working one.
 	# shellcheck disable=SC2086
-	command curl -qsS $CURL_ARGS "https://standards-oui.ieee.org/oui/oui.txt" --create-dirs -o "$DB_PATH" ||
-		error "unable to reach standards-oui.ieee.org"
+	if ! command curl -qfsS $CURL_ARGS "https://standards-oui.ieee.org/oui/oui.txt" \
+		--create-dirs -o "$DB_PATH.new"; then
+		command rm -f "$DB_PATH.new"
+		error "unable to download the DB from standards-oui.ieee.org"
+	fi
+	if ! command head -n1 "$DB_PATH.new" | command grep -q '^OUI/MA-L' ||
+		! command grep -q '(base 16)' "$DB_PATH.new"; then
+		command rm -f "$DB_PATH.new"
+		error "download failed, standards-oui.ieee.org did not return the OUI DB"
+	fi
+	command mv "$DB_PATH.new" "$DB_PATH" || error "unable to replace '$DB_PATH'"
 }
 
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
+}
+
+# Usage:
+#       install_cron_job
+install_cron_job() {
+	local current oui_path cron_entry
+	if ! current="$(command crontab -l 2>&1)"; then
+		[[ "$current" == *"no crontab for"* ]] || error "unable to read the crontab: $current"
+		current=""
+	fi
+	oui_path="$(command realpath "$0")"
+	cron_entry="$CRON_SCHEDULE $(builtin printf '%q' "$oui_path") -s"
+	# Replace any earlier entry for this script rather than add a duplicate, and
+	# collapse the run of blank lines its removal leaves. The command
+	# substitution drops any left at the end.
+	current="$(
+		command awk -v comment="$CRON_COMMENT" -v job="$oui_path -s" '
+			function emit(line) { if (line != "" || !blank) print line; blank = (line == "") }
+			$0 == comment { held = 1; next }
+			index($0, job) { held = 0; next }
+			{ if (held) emit(comment); held = 0; emit($0) }
+			END { if (held) emit(comment) }
+		' <<<"$current"
+	)"
+	command crontab - <<<"${current:+$current$'\n\n'}$CRON_COMMENT"$'\n'"$cron_entry" ||
+		error "installation failed"
 }
 
 ################################################################################
 # Validate input.
 ################################################################################
 
-# shellcheck disable=SC2015
+# Move options ahead of the input so getopts sees them wherever they were passed.
+options=()
+operands=()
+for arg in "$@"; do
+	[[ "$arg" == -?* ]] && options+=("$arg") || operands+=("$arg")
+done
+set -- "${options[@]}" "${operands[@]}"
+install=0
+sync=0
 while getopts ":ish" arg; do
 	case $arg in
 	i) # install
-		command crontab - <<<"$(command crontab -l)"$'\n\n# Update OUI DB.\n'"$CRON_SCHEDULE $(command realpath "$0") -s" &&
-			error "installed cron tab" 0 ||
-			error "installation failed"
+		install=1
 		;;
 	s) # sync
-		download_oui_db &&
-			error "synced DB" 0 ||
-			error "sync failed"
+		sync=1
 		;;
 	h) # help
 		builtin echo "$_HELP_DOC" && exit
@@ -65,10 +110,25 @@ while getopts ":ish" arg; do
 done
 shift $((OPTIND - 1))
 
+if [[ $install -eq 1 || $sync -eq 1 ]]; then
+	[[ $# -gt 0 ]] && error "invalid input, -i and -s do not take an OUI" 64 # EX_USAGE
+	if [[ $install -eq 1 ]]; then
+		install_cron_job
+		builtin echo "$_NAME: installed cron tab"
+	fi
+	if [[ $sync -eq 1 ]]; then
+		download_oui_db
+		builtin echo "$_NAME: synced DB"
+	fi
+	exit 0
+fi
+
 [[ $# -eq 0 ]] && error "missing input, please pass an OUI" 64            # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one OUI" 64 # EX_USAGE
 mac_id="${1^^}"
-[[ ! "$mac_id" =~ ^([0-9A-F]{2}[:-]?){5}([0-9A-F]{2})$ ]] && error "invalid input, please pass an OUI" 65 # EX_DATAERR
+# Either the three byte OUI itself or a whole MAC address.
+[[ ! "$mac_id" =~ ^[0-9A-F]{2}([:-]?[0-9A-F]{2}){2}(([:-]?[0-9A-F]{2}){3})?$ ]] &&
+	error "invalid input, please pass an OUI" 65 # EX_DATAERR
 [[ ! -f "$DB_PATH" ]] && download_oui_db
 
 ################################################################################
@@ -76,6 +136,12 @@ mac_id="${1^^}"
 ################################################################################
 
 mac_prefix="$(builtin echo "$mac_id" | command sed -E 's/(-|:)//g' | command cut -c1-6)"
-command grep "$mac_prefix" "$DB_PATH" |
-	command sed -E 's/.*\(base 16\)\s+(.*)/\1/g' |
-	command grep .
+# Only the "(base 16)" line of an entry starts with the bare prefix, the rest
+# (addresses included) could contain it anywhere.
+vendors="$(command grep -E "^${mac_prefix}[[:space:]]+\(base 16\)" "$DB_PATH")"
+[[ $? -gt 1 ]] && error "unable to read '$DB_PATH'"
+# An OUI nobody has registered is an answer rather than an error.
+[[ -z "$vendors" ]] && exit 0
+# The DB has DOS line endings.
+command tr -d '\r' <<<"$vendors" |
+	command sed -E 's/^[0-9A-F]{6}[[:space:]]+\(base 16\)[[:space:]]*//'
