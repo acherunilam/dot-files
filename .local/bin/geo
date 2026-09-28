@@ -208,11 +208,13 @@ if [[ -z "$ip_addr" ]]; then # local MMDB
 			error "invalid input '$line', please pass one IP address per line" 65 # EX_DATAERR
 	done <<<"$ip_list"
 	[[ ! -f "$DB_PATH" ]] && download_mmdb
-	# mmdbctl exits cleanly even when it can't read the MMDB or an address, and
-	# only says so on STDERR, so collect that while the results go out.
+	# mmdbctl exits cleanly even when it can't read the MMDB, and only says so on
+	# STDERR, so collect that while the results go out. An address the MMDB has
+	# no data for is an answer rather than an error, so drop those.
 	{
 		lookup_errors="$(
-			{ command mmdbctl read "$DB_PATH" <<<"$ip_list" | command jq -c '.' >&3; } 2>&1
+			{ command mmdbctl read "$DB_PATH" <<<"$ip_list" | command jq -c '.' >&3; } 2>&1 |
+				command grep -v "^err: couldn't get data for "
 		)"
 	} 3>&1
 	if [[ -n "$lookup_errors" ]]; then
