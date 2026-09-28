@@ -36,7 +36,7 @@ check_if_installed() {
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
@@ -45,19 +45,30 @@ error() {
 #       query_cymru <domain>
 # shellcheck disable=SC2086
 query_cymru() {
-	command dig +short $DIG_ARGS TXT "$1" | command sed -E 's/"//g'
+	# dig +short prints resolver errors (";; ...") to stdout, never treat them as data.
+	if ! dig_output="$(command dig +short $DIG_ARGS TXT "$1")" ||
+		command grep -q '^;;' <<<"$dig_output"; then
+		error "unable to resolve '$1' via DNS"
+	fi
+	command sed -E 's/"//g' <<<"$dig_output"
 }
 
 # Usage:
 #       query_cymru_and_append_asn_info <ip_reversed> <domain>
 query_cymru_and_append_asn_info() {
 	# Longest prefix matching in case IP is reachable through multiple prefixes.
-	ip_info="$(query_cymru "$1.$2" | command sort -V | command tail -n1)"
-	[[ -z "$ip_info" ]] && exit 1
+	ip_info="$(
+		query_cymru "$1.$2" |
+			command awk -F'|' '{split($2, prefix, "/"); print prefix[2] + 0 "\t" $0}' |
+			command sort -n |
+			command tail -n1 |
+			command cut -f2-
+	)" || exit
+	[[ -z "$ip_info" ]] && error "no AS found for $input"
 	asn=$(command awk '{print $1}' <<<"$ip_info")
 	asn_info="$(
 		query_cymru "AS$asn.asn.cymru.com" | command awk -F'|' '{print $5}'
-	)"
+	)" || exit
 	builtin echo "$ip_info |$asn_info"
 }
 
@@ -68,19 +79,56 @@ query_peeringdb() {
 	output="$(
 		command curl -qsS $CURL_ARGS -H "Authorization: Api-Key $PEERINGDB_API_KEY" \
 			"https://www.peeringdb.com/api/${1#/}"
-	)"
-	err_status="$(command jq -r '.meta.error // empty' <<<"$output")"
-	[[ -n "$err_status" ]] && builtin echo "[PeeringDB] $err_status" && exit 1
+	)" || error "unable to reach peeringdb.com"
+	err_status="$(command jq -r '.meta.error // empty' <<<"$output")" ||
+		error "unexpected response from peeringdb.com"
+	[[ -n "$err_status" ]] && error "[PeeringDB] $err_status"
 	command jq -r ".${2#.} // empty" <<<"$output"
 }
 
 # Usage:
 #		cat <file> | tac
 tac() {
-	if [[ "$OSTYPE" == "darwin"* ]]; then
-		command tail -r
-	else
+	# GNU coreutils ships tac, BSD tail supports -r (GNU tail does not).
+	if builtin type -P tac >/dev/null; then
 		command tac
+	else
+		command tail -r
+	fi
+}
+
+# Usage:
+#		is_ipv6 <ip_address>
+is_ipv6() {
+	local hextet='[0-9a-f]{1,4}' left right colons count=0
+	if [[ "$1" == *::* ]]; then
+		left="${1%%::*}"
+		right="${1#*::}"
+		[[ "$right" == *::* ]] && return 1
+		[[ -z "$left" || "$left" =~ ^$hextet(:$hextet)*$ ]] || return 1
+		[[ -z "$right" || "$right" =~ ^$hextet(:$hextet)*$ ]] || return 1
+		colons="${left//[^:]/}${right//[^:]/}"
+		[[ -n "$left" ]] && count=$((count + 1))
+		[[ -n "$right" ]] && count=$((count + 1))
+		# "::" must stand in for at least one hextet, so at most 7 are written out.
+		[[ $((${#colons} + count)) -le 7 ]]
+	else
+		[[ "$1" =~ ^$hextet(:$hextet){7}$ ]]
+	fi
+}
+
+# Usage:
+#		cat <prefixes> | align_prefixes
+align_prefixes() {
+	# Right-align addresses on the "/" separator; only util-linux column has -R.
+	if command column --version 2>/dev/null | command grep -q util-linux; then
+		command column -tR1 -s'/' |
+			command sed -E 's/([0-9a-f.:]+)[[:space:]]+([0-9]+)/\1\/\2/g'
+	else
+		command awk -F'/' '
+			{ address[NR] = $1; length_[NR] = $2; if (length($1) > width) width = length($1) }
+			END { for (i = 1; i <= NR; i++) printf("%" width "s/%s\n", address[i], length_[i]) }
+		'
 	fi
 }
 
@@ -91,6 +139,13 @@ tac() {
 set -o pipefail
 sibling_asn=0
 all_prefixes=0
+# Move options ahead of the IP/ASN so getopts sees them wherever they were passed.
+options=()
+operands=()
+for arg in "$@"; do
+	[[ "$arg" == -?* ]] && options+=("$arg") || operands+=("$arg")
+done
+set -- "${options[@]}" "${operands[@]}"
 while getopts ":psh" arg; do
 	case $arg in
 	p) # prefixes
@@ -108,20 +163,24 @@ while getopts ":psh" arg; do
 	esac
 done
 shift $((OPTIND - 1))
-[[ "${!#}" == "-p" ]] && all_prefixes=$((all_prefixes + 1)) && set -- "${@:1:$#-1}"
-[[ "${!#}" =~ ^-pp+ ]] && all_prefixes=2 && set -- "${@:1:$#-1}"
-[[ "${!#}" == "-s" ]] && sibling_asn=1 && set -- "${@:1:$#-1}"
 
+[[ $all_prefixes -gt 0 && $sibling_asn -eq 1 ]] &&
+	error "invalid input, -p and -s cannot be used together" 64 # EX_USAGE
 [[ $# -eq 0 ]] && error "missing input, please pass an IP or ASN" 64             # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64 # EX_USAGE
 # If a prefix is passed, only the first IP is considered.
 input="$(command sed -E 's/\/[0-9]+$//g' <<<"${1,,}")"
+# IPv4-mapped IPv6 addresses (::ffff:a.b.c.d) are looked up as IPv4.
+[[ $input =~ ^(::|(0{1,4}:){5})ffff:([0-9.]+)$ ]] && input="${BASH_REMATCH[3]}"
 
 ################################################################################
 # Execute.
 ################################################################################
 
-if [[ $input =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then # IPv4
+if [[ $input =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]]; then # IPv4
+	for octet in "${BASH_REMATCH[@]:1}"; do
+		[[ $((10#$octet)) -gt 255 ]] && error "invalid input, please pass an IP or ASN" 64 # EX_USAGE
+	done
 	reversed_ip="$(
 		builtin echo "$input" |
 			command tr '.' '\n' |
@@ -130,7 +189,7 @@ if [[ $input =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then # IPv4
 			command sed 's/\.$//g'
 	)"
 	query_cymru_and_append_asn_info "$reversed_ip" origin.asn.cymru.com
-elif [[ $input =~ :[0-9a-f:]+ ]]; then # IPv6
+elif is_ipv6 "$input"; then # IPv6
 	hextets=$(
 		builtin echo "$input" |
 			command sed 's/::/:/g;s/:/\n/g;/^$/d' |
@@ -164,31 +223,31 @@ elif [[ $input =~ ^(as)?[0-9]+$ ]]; then # ASN
 			command curl -qsS $CURL_ARGS \
 				"https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS$asn" |
 				command jq -r '.data.prefixes[].prefix' |
-				command sort -V
+				# IPv4 prefixes first, then IPv6.
+				command awk '{print (index($0, ":") ? 6 : 4) "\t" $0}' |
+				command sort -t"$(builtin printf '\t')" -k1,1n -k2,2V |
+				command cut -f2-
 		)" || error "unable to reach stat.ripe.net"
 		if [[ -n "$output" ]] && [[ $all_prefixes -gt 1 ]]; then
 			check_if_installed "netmask" "https://github.com/tlby/netmask"
 			# shellcheck disable=SC2046
-			output="$(builtin echo "$output" | command netmask -f - | command sed -E 's/^\s+//g')"
+			output="$(builtin echo "$output" | command netmask -f - | command sed -E 's/^[[:space:]]+//g')"
 		fi
-		output="$(
-			builtin echo "$output" |
-				command column -tR1 -s'/' |
-				command sed -E 's/([0-9a-f.:]+)\s+([0-9]+)/\1\/\2/g'
-		)"
+		[[ -n "$output" ]] && output="$(builtin echo "$output" | align_prefixes)"
 	elif [[ $sibling_asn -eq 1 ]]; then
 		[[ -z "$PEERINGDB_API_KEY" ]] && error "missing environment variable, please set PEERINGDB_API_KEY" 78 # EX_CONFIG
-		asn_org="$(query_peeringdb "/org?asn=$asn" ".data[0].id")" || error "$asn_org"
+		asn_org="$(query_peeringdb "/org?asn=$asn" ".data[0].id")" || exit
 		[[ -z "$asn_org" ]] && exit
-		output="$(query_peeringdb "/net?org=$asn_org" ".data[].asn" | command sort -n)" || error "$output"
+		output="$(query_peeringdb "/net?org=$asn_org" ".data[].asn" | command sort -n)" || exit
 		[[ "$output" == "$asn" ]] && exit
 		[[ -t 1 ]] && color="always" || color="never"
 		command grep -E --color="$color" "^$asn$|$" <<<"$output"
 		exit
 	else
-		output="$(query_cymru "AS$asn.asn.cymru.com")"
+		output="$(query_cymru "AS$asn.asn.cymru.com")" || exit
 	fi
-	[[ -n "$output" ]] && builtin echo "$output"
+	[[ -z "$output" ]] && error "no data found for AS$asn"
+	builtin echo "$output"
 else
 	error "invalid input, please pass an IP or ASN" 64 # EX_USAGE
 fi
