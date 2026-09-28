@@ -26,9 +26,16 @@ CURL_ARGS="--connect-timeout 2 --max-time 5"
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
+}
+
+# Usage:
+#       quote_curl_config <value>
+quote_curl_config() {
+	local value="${1//\\/\\\\}"
+	builtin printf '"%s"' "${value//\"/\\\"}"
 }
 
 ################################################################################
@@ -54,20 +61,23 @@ shift $((OPTIND - 1))
 
 [[ -z "$PUSHOVER_USER" ]] && error "missing environment variable, please set PUSHOVER_USER" 78   # EX_CONFIG
 [[ -z "$PUSHOVER_TOKEN" ]] && error "missing environment variable, please set PUSHOVER_TOKEN" 78 # EX_CONFIG
-[[ $# -eq 0 ]] && error "missing input, please pass a message" 64                                # EX_USAGE
+[[ -z "$*" ]] && error "missing input, please pass a message" 64                                  # EX_USAGE
 
 ################################################################################
 # Execute.
 ################################################################################
 
+# Hand the keys over as a config on STDIN, as any user can read the arguments
+# of a running curl.
 # shellcheck disable=SC2086
 response="$(
-	command curl -qsS $CURL_ARGS \
-		--form-string "user=$PUSHOVER_USER" \
-		--form-string "token=$PUSHOVER_TOKEN" \
-		--form-string "priority=$priority" \
-		--form-string "message=$*" \
-		"https://api.pushover.net/1/messages.json"
+	builtin printf 'form-string = %s\nform-string = %s\n' \
+		"$(quote_curl_config "user=$PUSHOVER_USER")" \
+		"$(quote_curl_config "token=$PUSHOVER_TOKEN")" |
+		command curl -qsS $CURL_ARGS --config - \
+			--form-string "priority=$priority" \
+			--form-string "message=$*" \
+			"https://api.pushover.net/1/messages.json"
 )" || error "unable to reach pushover.net"
 if command grep -q '"user":"invalid"' <<<"$response"; then
 	error "invalid user, please check the environment variable PUSHOVER_USER" 78 # EX_CONFIG
