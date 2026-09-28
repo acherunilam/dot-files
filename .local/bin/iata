@@ -22,28 +22,98 @@ Options:
   -s    Sync the local DB to the latest version.
   -h    Print help."
 CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
+CRON_COMMENT="# Update IATA/country DB."
 CURL_ARGS="--connect-timeout 2 --max-time 30"
 DB_PATH="$HOME/.local/share/iata"
+# Splits each CSV row into f[], with the quotes dropped and any comma inside a
+# field kept as "~" so the output can stay comma separated, and maps each header
+# to its column in col[], as the upstream CSV gains columns over time.
+# shellcheck disable=SC2016
+_CSV_AWK='
+function parse(    n, i, part, line) {
+	n = split($0, part, "\"")
+	line = ""
+	for (i = 1; i <= n; i++) {
+		if (i % 2 == 0) gsub(",", "~", part[i])
+		line = line part[i]
+	}
+	return split(line, f, ",")
+}
+NR == 1 { header = $0; n = parse(); for (i = 1; i <= n; i++) col[f[i]] = i; next }
+{ parse() }
+'
 
 ################################################################################
 # Helper methods.
 ################################################################################
 
 # Usage
-#       airport_search <keyword> [<grep_args>]
+#       airport_search <keyword> (code | name)
 airport_search() {
-	# shellcheck disable=SC2086
-	command grep $2 "$1" "$DB_PATH/airports.csv" |
-		command awk -F'"' -v OFS='' '{ for (i=2; i<=NF; i+=2) gsub(",", "~", $i) } 1' |
-		command awk -F, '{gsub("\"", ""); OFS=","; print $14, $11, $8, $9, $4, $5, $6, $17}' |
-		command grep -v '^,'
+	# Parsing every row is slow, so let grep pick out the rows that can match
+	# and keep the header for the column names. The keyword is matched as plain
+	# text, and reaches awk through the environment since -v would read its
+	# backslashes as escapes.
+	{
+		command head -n1 "$DB_PATH/airports.csv"
+		if [[ "$2" == "code" ]]; then
+			command grep -F -- "\"$1\"" "$DB_PATH/airports.csv"
+		else
+			command grep -F -i -- "$1" "$DB_PATH/airports.csv"
+		fi
+	} | KEYWORD="$1" MODE="$2" command awk -v OFS=, "$_CSV_AWK"'
+		# The header itself can match the keyword too.
+		NR > 1 && $0 == header { next }
+		{
+			code = f[col["iata_code"]]
+			if (code == "") next
+			if (ENVIRON["MODE"] == "code" && code != ENVIRON["KEYWORD"]) next
+			print code, f[col["municipality"]], f[col["continent"]], f[col["iso_country"]], f[col["name"]],
+				f[col["latitude_deg"]], f[col["longitude_deg"]], f[col["wikipedia_link"]]
+		}
+	'
 }
 
 # Usage:
 #       country_code_to_name <country_code>
 country_code_to_name() {
-	command awk -F, '$2 == "\"'"$1"'\"" {gsub("\"", ""); print $3}' \
-		"$DB_PATH/countries.csv"
+	KEYWORD="$1" command awk "$_CSV_AWK"'
+		f[col["code"]] == ENVIRON["KEYWORD"] { print f[col["name"]] }
+	' "$DB_PATH/countries.csv"
+}
+
+# Usage:
+#       country_name_search <keyword>
+country_name_search() {
+	KEYWORD="$1" command awk "$_CSV_AWK"'
+		index(toupper(f[col["name"]]), ENVIRON["KEYWORD"]) { print f[col["code"]] "  " f[col["name"]] }
+	' "$DB_PATH/countries.csv"
+}
+
+# Usage:
+#       install_cron_job
+install_cron_job() {
+	local current iata_path cron_entry
+	if ! current="$(command crontab -l 2>&1)"; then
+		[[ "$current" == *"no crontab for"* ]] || error "unable to read the crontab: $current"
+		current=""
+	fi
+	iata_path="$(command realpath "$0")"
+	cron_entry="$CRON_SCHEDULE $(builtin printf '%q' "$iata_path") -s"
+	# Replace any earlier entry for this script rather than add a duplicate, and
+	# collapse the run of blank lines its removal leaves. The command
+	# substitution drops any left at the end.
+	current="$(
+		command awk -v comment="$CRON_COMMENT" -v job="$iata_path -s" '
+			function emit(line) { if (line != "" || !blank) print line; blank = (line == "") }
+			$0 == comment { held = 1; next }
+			index($0, job) { held = 0; next }
+			{ if (held) emit(comment); held = 0; emit($0) }
+			END { if (held) emit(comment) }
+		' <<<"$current"
+	)"
+	command crontab - <<<"${current:+$current$'\n\n'}$CRON_COMMENT"$'\n'"$cron_entry" ||
+		error "installation failed"
 }
 
 # Usage
@@ -65,7 +135,7 @@ download_iata_db() {
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
@@ -76,6 +146,13 @@ error() {
 
 country=0
 verbose=0
+# Move options ahead of the input so getopts sees them wherever they were passed.
+options=()
+operands=()
+for arg in "$@"; do
+	[[ "$arg" == -?* ]] && options+=("$arg") || operands+=("$arg")
+done
+set -- "${options[@]}" "${operands[@]}"
 # shellcheck disable=SC2015
 while getopts ":cisvh" arg; do
 	case $arg in
@@ -83,10 +160,7 @@ while getopts ":cisvh" arg; do
 		country=1
 		;;
 	i) # install
-		cron_entry=$'\n\n# Update IATA/country DB.\n'"$CRON_SCHEDULE $(command realpath "$0") -s"
-		command crontab - <<<"$(command crontab -l)$cron_entry" &&
-			error "installed cron tab" 0 ||
-			error "installation failed"
+		install_cron_job && error "installed cron tab" 0
 		;;
 	s) # sync
 		download_iata_db "airports" &&
@@ -106,8 +180,6 @@ while getopts ":cisvh" arg; do
 	esac
 done
 shift $((OPTIND - 1))
-[[ "${!#}" == "-c" ]] && country=1 && set -- "${@:1:$#-1}"
-[[ "${!#}" == "-v" ]] && verbose=1 && set -- "${@:1:$#-1}"
 
 [[ $# -eq 0 ]] &&
 	error "missing input, please pass an airport code, country code, or city" 64 # EX_USAGE
@@ -120,18 +192,12 @@ input="${*^^}"
 ################################################################################
 
 if [[ $country -eq 1 ]]; then # country reverse lookup
-	result="$(
-		command awk -F, 'toupper($3) ~ /'"$input"'/ {gsub("\"", ""); OFS="  "; print $2, $3}' "$DB_PATH/countries.csv" |
-			command sort -k2
-	)"
+	result="$(country_name_search "$input" | command sort -k2)"
 else
 	if [[ ${#input} -eq 2 ]]; then # country code
 		result="$(country_code_to_name "$input")"
 	elif [[ ${#input} -eq 3 ]]; then # IATA code
-		info="$(
-			airport_search "\"$input\"" |
-				command grep "^$input,"
-		)"
+		info="$(airport_search "$input" code)"
 		IFS=, read -r iata city continent country_code name latitude longitude wiki <<<"$info"
 		country="$(country_code_to_name "$country_code")"
 		if [[ -n "$info" ]]; then
@@ -152,7 +218,7 @@ wiki|$wiki" |
 		fi
 	else # IATA code reverse lookup
 		result="$(
-			airport_search "$input" "--ignore-case" |
+			airport_search "$input" name |
 				command cut -d, -f1,2,4,5 |
 				command sed -E 's/(...),(.*),(..),(.*)/\1\|\4\|\2, \3/g' |
 				command column -t -s"|" |
