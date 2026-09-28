@@ -45,12 +45,15 @@ error() {
 #       query_cymru <domain>
 # shellcheck disable=SC2086
 query_cymru() {
-	# dig +short prints resolver errors (";; ...") to stdout, never treat them as data.
-	if ! dig_output="$(command dig +short $DIG_ARGS TXT "$1")" ||
-		command grep -q '^;;' <<<"$dig_output"; then
-		error "unable to resolve '$1' via DNS"
-	fi
-	command sed -E 's/"//g' <<<"$dig_output"
+	# dig +short prints nothing for a failed lookup (SERVFAIL, REFUSED) just as it
+	# does for a genuine no match, so read the response status instead. Only
+	# NOERROR and NXDOMAIN are answers, a missing status means no reply at all.
+	local dig_output status
+	dig_output="$(command dig +noall +comments +answer $DIG_ARGS TXT "$1")"
+	status="$(command sed -nE 's/.*status: ([A-Z]+).*/\1/p' <<<"$dig_output" | command head -n1)"
+	[[ "$status" == "NOERROR" || "$status" == "NXDOMAIN" ]] ||
+		error "unable to resolve '$1' via DNS${status:+ ($status)}"
+	command sed -nE 's/^[^;].*[[:space:]]TXT[[:space:]]+//p' <<<"$dig_output" | command sed -E 's/"//g'
 }
 
 # Usage:
@@ -64,7 +67,8 @@ query_cymru_and_append_asn_info() {
 			command tail -n1 |
 			command cut -f2-
 	)" || exit
-	[[ -z "$ip_info" ]] && error "no AS found for $input"
+	# No AS announces the IP, which is an answer rather than an error.
+	[[ -z "$ip_info" ]] && exit 0
 	asn=$(command awk '{print $1}' <<<"$ip_info")
 	asn_info="$(
 		query_cymru "AS$asn.asn.cymru.com" | command awk -F'|' '{print $5}'
@@ -246,7 +250,8 @@ elif [[ $input =~ ^(as)?[0-9]+$ ]]; then # ASN
 	else
 		output="$(query_cymru "AS$asn.asn.cymru.com")" || exit
 	fi
-	[[ -z "$output" ]] && error "no data found for AS$asn"
+	# Nothing known about the ASN is an answer rather than an error.
+	[[ -z "$output" ]] && exit 0
 	builtin echo "$output"
 else
 	error "invalid input, please pass an IP or ASN" 64 # EX_USAGE
