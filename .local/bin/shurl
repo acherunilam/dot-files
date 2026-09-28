@@ -26,20 +26,30 @@ SKIP_HTTP_PREFIX='true'
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
+}
+
+# Usage:
+#       json_string <value>
+json_string() {
+	# Control characters are refused up front, so only these need escaping.
+	local value="${1//\\/\\\\}"
+	builtin printf '"%s"' "${value//\"/\\\"}"
 }
 
 # Usage:
 #       builtin echo "text message" | pbcopy
 pbcopy() {
 	content="$(</dev/stdin)"
-	if [[ "$OSTYPE" == "darwin"* ]]; then
+	if builtin type -P pbcopy >/dev/null; then
 		builtin echo -n "$content" | command pbcopy
 		return
 	fi
-	output="$(builtin printf '\e]52;c;%s\a' "$(builtin echo -n "$content" | command base64 -w0)")"
+	# Without a clipboard of our own, ask the terminal to set it (OSC 52). GNU
+	# base64 wraps its output and BSD base64 doesn't, so join the lines either way.
+	output="$(builtin printf '\e]52;c;%s\a' "$(builtin echo -n "$content" | command base64 | command tr -d '\n')")"
 	# shellcheck disable=SC1003
 	[[ -n "$TMUX" ]] && output="$(builtin printf '\ePtmux;\e%s\e\\' "$output")"
 	builtin printf "%s" "$output"
@@ -49,6 +59,13 @@ pbcopy() {
 # Validate input.
 ################################################################################
 
+# Move options ahead of the URL so getopts sees them wherever they were passed.
+options=()
+operands=()
+for arg in "$@"; do
+	[[ "$arg" == -?* ]] && options+=("$arg") || operands+=("$arg")
+done
+set -- "${options[@]}" "${operands[@]}"
 while getopts ":h" arg; do
 	case $arg in
 	h) # help
@@ -65,22 +82,23 @@ shift $((OPTIND - 1))
 [[ $# -eq 0 ]] && error "missing input, please pass a URL" 64                                          # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one URL" 64                              # EX_USAGE
 url="$1"
-[[ ! $url =~ ^https?://[^\.]+\..+$ ]] && error "invalid input, please pass a URL" 65 # EX_DATAERR
+[[ ! $url =~ ^https?://[^\.]+\..+$ || $url =~ [[:cntrl:]] ]] && error "invalid input, please pass a URL" 65 # EX_DATAERR
 
 ################################################################################
 # Execute.
 ################################################################################
 
-[[ -n $URL_SHORTENER_AUTH_BASIC ]] && curl_auth_arg="-u $URL_SHORTENER_AUTH_BASIC"
+shortener_url="${URL_SHORTENER_URL%/}"
+curl_auth_args=()
+[[ -n $URL_SHORTENER_AUTH_BASIC ]] && curl_auth_args=(-u "$URL_SHORTENER_AUTH_BASIC")
 # shellcheck disable=SC2086
 response="$(
-	command curl -qsS $CURL_ARGS \
-		-X POST $curl_auth_arg \
-		-d '{"longlink":"'"$url"'"}' "$URL_SHORTENER_URL/api/new" ||
-		error "unable to reach $URL_SHORTENER_URL"
-)"
-response="$URL_SHORTENER_URL/$response"
-[[ -z "$response" ]] && error "unknown error, missing repsonse"
+	command curl -qfsS $CURL_ARGS -X POST "${curl_auth_args[@]}" \
+		-d "{\"longlink\":$(json_string "$url")}" "$shortener_url/api/new"
+)" || error "unable to shorten the URL via $shortener_url"
+[[ -z "$response" ]] && error "unknown error, missing response"
+response="$shortener_url/$response"
 [[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(command sed -E 's|https?://||g' <<<"$response")"
 builtin echo "$response"
 [[ -t 1 ]] && builtin echo -n "$response" | pbcopy
+exit 0
