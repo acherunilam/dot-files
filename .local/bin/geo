@@ -21,6 +21,7 @@ Options:
 Environment variables:
   IPINFO_API_TOKEN	https://ipinfo.io/account/token"
 CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
+CRON_COMMENT="# Update geolocation MMDB."
 CURL_ARGS="--connect-timeout 2 --max-time 30"
 DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
 
@@ -40,21 +41,94 @@ download_mmdb() {
 	[[ -z "$IPINFO_API_TOKEN" ]] &&
 		error "missing environment variable, please set IPINFO_API_TOKEN" 78 # EX_CONFIG
 	# shellcheck disable=SC2086
-	command curl -qsS $CURL_ARGS -L \
+	if ! command curl -qfsS $CURL_ARGS -L \
 		"https://ipinfo.io/data/free/country_asn.mmdb?token=$IPINFO_API_TOKEN" \
-		--create-dirs -o "$DB_PATH.new" || error "unable to reach ipinfo.io"
-	if command grep -aq "per day limit" "$DB_PATH.new" 2>/dev/null; then
-		command rm "$DB_PATH.new"
-		error "download failed, per day limit reached"
-	else
-		command mv "$DB_PATH.new" "$DB_PATH" 2>/dev/null
+		--create-dirs -o "$DB_PATH.new"; then
+		command rm -f "$DB_PATH.new"
+		error "unable to download the MMDB from ipinfo.io"
 	fi
+	if command grep -aq "per day limit" "$DB_PATH.new" 2>/dev/null; then
+		command rm -f "$DB_PATH.new"
+		error "download failed, per day limit reached"
+	fi
+	# Only replace the current MMDB with a real one, as ipinfo.io can answer with
+	# an error page instead. Its metadata marker sits in the last 128 KiB.
+	if ! command tail -c 131072 "$DB_PATH.new" | LC_ALL=C command grep -aqF "MaxMind.com"; then
+		command rm -f "$DB_PATH.new"
+		error "download failed, ipinfo.io did not return an MMDB"
+	fi
+	command mv "$DB_PATH.new" "$DB_PATH" || error "unable to replace '$DB_PATH'"
+}
+
+# Usage:
+#       install_cron_job
+install_cron_job() {
+	local current geo_path cron_entry
+	if ! current="$(command crontab -l 2>&1)"; then
+		[[ "$current" == *"no crontab for"* ]] || error "unable to read the crontab: $current"
+		current=""
+	fi
+	geo_path="$(command realpath "$0")"
+	# Cron runs jobs without the login shell's environment, which is where
+	# IPINFO_API_TOKEN lives, so run the sync through an interactive login shell.
+	# Without a terminal that shell warns about job control, which isn't news.
+	cron_entry="$CRON_SCHEDULE $BASH -ilc '$(builtin printf '%q' "$geo_path") -s' 2>&1 |"
+	cron_entry+=" grep -v -e 'cannot set terminal process group' -e 'no job control in this shell'"
+	# Replace any earlier entry for this script rather than add a duplicate, and
+	# collapse the run of blank lines its removal leaves. The command
+	# substitution drops any left at the end.
+	current="$(
+		command awk -v comment="$CRON_COMMENT" -v job="$geo_path -s" '
+			function emit(line) { if (line != "" || !blank) print line; blank = (line == "") }
+			$0 == comment { held = 1; next }
+			index($0, job) { held = 0; next }
+			{ if (held) emit(comment); held = 0; emit($0) }
+			END { if (held) emit(comment) }
+		' <<<"$current"
+	)"
+	command crontab - <<<"${current:+$current$'\n\n'}$CRON_COMMENT"$'\n'"$cron_entry" ||
+		error "installation failed"
+}
+
+# Usage:
+#       is_ipv6 <ip_address>
+is_ipv6() {
+	local hextet='[0-9a-f]{1,4}' ip="${1,,}" left right colons count=0
+	# An embedded IPv4 address, as in ::ffff:1.2.3.4, takes up two hextets.
+	if [[ "$ip" =~ ^(.*:)([0-9]+\.[0-9.]+)$ ]]; then
+		ip="${BASH_REMATCH[1]}0:0"
+		is_ipv4 "${BASH_REMATCH[2]}" || return 1
+	fi
+	if [[ "$ip" == *::* ]]; then
+		left="${ip%%::*}"
+		right="${ip#*::}"
+		[[ "$right" == *::* ]] && return 1
+		[[ -z "$left" || "$left" =~ ^$hextet(:$hextet)*$ ]] || return 1
+		[[ -z "$right" || "$right" =~ ^$hextet(:$hextet)*$ ]] || return 1
+		colons="${left//[^:]/}${right//[^:]/}"
+		[[ -n "$left" ]] && count=$((count + 1))
+		[[ -n "$right" ]] && count=$((count + 1))
+		# "::" must stand in for at least one hextet, so at most 7 are written out.
+		[[ $((${#colons} + count)) -le 7 ]]
+	else
+		[[ "$ip" =~ ^$hextet(:$hextet){7}$ ]]
+	fi
+}
+
+# Usage:
+#       is_ipv4 <ip_address>
+is_ipv4() {
+	local octet
+	[[ "$1" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]] || return 1
+	for octet in "${BASH_REMATCH[@]:1}"; do
+		[[ $((10#$octet)) -le 255 ]] || return 1
+	done
 }
 
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
@@ -63,19 +137,22 @@ error() {
 # Validate input.
 ################################################################################
 
-# shellcheck disable=SC2015
+# Move options ahead of the IP so getopts sees them wherever they were passed.
+options=()
+operands=()
+for arg in "$@"; do
+	[[ "$arg" == -?* ]] && options+=("$arg") || operands+=("$arg")
+done
+set -- "${options[@]}" "${operands[@]}"
+install=0
+sync=0
 while getopts ":ish" arg; do
 	case $arg in
 	i) # install
-		cron_entry=$'\n\n# Update geolocation MMDB.\n'"$CRON_SCHEDULE $(command realpath "$0") -s"
-		command crontab - <<<"$(command crontab -l)$cron_entry" &&
-			error "installed cron tab" 0 ||
-			error "installation failed"
+		install=1
 		;;
 	s) # sync
-		download_mmdb &&
-			error "synced DB" 0 ||
-			error "sync failed"
+		sync=1
 		;;
 	h) # help
 		builtin echo "$_HELP_DOC" && exit
@@ -86,6 +163,19 @@ while getopts ":ish" arg; do
 	esac
 done
 shift $((OPTIND - 1))
+
+if [[ $install -eq 1 || $sync -eq 1 ]]; then
+	[[ $# -gt 0 ]] && error "invalid input, -i and -s do not take an IP address" 64 # EX_USAGE
+	if [[ $install -eq 1 ]]; then
+		install_cron_job
+		builtin echo "$_NAME: installed cron job"
+	fi
+	if [[ $sync -eq 1 ]]; then
+		download_mmdb
+		builtin echo "$_NAME: synced DB"
+	fi
+	exit 0
+fi
 
 set -o pipefail
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64 # EX_USAGE
@@ -113,17 +203,35 @@ if [[ -z "$ip_addr" ]]; then # local MMDB
 			command sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s#/[0-9]+$##; /^$/d'
 	)"
 	[[ -z "$ip_list" ]] && error "missing input, please pass an IP address" 64 # EX_USAGE
-	invalid="$(
-		command grep -Eiv '^([0-9]{1,3}(\.[0-9]{1,3}){3}|([0-9a-f]{0,4}:){1,7}([0-9a-f]{1,4}|[0-9]{1,3}(\.[0-9]{1,3}){3})?)$' <<<"$ip_list" |
-			command head -n1
-	)"
-	[[ -n "$invalid" ]] && error "invalid input '$invalid', please pass one IP address per line" 65 # EX_DATAERR
+	while IFS= read -r line; do
+		is_ipv4 "$line" || is_ipv6 "$line" ||
+			error "invalid input '$line', please pass one IP address per line" 65 # EX_DATAERR
+	done <<<"$ip_list"
 	[[ ! -f "$DB_PATH" ]] && download_mmdb
-	command mmdbctl read "$DB_PATH" <<<"$ip_list" | command jq -c '.'
+	# mmdbctl exits cleanly even when it can't read the MMDB or an address, and
+	# only says so on STDERR, so collect that while the results go out.
+	{
+		lookup_errors="$(
+			{ command mmdbctl read "$DB_PATH" <<<"$ip_list" | command jq -c '.' >&3; } 2>&1
+		)"
+	} 3>&1
+	if [[ -n "$lookup_errors" ]]; then
+		builtin echo "$lookup_errors" >&2
+		exit 1
+	fi
 else # external API
 	# If a prefix is passed, only the first IP is considered.
 	ip_addr="$(command sed -E 's/\/[0-9]+$//g' <<<"$ip_addr")"
+	is_ipv4 "$ip_addr" || is_ipv6 "$ip_addr" ||
+		error "invalid input, please pass an IP address" 64 # EX_USAGE
 	# shellcheck disable=SC2086
-	command curl -qsS $CURL_ARGS "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN" |
-		command jq -e '.' || error "unable to reach ipinfo.io"
+	response="$(
+		command curl -qsS $CURL_ARGS "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN"
+	)" || error "unable to reach ipinfo.io"
+	command jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from ipinfo.io"
+	api_error="$(
+		command jq -r '.error // empty | if type == "object" then "\(.title): \(.message)" else . end' <<<"$response"
+	)"
+	[[ -n "$api_error" ]] && error "[ipinfo.io] $api_error"
+	command jq '.' <<<"$response"
 fi
