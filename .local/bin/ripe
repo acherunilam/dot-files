@@ -63,7 +63,7 @@ while getopts ":h" arg; do
 done
 shift $((OPTIND - 1))
 
-[[ $# -eq 0 ]] && error "missing input, please pass a destination, country, ASN, or measurement ID" 64 # EX_USAGE
+[[ $# -eq 0 ]] && error "missing input, please pass a destination, country, ASN, or measurement link" 64 # EX_USAGE
 target="$(command sed -E 's/^as([0-9]+)$/\1/g' <<<"${1,,}")"
 check_if_installed "jq" "https://github.com/stedolan/jq"
 [[ -z "$ATLAS_CREATE_KEY" ]] && error "missing environment variable, please set ATLAS_CREATE_KEY" 78 # EX_CONFIG

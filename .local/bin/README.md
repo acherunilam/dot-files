@@ -51,7 +51,7 @@ iata germany -c
 ```
 
 ## Measurement
-Uses [RIPEstat Data API](https://stat.ripe.net/docs/02.data-api).
+Uses [RIPE Atlas](https://atlas.ripe.net), via [RIPE Atlas Tools](https://github.com/RIPE-NCC/ripe-atlas-tools) and its [API](https://atlas.ripe.net/docs/apis/rest-api-manual/).
 ```bash
 # Run traceroute to facebook.com from 10 random probes around the world.
 ripe facebook.com
@@ -63,8 +63,8 @@ ripe 8.8.8.8 AS7018 100
 ripe IN
 # Count the active probes in AT&T.
 ripe AS7018
-# Get the report for measurement #67353375.
-ripe 67353375
+# Get the report for measurement #67353375, by its link.
+ripe https://atlas.ripe.net/measurements/67353375/
 ```
 
 ## Vendor
