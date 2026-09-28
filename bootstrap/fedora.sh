@@ -5,12 +5,13 @@
 ################################################################################
 
 _NAME=$(command basename "$0")
-if command ps -e | command grep -Eq "Xorg|wayland"; then
+if compgen -G '/usr/share/wayland-sessions/*.desktop' >/dev/null ||
+	compgen -G '/usr/share/xsessions/*.desktop' >/dev/null; then
 	HAS_GUI=1
 else
 	HAS_GUI=0
 fi
-if command lspci 2>/dev/null | command grep -iq nvidia; then
+if command grep -qs 0x10de /sys/bus/pci/devices/*/vendor; then
 	HAS_NVIDIA=1
 else
 	HAS_NVIDIA=0
@@ -39,7 +40,7 @@ TIME_ZONE="America/Los_Angeles"
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
@@ -48,26 +49,33 @@ error() {
 # Validate input
 ################################################################################
 
-for arg in "$@"; do
-	case "$arg" in
+while (($#)); do
+	case "$1" in
 	--help)
 		echo "$HELP_DOC" && exit
 		;;
+	--hostname | --keys | --user)
+		[[ -z "$2" ]] && error "option '$1' requires a value" 64 # EX_USAGE
+		;;&
 	--hostname)
-		HOST_NAME="$arg"
+		HOST_NAME="$2"
+		shift
 		;;
 	--keys)
-		KEYS_FILE="$arg"
+		KEYS_FILE="$2"
 		[[ ! -r "$KEYS_FILE" ]] && error "file '$KEYS_FILE' not found"
 		[[ ! -s "$KEYS_FILE" ]] && error "file '$KEYS_FILE' empty"
+		shift
 		;;
 	--user)
-		USER_NAME="$arg"
+		USER_NAME="$2"
+		shift
 		;;
 	*)
 		echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
+	shift
 done
 if [[ $UID -eq 0 ]]; then
 	[[ -z "$USER_NAME" ]] && error "please pass the user name with --user"
@@ -80,7 +88,7 @@ fi
 ################################################################################
 
 # Cockpit
-sudo dnf remove -y cockpit*
+sudo dnf remove -y 'cockpit*'
 # DNF
 if ! grep -q '^max_parallel_downloads' /etc/dnf/dnf.conf; then
 	echo "max_parallel_downloads=20" | sudo tee -a /etc/dnf/dnf.conf
@@ -88,7 +96,7 @@ fi
 # DNS
 sudo tee /etc/systemd/resolved.conf <<EOF
 [Resolve]
-DNS=8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::884
+DNS=8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844
 FallbackDNS=
 Domains=~.
 #DNSSEC=no
@@ -108,33 +116,33 @@ sudo systemctl daemon-reload
 sudo systemctl restart systemd-resolved
 # Expand root partition
 free_space="$(
-	sudo vgs --rows |
+	sudo vgs --rows 2>/dev/null |
 		command grep 'VFree' |
 		command awk '{print $2}'
 )"
-if [[ "$free_space" != "0" ]]; then
-	logical_volume="$(
-		command df -h |
-			command grep /$ |
-			command awk '{print $1}'
-	)"
+if [[ -n "$free_space" && "$free_space" != "0" ]]; then
+	logical_volume="$(command findmnt -no SOURCE /)"
 	sudo lvextend -r -l +100%FREE "$logical_volume"
 fi
 # Firewall
 sudo systemctl disable --now firewalld
 # Hostname
 [[ -n "$HOST_NAME" ]] && sudo hostnamectl set-hostname "$HOST_NAME"
+# User
+if ! command id "$USER_NAME" &>/dev/null; then
+	sudo useradd -m -G wheel "$USER_NAME"
+fi
 # SSH
-[[ "$USER_NAME" != "$USER" ]] && command su "$USER_NAME"
 if [[ -n "$KEYS_FILE" ]]; then
-	command chmod 700 "$HOME"
-	command mkdir "$HOME/.ssh"
-	command chmod 700 "$HOME/.ssh"
-	sudo cp "$KEYS_FILE" "$HOME/.ssh/authorized_keys"
-	sudo chown "$USER_NAME": "$HOME/.ssh/authorized_keys"
-	command chmod 600 "$HOME/.ssh/authorized_keys"
-	sudo passwd -d root
-	sudo sed -i 's/^PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
+	user_home="$(command getent passwd "$USER_NAME" | command cut -d: -f6)"
+	sudo chmod 700 "$user_home"
+	sudo mkdir -p "$user_home/.ssh"
+	sudo cp "$KEYS_FILE" "$user_home/.ssh/authorized_keys"
+	sudo chown -R "$USER_NAME": "$user_home/.ssh"
+	sudo chmod 700 "$user_home/.ssh"
+	sudo chmod 600 "$user_home/.ssh/authorized_keys"
+	sudo passwd -l root
+	echo "PermitRootLogin no" | sudo tee /etc/ssh/sshd_config.d/00-root-login.conf
 fi
 echo "PrintLastLog No" | sudo tee /etc/ssh/sshd_config.d/silent-login.conf
 sudo systemctl daemon-reload
@@ -156,12 +164,10 @@ EOF
 sudo sysctl -p /etc/sysctl.d/98-tcp.conf
 # Time zone
 sudo timedatectl set-timezone "$TIME_ZONE"
-# User
-[[ -n "$USER_NAME" ]] && sudo useradd -m -G wheel "$USER_NAME"
-if sudo grep -q '^# %wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL' /etc/sudoers; then
-	sudo sed -i 's/^#\+[[:space:]]*%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/g' /etc/sudoers
-	sudo sed -i 's/^%wheel[[:space:]]\+ALL=(ALL)[[:space:]]\+ALL/# %wheel ALL=(ALL) ALL/g' /etc/sudoers
-fi
+# Sudo
+echo "%wheel ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/wheel
+sudo chmod 440 /etc/sudoers.d/wheel
+sudo visudo -cf /etc/sudoers.d/wheel || sudo rm -f /etc/sudoers.d/wheel
 
 ################################################################################
 # CLI
@@ -169,41 +175,34 @@ fi
 
 # Docker
 sudo rpm --import "https://download.docker.com/linux/fedora/gpg"
-sudo dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+sudo dnf config-manager addrepo --overwrite --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
 # Filebot
-sudo rpm --import "https://raw.githubusercontent.com/filebot/plugins/master/gpg/maintainer.pub"
-sudo tee /etc/yum.repos.d/filebot.repo <<EOF
-[filebot]
-name=filebot
-baseurl=https://get.filebot.net/rpm/main/x86_64
-skip_if_unavailable=True
-gpgcheck=0
-gpgkey=https://raw.githubusercontent.com/filebot/plugins/master/gpg/maintainer.pub
-enabled=1
-enabled_metadata=1
-EOF
+sudo dnf config-manager addrepo --overwrite --id=filebot \
+	--set=name=filebot \
+	--set=baseurl=https://get.filebot.net/rpm/main/x86_64 \
+	--set=skip_if_unavailable=1 \
+	--set=gpgcheck=0
 # Google Cloud CLI
-sudo rpm --import "https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
-sudo tee /etc/yum.repos.d/google-cloud-sdk.repo <<EOF
-[google-cloud-cli]
-name=Google Cloud CLI
-baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-\$basearch
-enabled=1
-gpgcheck=1
-repo_gpgcheck=0
-gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-EOF
+sudo rpm --import "https://packages.cloud.google.com/yum/doc/rpm-package-key-v10.gpg"
+sudo dnf config-manager addrepo --overwrite --id=google-cloud-cli --save-filename=google-cloud-sdk \
+	--set=name="Google Cloud CLI" \
+	--set=baseurl='https://packages.cloud.google.com/yum/repos/cloud-sdk-el10-$basearch' \
+	--set=gpgcheck=1 \
+	--set=repo_gpgcheck=0 \
+	--set=gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key-v10.gpg
 # RPM Fusion
 for repo in free nonfree; do
-	sudo dnf install -y "https://mirrors.rpmfusion.org/$repo/fedora/rpmfusion-$repo-release-$(rpm -E %fedora).noarch.rpm"
+	sudo dnf install -y "https://mirrors.rpmfusion.org/$repo/fedora/rpmfusion-$repo-release-$(rpm -E %fedora).noarch.rpm" ||
+		error "RPM Fusion $repo install failed"
 done
 # Tailscale
 sudo rpm --import "https://pkgs.tailscale.com/stable/fedora/repo.gpg"
-sudo dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+sudo dnf config-manager addrepo --overwrite --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 
 sudo dnf upgrade -y
 
 CLI_APPS=(
+	7zip
 	aircrack-ng
 	aria2
 	bat
@@ -219,13 +218,14 @@ CLI_APPS=(
 	containerd.io
 	cronie
 	datamash
-	dnf-automatic
+	dnf5-plugin-automatic
 	dnsperf
 	docker-buildx-plugin
 	docker-ce
 	docker-ce-cli
 	docker-compose-plugin
 	et
+	ethtool
 	ettercap
 	expect
 	fd-find
@@ -236,7 +236,6 @@ CLI_APPS=(
 	git-extras
 	golang
 	google-cloud-cli
-	hping3
 	htop
 	httpd-tools
 	hydra
@@ -245,6 +244,7 @@ CLI_APPS=(
 	innoextract
 	intel-media-driver
 	iperf3
+	jq
 	libnotify
 	libva-utils
 	lynis
@@ -266,8 +266,6 @@ CLI_APPS=(
 	nut
 	oathtool
 	openssl
-	p7zip
-	p7zip-plugins
 	parallel
 	perf
 	pipx
@@ -285,7 +283,6 @@ CLI_APPS=(
 	ripgrep
 	rust
 	ShellCheck
-	shfmt
 	socat
 	speedtest-cli
 	sshpass
@@ -299,17 +296,18 @@ CLI_APPS=(
 	tree
 	uboot-tools
 	unrar
-	vim
+	vim-enhanced
 	whois
 	wireguard-tools
 	wireshark-cli
 	xq
 	yt-dlp
 )
-sudo dnf install -y "${CLI_APPS[@]}" --allowerasing
+sudo dnf install -y "${CLI_APPS[@]}" --allowerasing ||
+	error "CLI package install failed"
 
 SERVICES=(
-	dnf-automatic.timer
+	dnf5-automatic.timer
 	docker
 	et
 	fwupd-refresh.timer
@@ -325,15 +323,16 @@ sudo systemctl enable --now "${SERVICES[@]}"
 if [[ $HAS_GUI -eq 1 ]]; then
 	# 1Password
 	sudo rpm --import https://downloads.1password.com/linux/keys/1password.asc
-	sudo tee "/etc/yum.repos.d/1password.repo" >/dev/null <<EOF
-[1password]
-name="1Password Stable Channel"
-baseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://downloads.1password.com/linux/keys/1password.asc
-EOF
+	sudo dnf config-manager addrepo --overwrite --id=1password \
+		--set=name="1Password Stable Channel" \
+		--set=baseurl='https://downloads.1password.com/linux/rpm/stable/$basearch' \
+		--set=gpgcheck=1 \
+		--set=repo_gpgcheck=1 \
+		--set=gpgkey=https://downloads.1password.com/linux/keys/1password.asc
+	# Google Chrome
+	sudo dnf install -y fedora-workstation-repositories ||
+		error "Google Chrome repo install failed"
+	sudo dnf config-manager setopt google-chrome.enabled=1
 
 	GUI_APPS=(
 		1password
@@ -344,7 +343,8 @@ EOF
 		vlc
 		wireshark
 	)
-	sudo dnf install -y "${GUI_APPS[@]}"
+	sudo dnf install -y "${GUI_APPS[@]}" ||
+		error "GUI package install failed"
 fi
 
 ################################################################################
@@ -354,14 +354,14 @@ fi
 if [[ $HAS_NVIDIA -eq 1 ]]; then
 	NVIDIA_APPS=(
 		akmod-nvidia
-		libva-utils
-		nvidia-vaapi-driver
+		libva-nvidia-driver
 		vdpauinfo
 		xorg-x11-drv-nvidia
 		xorg-x11-drv-nvidia-cuda
 		xorg-x11-drv-nvidia-cuda-libs
 	)
-	sudo dnf install -y "${NVIDIA_APPS[@]}"
+	sudo dnf install -y "${NVIDIA_APPS[@]}" ||
+		error "Nvidia package install failed"
 	# To account for a bug where autoremove might wrongly remove the package.
 	sudo dnf mark install akmod-nvidia
 fi
@@ -371,23 +371,33 @@ fi
 ################################################################################
 
 for lang in golang node python rust; do
-	command bash "$(command dirname "$0")/lib/$lang.sh"
+	# shellcheck disable=SC2024
+	sudo -iu "$USER_NAME" bash -s <"$(command dirname "$0")/lib/$lang.sh"
 done
 
 ################################################################################
 # Config after
 ################################################################################
 
+# DNF
+if [[ -r /etc/dnf/automatic.conf ]]; then
+	sudo sed -i 's/^apply_updates\s*=\s*no/apply_updates = yes/' /etc/dnf/automatic.conf
+else
+	printf '[commands]\napply_updates = yes\n' | sudo tee /etc/dnf/automatic.conf
+fi
 # Docker
-[[ $UID -ne 0 ]] && sudo usermod -aG docker "$USER"
+sudo usermod -aG docker "$USER_NAME"
 [[ ! -r /etc/docker/daemon.json ]] && echo "{}" | sudo tee /etc/docker/daemon.json
-command jq '.["metrics-addr"] = "0.0.0.0:9323"' /etc/docker/daemon.json | sudo tee /etc/docker/daemon.json
-if command ss -tulpn | command grep -q :9323; then
+daemon_json="$(command jq '.["metrics-addr"] = "0.0.0.0:9323"' /etc/docker/daemon.json)" &&
+	echo "$daemon_json" | sudo tee /etc/docker/daemon.json
+if ! command ss -tulpn | command grep -q :9323; then
 	sudo systemctl restart docker
 fi
 # Tailscale
-echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
-echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+sudo tee /etc/sysctl.d/99-tailscale.conf <<EOF
+net.ipv4.ip_forward = 1
+net.ipv6.conf.all.forwarding = 1
+EOF
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
 printf '#!/bin/sh\n\nethtool -K %s rx-udp-gro-forwarding on rx-gro-list off \n' "$(
 	command ip -o route get 8.8.8.8 |

@@ -7,4 +7,4 @@ PKGS=(
 	lighthouse
 	tonal
 )
-npm install --global "${PKGS[@]}"
+npm install --global --prefix "$HOME/.npm-packages" "${PKGS[@]}"
