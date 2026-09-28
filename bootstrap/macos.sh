@@ -16,11 +16,11 @@ fi
 
 TAPS=(
 	domt4/autoupdate
-	owasp-amass/amass
 )
 for tap in "${TAPS[@]}"; do
 	brew tap "$tap"
 done
+brew trust --command domt4/autoupdate/autoupdate
 
 CLI_APPS=(
 	aircrack-ng
@@ -29,6 +29,7 @@ CLI_APPS=(
 	bash
 	bash-completion@2
 	bat
+	bettercap
 	bind
 	binwalk
 	blueutil
@@ -45,7 +46,6 @@ CLI_APPS=(
 	dnsperf
 	dos2unix
 	e2fsprogs
-	ettercap
 	exiftool
 	expect
 	fd
@@ -58,7 +58,9 @@ CLI_APPS=(
 	gawk
 	gbevin/tools/receivemidi
 	gbevin/tools/sendmidi
+	gcalcli
 	gcc
+	gdown
 	gdrive
 	git
 	git-extras
@@ -79,8 +81,6 @@ CLI_APPS=(
 	iodine
 	iperf3
 	ipinfo-cli
-	insta360-link-controller
-	java
 	john-jumbo
 	jq
 	launchctl-completion
@@ -91,11 +91,9 @@ CLI_APPS=(
 	midicsv
 	miller
 	MisterTea/et/et
-	mitmproxy
 	mkvtoolnix
 	mpv
 	mtr
-	mvtools
 	ncdu
 	nethogs
 	netmask
@@ -105,6 +103,7 @@ CLI_APPS=(
 	node
 	oath-toolkit
 	open-completion
+	openjdk
 	openssh
 	opus-tools
 	p7zip
@@ -129,6 +128,7 @@ CLI_APPS=(
 	rustup
 	shellcheck
 	shfmt
+	smartmontools
 	socat
 	sox
 	speedtest-cli
@@ -150,7 +150,9 @@ CLI_APPS=(
 	u-boot-tools
 	uni
 	util-linux
+	uv
 	vapoursynth
+	vapoursynth-mvtools
 	vim
 	wakeonlan
 	watch
@@ -189,15 +191,14 @@ GUI_APPS=(
 	burp-suite
 	calibre
 	charles
-	chatgpt
 	chrome-remote-desktop-host
-	chromedriver
+	claude
 	cleanshot
 	contexts
-	copilot
+	copilot-money
 	daisydisk
 	discord
-	docker
+	docker-desktop
 	dropbox
 	elgato-control-center
 	elgato-stream-deck
@@ -206,39 +207,42 @@ GUI_APPS=(
 	fabfilter-pro-r
 	fantastical
 	firefox
+	fluidvoice
 	garmin-basecamp
 	garmin-express
+	gcloud-cli
 	google-chrome
-	google-cloud-sdk
-	handbrake
+	handbrake-app
 	ilok-license-manager
 	imaging-edge
 	inkscape
+	insta360-link-controller
 	istat-menus
 	iterm2
 	izotope-product-portal
 	keycastr
+	logitech-g-hub
 	loopback
-	messenger
 	meta
-	metasploit
+	mitmproxy
 	monodraw
+	musescore
 	native-access
 	notion
 	obs
 	pixelsnap
-	qlvideo
-	rar
+	qflipper
+	quicklook-video
 	rectangle-pro
 	sf-symbols
 	signal
-	soundsource
 	spitfire-audio
 	spotify
 	steam
+	steinberg-download-assistant
 	synthesia
 	sysex-librarian
-	tailscale
+	tailscale-app
 	telegram
 	textual
 	the-unarchiver
@@ -250,7 +254,7 @@ GUI_APPS=(
 	whisky
 	wifi-explorer-pro
 	wifispoof
-	wireshark
+	wireshark-app
 	yacreader
 	yubico-authenticator
 	zoom
