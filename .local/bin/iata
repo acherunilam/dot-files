@@ -227,5 +227,6 @@ wiki|$wiki" |
 	fi
 fi
 
-# No matches should result in exit code 1.
-builtin echo "$result" | command sed 's/~/,/g' | command grep .
+# No match is an answer rather than an error.
+[[ -z "$result" ]] && exit 0
+builtin echo "$result" | command sed 's/~/,/g'
