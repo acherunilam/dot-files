@@ -35,9 +35,16 @@ check_if_installed() {
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
+}
+
+# Usage:
+#       quote_curl_config <value>
+quote_curl_config() {
+	local value="${1//\\/\\\\}"
+	builtin printf '"%s"' "${value//\"/\\\"}"
 }
 
 ################################################################################
@@ -59,26 +66,43 @@ shift $((OPTIND - 1))
 [[ $# -eq 0 ]] && error "missing input, please pass a destination, country, ASN, or measurement ID" 64 # EX_USAGE
 target="$(command sed -E 's/^as([0-9]+)$/\1/g' <<<"${1,,}")"
 check_if_installed "jq" "https://github.com/stedolan/jq"
-check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
 [[ -z "$ATLAS_CREATE_KEY" ]] && error "missing environment variable, please set ATLAS_CREATE_KEY" 78 # EX_CONFIG
 
 ################################################################################
 # Execute.
 ################################################################################
 
-if [[ "$target" =~ ^[a-z]{2}$ || "$target" =~ ^[0-9]{1,10}$ ]]; then # count probes
+set -o pipefail
+# A measurement link, with or without the scheme, and whatever follows the ID.
+if [[ "$target" =~ ^(https?://)?(www\.)?atlas\.ripe\.net/measurements/([0-9]+)([/?#].*)?$ ]]; then # fetch report
+	measurement_id="${BASH_REMATCH[3]}"
+	# Hand the key over as a config on STDIN, as any user can read the arguments
+	# of a running curl.
+	# shellcheck disable=SC2086
+	response="$(
+		builtin printf 'header = %s\n' "$(quote_curl_config "Authorization: Key $ATLAS_CREATE_KEY")" |
+			command curl -qsS $CURL_ARGS --config - \
+				"https://atlas.ripe.net/api/v2/measurements/$measurement_id/results"
+	)" || error "unable to reach atlas.ripe.net"
+	command jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from atlas.ripe.net"
+	api_error="$(
+		command jq -r 'if type == "object" and has("error") then "\(.error.title): \(.error.detail)" else empty end' <<<"$response"
+	)"
+	[[ -n "$api_error" ]] && error "[atlas.ripe.net] $api_error"
+	command jq '.' <<<"$response"
+elif [[ "$target" =~ ^[a-z]{2}$ || "$target" =~ ^[0-9]{1,10}$ ]]; then # count probes
+	check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
+	# AS0 is reserved, and the search would take it as no filter at all.
+	[[ "$target" =~ ^0+$ ]] && error "'AS$target' is not a valid country or ASN" 65 # EX_DATAERR
 	[[ "$target" =~ ^[a-z]{2}$ ]] && filter_by="country" || filter_by="asn"
-	command ripe-atlas probe-search --limit "$PROBE_SEARCH_LIMIT" --"$filter_by" \
-		"$target" --status 1 --ids-only |
-		command wc -l |
-		command awk '{print $1}'
-elif [[ "$target" =~ ^https://atlas.ripe.net/measurements/[0-9]+/?$ ]]; then # fetch report
-	target="$(command sed -E 's/.*measurements\/([0-9]+)\/?/\1/g' <<<"$target")"
-	command curl -qsS $CURL_ARGS -H "Authorization: Key $ATLAS_CREATE_KEY" \
-		"https://atlas.ripe.net/api/v2/measurements/$target/results" |
-		command jq -e '.' ||
-		error "unable to reach atlas.ripe.net"
+	probes="$(
+		command ripe-atlas probe-search --limit "$PROBE_SEARCH_LIMIT" --"$filter_by" \
+			"$target" --status 1 --ids-only
+	)" || error "unable to count the probes in '$1'"
+	command grep -c . <<<"$probes"
+	exit 0
 else # run traceroute
+	check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
 	filter_by="area"
 	filter_value="$(
 		builtin echo "${2:-WW}" | command tr '[:lower:]' '[:upper:]' | command sed -E 's/^AS//g'
@@ -91,6 +115,8 @@ else # run traceroute
 		error "'$filter_value' is not a valid country or ASN" 65 # EX_DATAERR
 	fi
 	probe_count="${3:-$PROBE_COUNT_DEFAULT}"
+	[[ "$probe_count" =~ ^[1-9][0-9]*$ ]] ||
+		error "invalid probe count '$probe_count', please pass a positive whole number" 64 # EX_USAGE
 	command ripe-atlas measure traceroute "$target" \
 		--description "[traceroute] [$filter_value] $target" \
 		--from-"$filter_by" "$filter_value" \
