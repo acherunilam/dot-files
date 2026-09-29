@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 MODULES=(
 	github.com/cemulus/crt
 	github.com/danielgatis/imgcat

@@ -372,7 +372,8 @@ fi
 
 for lang in golang node python rust; do
 	# shellcheck disable=SC2024
-	sudo -iu "$USER_NAME" bash -s <"$(command dirname "$0")/lib/$lang.sh"
+	sudo -iu "$USER_NAME" bash -s <"$(command dirname "$0")/lib/$lang.sh" ||
+		error "$lang install failed"
 done
 
 ################################################################################

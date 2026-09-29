@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 PKGS=(
 	fast-cli
 	firebase-tools
