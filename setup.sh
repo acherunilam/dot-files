@@ -54,7 +54,7 @@ install_if_missing() {
 # Usage:
 #       error <message> [<exit_code>]
 error() {
-	[[ $2 -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
+	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
 	builtin echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
@@ -64,9 +64,6 @@ error() {
 ################################################################################
 
 export PATH="/opt/homebrew/bin:$PATH"
-
-install_if_missing "git"
-install_if_missing "rsync"
 
 for arg in "$@"; do
 	case "$arg" in
@@ -133,13 +130,16 @@ done
 [[ $HELP == 1 ]] && builtin echo "$HELP_DOC" && exit
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	! command -v brew >/dev/null &&
-		env INTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+		env INTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/tty
 fi
+install_if_missing "git"
+install_if_missing "rsync"
 
 if [[ -p /dev/stdin ]]; then
 	[[ $# -eq 0 ]] && INSTALL_ALL=1
 	TMP_DIR="$(command mktemp -d)"
-	command git clone https://github.com/acherunilam/dot-files "$TMP_DIR"
+	builtin trap 'command rm -rf "$TMP_DIR"' EXIT
+	command git clone https://github.com/acherunilam/dot-files "$TMP_DIR" || error "unable to clone the repo"
 	builtin cd "$TMP_DIR" || error "unable to cd into $TMP_DIR"
 else
 	[[ $# -eq 0 ]] && builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
@@ -170,22 +170,22 @@ if [[ $INSTALL_ALL == 1 ]]; then
 	INSTALL_TMUX=1
 	INSTALL_VIM=1
 fi
-[[ $INSTALL_BASH == 1 ]] && SOURCE+=" ./.bashrc ./.bash_profile ./.bash/*.sh"
-[[ $INSTALL_BIN == 1 ]] && SOURCE+=" ./.local/bin/*"
-[[ $INSTALL_CURL == 1 ]] && SOURCE+=" ./.curlrc"
-[[ $INSTALL_EDITLINE == 1 ]] && SOURCE+=" ./.editrc"
-[[ $INSTALL_FASD == 1 ]] && SOURCE+=" ./.fasdrc"
-[[ $INSTALL_GIT == 1 ]] && SOURCE+=" ./.gitconfig"
-[[ $INSTALL_MITMPROXY == 1 ]] && SOURCE+=" ./.mitmproxy/*.yaml"
-[[ $INSTALL_PYTHON == 1 ]] && SOURCE+=" ./.pythonrc"
-[[ $INSTALL_READLINE == 1 ]] && SOURCE+=" ./.inputrc"
-[[ $INSTALL_RIPGREP == 1 ]] && SOURCE+=" ./.ripgreprc"
-[[ $INSTALL_SCREEN == 1 ]] && SOURCE+=" ./.screenrc"
-[[ $INSTALL_SSH == 1 ]] && SOURCE+=" ./.ssh"
-[[ $INSTALL_TMUX == 1 ]] && SOURCE+=" ./.tmux.conf"
-[[ $INSTALL_VIM == 1 ]] && SOURCE+=" ./.vimrc"
+[[ $INSTALL_BASH == 1 ]] && SOURCE+=" .bashrc .bash_profile .bash/*.sh"
+[[ $INSTALL_BIN == 1 ]] && SOURCE+=" .local/bin/*"
+[[ $INSTALL_CURL == 1 ]] && SOURCE+=" .curlrc"
+[[ $INSTALL_EDITLINE == 1 ]] && SOURCE+=" .editrc"
+[[ $INSTALL_FASD == 1 ]] && SOURCE+=" .fasdrc"
+[[ $INSTALL_GIT == 1 ]] && SOURCE+=" .gitconfig"
+[[ $INSTALL_MITMPROXY == 1 ]] && SOURCE+=" .mitmproxy/*.yaml"
+[[ $INSTALL_PYTHON == 1 ]] && SOURCE+=" .pythonrc"
+[[ $INSTALL_READLINE == 1 ]] && SOURCE+=" .inputrc"
+[[ $INSTALL_RIPGREP == 1 ]] && SOURCE+=" .ripgreprc"
+[[ $INSTALL_SCREEN == 1 ]] && SOURCE+=" .screenrc"
+[[ $INSTALL_SSH == 1 ]] && SOURCE+=" .ssh"
+[[ $INSTALL_TMUX == 1 ]] && SOURCE+=" .tmux.conf"
+[[ $INSTALL_VIM == 1 ]] && SOURCE+=" .vimrc"
 [[ "$OSTYPE" != "darwin"* ]] && EXCLUDE_FILES+=" --exclude=mac.sh"
-command rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
+[[ -n $SOURCE ]] && command rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
 
 if [[ $INSTALL_BASH == 1 ]] && [[ "$OSTYPE" == "darwin"* ]]; then
 	command brew list | command grep ^bash$ >/dev/null || command brew install bash
@@ -196,7 +196,7 @@ if [[ $INSTALL_FASD == 1 ]]; then
 		command chmod 755 "$HOME/.local/bin/fasd"
 fi
 if [[ $INSTALL_NODE == 1 ]]; then
-	command sed -Ei '/^(fund|prefix)=/d' "$HOME/.npmrc" 2>/dev/null
+	command sed -E -i.bak '/^(fund|prefix)=/d' "$HOME/.npmrc" 2>/dev/null && command rm -f "$HOME/.npmrc.bak"
 	builtin echo -e "fund=false\nprefix=$HOME/.npm-packages" >>"$HOME/.npmrc"
 fi
 if [[ $INSTALL_VIM == 1 ]]; then
@@ -204,7 +204,7 @@ if [[ $INSTALL_VIM == 1 ]]; then
 	install_if_missing "vim"
 	command curl $CURL_ARGS -o "$TARGET_DIR/.vim/autoload/plug.vim" --create-dirs \
 		"https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-	command vim +PlugInstall +qall
+	command vim +PlugInstall +qall </dev/null
 fi
 if [[ $INSTALL_SSH == 1 ]]; then
 	command chmod 700 "$TARGET_DIR"
