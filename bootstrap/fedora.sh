@@ -389,9 +389,15 @@ fi
 # Docker
 sudo usermod -aG docker "$USER_NAME"
 [[ ! -r /etc/docker/daemon.json ]] && echo "{}" | sudo tee /etc/docker/daemon.json
-daemon_json="$(command jq '.["metrics-addr"] = "0.0.0.0:9323"' /etc/docker/daemon.json)" &&
+daemon_json="$(command jq '
+	.["metrics-addr"] = "0.0.0.0:9323" |
+	.["log-driver"] = "json-file" |
+	.["log-opts"] = {"max-size": "10m", "max-file": "3"}
+' /etc/docker/daemon.json)"
+if [[ "$daemon_json" != "$(command cat /etc/docker/daemon.json)" ]]; then
 	echo "$daemon_json" | sudo tee /etc/docker/daemon.json
-if ! command ss -tulpn | command grep -q :9323; then
+	sudo systemctl restart docker
+elif ! command ss -tulpn | command grep -q :9323; then
 	sudo systemctl restart docker
 fi
 # Tailscale
