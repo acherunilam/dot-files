@@ -413,7 +413,4 @@ printf '#!/bin/sh\n\nethtool -K %s rx-udp-gro-forwarding on rx-gro-list off \n' 
 	sudo tee /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
 sudo chmod 755 /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
 sudo /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
-if grep -q '^FLAGS=""' /etc/default/tailscaled; then
-	sudo sed -i 's/^FLAGS=""/FLAGS="--debug=0.0.0.0:1234"/g' /etc/default/tailscaled
-	sudo systemctl restart tailscaled
-fi
+sudo tailscale set --webclient
