@@ -308,5 +308,11 @@ done
 if ! command brew autoupdate status 2>/dev/null | command grep -q 'installed and running'; then
 	command mkdir -p ~/Library/LaunchAgents && command brew autoupdate start --upgrade
 fi
-# Tor
-command brew services start tor
+# Services
+BREW_SERVICES=(
+	supervisor
+	tor
+)
+for service in "${BREW_SERVICES[@]}"; do
+	command brew services start "$service"
+done
