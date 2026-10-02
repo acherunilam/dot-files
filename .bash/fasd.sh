@@ -3,7 +3,6 @@
 
 
 alias a='fasd -a'
-alias s='fasd -si'
 alias sd='fasd -sid'
 alias sf='fasd -sif'
 alias d='fasd -d'
@@ -56,7 +55,7 @@ _fasd_bash_hook_cmd_complete() {
 }
 
 # enable bash command mode completion
-_fasd_bash_hook_cmd_complete fasd a s d f sd sf z zz
+_fasd_bash_hook_cmd_complete fasd a d f sd sf z zz
 
 if [[ "$OSTYPE" == "darwin"* ]] ; then
     alias o='a -e open'
