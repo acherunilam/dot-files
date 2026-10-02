@@ -55,8 +55,6 @@ map <Esc>S :w !sudo tee % > /dev/null<CR>
 map <Esc>w :wq!<CR>
 " <escape>,q will quit the file without saving
 map <Esc>q :q!<CR>
-" F2 will toggle the option to paste text unmodified
-set pastetoggle=<F2>
 " F3 will remove all trailing whitespaces
 nnoremap <silent> <F3> :let _s=@/ <Bar> :%s/\s\+$//e <Bar> :let @/=_s <Bar> :nohl <Bar> :unlet _s<CR>
 " F4 will toggle spell check
