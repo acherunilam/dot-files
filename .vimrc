@@ -10,7 +10,8 @@ set foldenable                                                       " enable fo
 set foldlevelstart=10                                                " open most folds by default
 set foldnestmax=10                                                   " 10 nested fold max
 set foldmethod=indent                                                " fold based on indent level
-nnoremap <space> za                                                  " space opens/closes folds
+" space opens/closes folds
+nnoremap <space> za
 
 
 " Indentation
