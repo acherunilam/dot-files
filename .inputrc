@@ -8,7 +8,7 @@
 
 # display possible completions using different color
 set colored-stats on
-# filename matching is case sensitive
+# filename matching is case insensitive
 set completion-ignore-case on
 # treat '-' and '_' as equivalent when performing filename matching
 set completion-map-case on
