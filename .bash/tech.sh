@@ -8,7 +8,7 @@ include "$HOME/.acme.sh/acme.sh.env"
 #
 # Dependencies:
 #       dnf install bcc
-export PATH="/usr/share/bcc/tools:$PATH"
+prepend_path PATH "/usr/share/bcc/tools"
 
 # Configure helpers for Tor (https://www.torproject.org), an anonymous overlay network.
 alias tor-curl='curl -qsS --location --proxy socks5://localhost:9050'                    # curl through Tor

@@ -1,19 +1,20 @@
 # shellcheck shell=bash
 
 # Golang
-export PATH="$HOME/go/bin:$PATH"
+prepend_path PATH "$HOME/go/bin"
 
 # Node
 export NPM_PACKAGES="$HOME/.npm-packages"
-export NODE_PATH="$NPM_PACKAGES/lib/node_modules:$NODE_PATH"
-export PATH="$NPM_PACKAGES/bin:$PATH"
-export MANPATH="$NPM_PACKAGES/share/man:$MANPATH"
+prepend_path NODE_PATH "$NPM_PACKAGES/lib/node_modules"
+prepend_path PATH "$NPM_PACKAGES/bin"
+prepend_path MANPATH "$NPM_PACKAGES/share/man"
+[[ -n "$MANPATH" && "$MANPATH" != *: ]] && MANPATH+=":"
 
 # Python
 export PYTHONSTARTUP="$HOME/.pythonrc"
-for dir in $(command find "$HOME/Library/Python" -maxdepth 2 -type d -name bin 2>/dev/null); do
-	export PATH="$dir:$PATH"
+for dir in $(printf '%s\n' "$HOME"/Library/Python/*/bin | command sort -rV); do
+	prepend_path PATH "$dir"
 done
 
 # Rust
-export PATH="$HOME/.cargo/bin:$PATH"
+prepend_path PATH "$HOME/.cargo/bin"

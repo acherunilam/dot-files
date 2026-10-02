@@ -7,9 +7,10 @@
 export HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 export HOMEBREW_CELLAR="$HOMEBREW_PREFIX/Cellar"
 export HOMEBREW_REPOSITORY="$HOMEBREW_PREFIX"
-export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin${PATH+:$PATH}"
-export MANPATH="$HOMEBREW_PREFIX/share/man${MANPATH+:$MANPATH}:"
-export INFOPATH="$HOMEBREW_PREFIX/share/info:${INFOPATH:-}"
+prepend_path PATH "$HOMEBREW_PREFIX/sbin"
+prepend_path PATH "$HOMEBREW_PREFIX/bin"
+prepend_path MANPATH "$HOMEBREW_PREFIX/share/man"
+prepend_path INFOPATH "$HOMEBREW_PREFIX/share/info"
 include "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh"
 for file in "$HOMEBREW_PREFIX/etc/bash_completion.d/"*; do
 	include "$file"
@@ -21,26 +22,28 @@ export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
 
 # Load John the Ripper (https://www.openwall.com/john), a password security
 # auditing and password recovery tool.
-export PATH="$HOMEBREW_PREFIX/share/john/:$PATH"
+prepend_path PATH "$HOMEBREW_PREFIX/share/john/"
 
 # Load Metasploit (https://github.com/rapid7/metasploit-framework), a
 # penetration testing framework.
-export PATH="/opt/metasploit-framework/bin:$PATH"
+prepend_path PATH "/opt/metasploit-framework/bin"
 
 # Load Secretive (https://github.com/maxgoedjen/secretive), a Secure
 # Enclave-based SSH Agent.
 # export SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
-# export PATH="$HOMEBREW_PREFIX/opt/openssh/bin:$PATH"
+# prepend_path PATH "$HOMEBREW_PREFIX/opt/openssh/bin"
 
 # Make macOS more like Linux.
-export PATH="$HOMEBREW_PREFIX/opt/curl/bin:$PATH"
-export PATH="$HOMEBREW_PREFIX/opt/findutils/libexec/gnubin:$PATH"
-export MANPATH="$HOMEBREW_PREFIX/opt/findutils/libexec/gnuman:$MANPATH"
-export PATH="$HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnubin:$PATH"
-export MANPATH="$HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnuman:$MANPATH"
-export PATH="$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin:$PATH"
-export MANPATH="$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnuman:$MANPATH"
-export PATH="$HOMEBREW_PREFIX/opt/util-linux/bin:$PATH"
+prepend_path PATH "$HOMEBREW_PREFIX/opt/curl/bin"
+prepend_path PATH "$HOMEBREW_PREFIX/opt/findutils/libexec/gnubin"
+prepend_path MANPATH "$HOMEBREW_PREFIX/opt/findutils/libexec/gnuman"
+prepend_path PATH "$HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnubin"
+prepend_path MANPATH "$HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnuman"
+prepend_path PATH "$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin"
+prepend_path MANPATH "$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnuman"
+prepend_path PATH "$HOMEBREW_PREFIX/opt/util-linux/bin"
+[[ -n "$MANPATH" && "$MANPATH" != *: ]] && MANPATH+=":"
+[[ -n "$INFOPATH" && "$INFOPATH" != *: ]] && INFOPATH+=":"
 alias awk='gawk'                                                    # `awk -vFPAT` should work
 alias base64='gbase64'                                              # `base64 -w0` should work
 alias date='gdate'                                                  # `date -I` should work

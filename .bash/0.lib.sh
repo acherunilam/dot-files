@@ -32,6 +32,19 @@ error() {
 }
 
 
+# Prepend a directory to a colon-separated variable and export it, unless the
+# directory is already there or doesn't exist.
+#
+# Usage:
+#       prepend_path <variable> <dir>
+prepend_path() {
+    local var="$1" dir="$2"
+    [[ -d "$dir" && ":${!var}:" != *":$dir:"* ]] || return 0
+    printf -v "$var" '%s' "$dir${!var:+:${!var}}"
+    export "${var?}"
+}
+
+
 # Source a file only if it exists.
 #
 # Usage:
