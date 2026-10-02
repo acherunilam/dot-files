@@ -4,7 +4,7 @@
 # Global variables.
 ################################################################################
 
-_NAME="$(command basename "$0")"
+_NAME="$(basename "$0")"
 _HELP_DOC="Send a push notification using Pushover, a push notification service.
 
 Usage:
@@ -27,7 +27,7 @@ CURL_ARGS="--connect-timeout 2 --max-time 5"
 #       error <message> [<exit_code>]
 error() {
 	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
-	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
 
@@ -35,7 +35,7 @@ error() {
 #       quote_curl_config <value>
 quote_curl_config() {
 	local value="${1//\\/\\\\}"
-	builtin printf '"%s"' "${value//\"/\\\"}"
+	printf '"%s"' "${value//\"/\\\"}"
 }
 
 ################################################################################
@@ -49,10 +49,10 @@ while getopts ":ph" arg; do
 		priority=1
 		;;
 	h) # help
-		builtin echo "$_HELP_DOC" && exit
+		echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
+		echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
@@ -71,18 +71,18 @@ shift $((OPTIND - 1))
 # of a running curl.
 # shellcheck disable=SC2086
 response="$(
-	builtin printf 'form-string = %s\nform-string = %s\n' \
+	printf 'form-string = %s\nform-string = %s\n' \
 		"$(quote_curl_config "user=$PUSHOVER_USER")" \
 		"$(quote_curl_config "token=$PUSHOVER_TOKEN")" |
-		command curl -qsS $CURL_ARGS --config - \
+		curl -qsS $CURL_ARGS --config - \
 			--form-string "priority=$priority" \
 			--form-string "message=$*" \
 			"https://api.pushover.net/1/messages.json"
 )" || error "unable to reach pushover.net"
-if command grep -q '"user":"invalid"' <<<"$response"; then
+if grep -q '"user":"invalid"' <<<"$response"; then
 	error "invalid user, please check the environment variable PUSHOVER_USER" 78 # EX_CONFIG
-elif command grep -q '"token":"invalid"' <<<"$response"; then
+elif grep -q '"token":"invalid"' <<<"$response"; then
 	error "invalid token, please check the environment variable PUSHOVER_TOKEN" 78 # EX_CONFIG
-elif ! command grep -q '"status":1' <<<"$response"; then
+elif ! grep -q '"status":1' <<<"$response"; then
 	error "unknown error: $response"
 fi

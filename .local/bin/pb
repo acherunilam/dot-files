@@ -4,7 +4,7 @@
 # Global variables.
 ################################################################################
 
-_NAME="$(command basename "$0")"
+_NAME="$(basename "$0")"
 _HELP_DOC="Upload text to @mkaczanowski's Pastebin, a self-hosted pastebin. If
 nothing is piped in, then the contents of the clipboard will be used (macOS only).
 
@@ -32,24 +32,24 @@ SKIP_HTTP_PREFIX='true'
 #       error <message> [<exit_code>]
 error() {
 	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
-	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
 
 # Usage:
-#       builtin echo "text message" | pbcopy
+#       echo "text message" | pbcopy
 pbcopy() {
 	content="$(</dev/stdin)"
-	if builtin type -P pbcopy >/dev/null; then
-		builtin echo -n "$content" | command pbcopy
+	if type -P pbcopy >/dev/null; then
+		echo -n "$content" | command pbcopy
 		return
 	fi
 	# Without a clipboard of our own, ask the terminal to set it (OSC 52). GNU
 	# base64 wraps its output and BSD base64 doesn't, so join the lines either way.
-	output="$(builtin printf '\e]52;c;%s\a' "$(builtin echo -n "$content" | command base64 | command tr -d '\n')")"
+	output="$(printf '\e]52;c;%s\a' "$(echo -n "$content" | base64 | tr -d '\n')")"
 	# shellcheck disable=SC1003
-	[[ -n "$TMUX" ]] && output="$(builtin printf '\ePtmux;\e%s\e\\' "$output")"
-	builtin printf "%s" "$output"
+	[[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
+	printf "%s" "$output"
 }
 
 ################################################################################
@@ -69,10 +69,10 @@ while getopts ":bh" arg; do
 		curl_query="?burn=true"
 		;;
 	h) # help
-		builtin echo "$_HELP_DOC" && exit
+		echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
+		echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
@@ -82,15 +82,15 @@ shift $((OPTIND - 1))
 [[ $# -gt 0 ]] && error "invalid input, please pass the text via STDIN rather than as an argument" 64 # EX_USAGE
 # Upload the content byte for byte from a file, as holding it in a variable
 # drops NUL bytes and trailing newlines.
-content_file="$(command mktemp)" || error "unable to create a temporary file"
-trap 'command rm -f "$content_file"' EXIT
+content_file="$(mktemp)" || error "unable to create a temporary file"
+trap 'rm -f "$content_file"' EXIT
 if [[ -t 0 ]] || ! { : </dev/stdin; } 2>/dev/null; then # nothing piped in, or STDIN is closed
-	builtin type -P pbpaste >/dev/null && command pbpaste >"$content_file"
+	type -P pbpaste >/dev/null && pbpaste >"$content_file"
 	[[ -s "$content_file" ]] || error "missing input, please pass the text via STDIN" 64 # EX_USAGE
 else
 	# Only fall back on the clipboard when nothing was piped at all, or an empty
 	# pipeline would quietly upload whatever happens to be on the clipboard.
-	command cat >"$content_file"
+	cat >"$content_file"
 	[[ -s "$content_file" ]] || error "missing input, nothing was received on STDIN" 64 # EX_USAGE
 fi
 
@@ -102,11 +102,11 @@ curl_auth_args=()
 [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_args=(-u "$PASTEBIN_AUTH_BASIC")
 # shellcheck disable=SC2086
 response="$(
-	command curl -qfsS $CURL_ARGS -XPOST "${curl_auth_args[@]}" --data-binary @"$content_file" \
+	curl -qfsS $CURL_ARGS -XPOST "${curl_auth_args[@]}" --data-binary @"$content_file" \
 		"${PASTEBIN_URL%/}$curl_query"
 )" || error "unable to upload to $PASTEBIN_URL"
 [[ -z "$response" ]] && error "unknown error, missing response"
-[[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(command sed -E 's|https?://||g' <<<"$response")"
-builtin echo "$response"
-[[ -t 1 ]] && builtin echo -n "$response" | pbcopy
+[[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(sed -E 's|https?://||g' <<<"$response")"
+echo "$response"
+[[ -t 1 ]] && echo -n "$response" | pbcopy
 exit 0

@@ -51,8 +51,8 @@ elif [[ "$OSTYPE" == "darwin"* ]] ; then
     include "$HOMEBREW_PREFIX/opt/fzf/shell/completion.bash"
     include "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.bash"
 fi
-_fzf_compgen_dir() { fd --type d --hidden --follow --exclude ".git" --exclude ".hg" . "$1" ; }
-_fzf_compgen_path() { fd --hidden --follow --exclude ".git" --exclude ".hg" . "$1" ; }
+_fzf_compgen_dir() { command fd --type d --hidden --follow --exclude ".git" --exclude ".hg" . "$1" ; }
+_fzf_compgen_path() { command fd --hidden --follow --exclude ".git" --exclude ".hg" . "$1" ; }
 export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git"
 export FZF_DEFAULT_OPTS="--bind 'ctrl-a:select-all'"
 

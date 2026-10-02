@@ -7,7 +7,7 @@ set -euo pipefail
 ################################################################################
 
 if ! sudo grep -q "^$USER ALL=(ALL) NOPASSWD: ALL" /etc/sudoers; then
-	builtin echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
+	echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 fi
 
 ################################################################################
@@ -262,7 +262,7 @@ GUI_APPS=(
 )
 brew install --cask "${GUI_APPS[@]}"
 
-APP_STORE_APPS="$(command awk '{print $1}' <<<"
+APP_STORE_APPS="$(awk '{print $1}' <<<"
     1365531024      # 1Blocker
     1569813296      # 1Password for Safari
     937984704       # Amphetamine
@@ -297,7 +297,7 @@ mas install $APP_STORE_APPS
 ################################################################################
 
 for lang in golang node python rust; do
-	command bash "$(command dirname "$0")/lib/$lang.sh"
+	bash "$(dirname "$0")/lib/$lang.sh"
 done
 
 ################################################################################
@@ -305,8 +305,8 @@ done
 ################################################################################
 
 # Homebrew
-if ! command brew autoupdate status 2>/dev/null | command grep -q 'installed and running'; then
-	command mkdir -p ~/Library/LaunchAgents && command brew autoupdate start --upgrade
+if ! brew autoupdate status 2>/dev/null | grep -q 'installed and running'; then
+	mkdir -p ~/Library/LaunchAgents && brew autoupdate start --upgrade
 fi
 # Services
 BREW_SERVICES=(
@@ -314,5 +314,5 @@ BREW_SERVICES=(
 	tor
 )
 for service in "${BREW_SERVICES[@]}"; do
-	command brew services start "$service"
+	brew services start "$service"
 done

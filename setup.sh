@@ -5,7 +5,7 @@
 # Global variables
 ################################################################################
 
-_NAME=$(command basename "$0")
+_NAME=$(basename "$0")
 CURL_ARGS="-sSq --connect-timeout 2 --max-time 5 -fL"
 HELP_DOC="Set up dot files.
 
@@ -40,9 +40,9 @@ TARGET_DIR="$HOME"
 # Usage:
 #       install_if_missing <binary>
 install_if_missing() {
-	if ! builtin hash "$1" 2>/dev/null; then
+	if ! type -P "$1" >/dev/null; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
-			command brew install "$1"
+			brew install "$1"
 		else
 			sudo dnf install --assumeyes "$1"
 		fi
@@ -55,7 +55,7 @@ install_if_missing() {
 #       error <message> [<exit_code>]
 error() {
 	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
-	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
 
@@ -122,14 +122,14 @@ for arg in "$@"; do
 		INSTALL_VIM=1
 		;;
 	*)
-		builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+		echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
 
-[[ $HELP == 1 ]] && builtin echo "$HELP_DOC" && exit
+[[ $HELP == 1 ]] && echo "$HELP_DOC" && exit
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	! command -v brew >/dev/null &&
+	! type -P brew >/dev/null &&
 		env INTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/tty
 fi
 install_if_missing "git"
@@ -137,13 +137,13 @@ install_if_missing "rsync"
 
 if [[ -p /dev/stdin ]]; then
 	[[ $# -eq 0 ]] && INSTALL_ALL=1
-	TMP_DIR="$(command mktemp -d)"
-	builtin trap 'command rm -rf "$TMP_DIR"' EXIT
-	command git clone https://github.com/acherunilam/dot-files "$TMP_DIR" || error "unable to clone the repo"
-	builtin cd "$TMP_DIR" || error "unable to cd into $TMP_DIR"
+	TMP_DIR="$(mktemp -d)"
+	trap 'rm -rf "$TMP_DIR"' EXIT
+	git clone https://github.com/acherunilam/dot-files "$TMP_DIR" || error "unable to clone the repo"
+	cd "$TMP_DIR" || error "unable to cd into $TMP_DIR"
 else
-	[[ $# -eq 0 ]] && builtin echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
-	builtin cd "$(dirname "$0")" || error "unable to cd into $(dirname "$0")"
+	[[ $# -eq 0 ]] && echo "$HELP_DOC" >&2 && exit 64 # EX_USAGE
+	cd "$(dirname "$0")" || error "unable to cd into $(dirname "$0")"
 fi
 
 ################################################################################
@@ -185,29 +185,29 @@ fi
 [[ $INSTALL_TMUX == 1 ]] && SOURCE+=" .tmux.conf"
 [[ $INSTALL_VIM == 1 ]] && SOURCE+=" .vimrc"
 [[ "$OSTYPE" != "darwin"* ]] && EXCLUDE_FILES+=" --exclude=mac.sh"
-[[ -n $SOURCE ]] && command rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
+[[ -n $SOURCE ]] && rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
 
 if [[ $INSTALL_BASH == 1 ]] && [[ "$OSTYPE" == "darwin"* ]]; then
-	command brew list | command grep ^bash$ >/dev/null || command brew install bash
+	brew list | grep ^bash$ >/dev/null || brew install bash
 fi
 if [[ $INSTALL_FASD == 1 ]]; then
 	install_if_missing "curl"
-	command curl $CURL_ARGS -o "$HOME/.local/bin/fasd" --create-dirs "https://raw.githubusercontent.com/clvv/fasd/master/fasd" &&
-		command chmod 755 "$HOME/.local/bin/fasd"
+	curl $CURL_ARGS -o "$HOME/.local/bin/fasd" --create-dirs "https://raw.githubusercontent.com/clvv/fasd/master/fasd" &&
+		chmod 755 "$HOME/.local/bin/fasd"
 fi
 if [[ $INSTALL_NODE == 1 ]]; then
-	command sed -E -i.bak '/^(fund|prefix)=/d' "$HOME/.npmrc" 2>/dev/null && command rm -f "$HOME/.npmrc.bak"
-	builtin echo -e "fund=false\nprefix=$HOME/.npm-packages" >>"$HOME/.npmrc"
+	sed -E -i.bak '/^(fund|prefix)=/d' "$HOME/.npmrc" 2>/dev/null && rm -f "$HOME/.npmrc.bak"
+	echo -e "fund=false\nprefix=$HOME/.npm-packages" >>"$HOME/.npmrc"
 fi
 if [[ $INSTALL_VIM == 1 ]]; then
 	install_if_missing "curl"
 	install_if_missing "vim"
-	command curl $CURL_ARGS -o "$TARGET_DIR/.vim/autoload/plug.vim" --create-dirs \
+	curl $CURL_ARGS -o "$TARGET_DIR/.vim/autoload/plug.vim" --create-dirs \
 		"https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-	command vim +PlugInstall +qall </dev/null
+	vim +PlugInstall +qall </dev/null
 fi
 if [[ $INSTALL_SSH == 1 ]]; then
-	command chmod 700 "$TARGET_DIR"
-	command chmod 700 "$TARGET_DIR/.ssh"
-	command chmod 644 "$TARGET_DIR/.ssh/config"
+	chmod 700 "$TARGET_DIR"
+	chmod 700 "$TARGET_DIR/.ssh"
+	chmod 644 "$TARGET_DIR/.ssh/config"
 fi
