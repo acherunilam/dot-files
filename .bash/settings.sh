@@ -29,7 +29,6 @@ shopt -s cmdhist                                    # force multi-line commands 
 shopt -s direxpand                                  # replace directory names with the results of word expansion
 shopt -s dirspell                                   # auto-complete directory names even if there's a minor spelling mistake
 shopt -s dotglob                                    # consider filenames beginning with a '.' for filename expansions
-shopt -s expand_aliases                             # expand aliases in scripts
 shopt -s extglob                                    # enhance pattern matching features
 shopt -s globstar                                   # expand "**" to match files in subdirectories as well
 shopt -s histappend                                 # append to history rather than overwrite (avoid history loss)
