@@ -66,7 +66,7 @@ alias loc='mdfind -name 2>/dev/null'     # search globally by file name
 alias shred='gshred -vfzu -n 10'         # securely erase the file
 alias slp='pmset sleepnow'               # go to sleep
 
-# Shutdown or reboot immediately.
+# Shut down or reboot immediately.
 #
 # Usage:
 #       bye [-r]
@@ -96,7 +96,7 @@ cdf() {
 	fi
 }
 
-# Delete all small (>10M) downloaded files.
+# Delete all small (<10M) downloaded files.
 #
 # Usage:
 #       clean [-n]
