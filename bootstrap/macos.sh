@@ -166,6 +166,7 @@ CLI_APPS=(
 	yq
 	yt-dlp
 	zbar
+	zoxide
 	zsh
 	zsh-completions
 )
