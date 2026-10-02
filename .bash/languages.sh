@@ -11,7 +11,6 @@ prepend_path MANPATH "$NPM_PACKAGES/share/man"
 [[ -n "$MANPATH" && "$MANPATH" != *: ]] && MANPATH+=":"
 
 # Python
-export PYTHONSTARTUP="$HOME/.pythonrc"
 for dir in $(printf '%s\n' "$HOME"/Library/Python/*/bin | command sort -rV); do
 	prepend_path PATH "$dir"
 done
