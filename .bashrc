@@ -4,6 +4,7 @@
 # This file is read and executed only when Bash is invoked as an interactive
 # non-login shell. If not running interactively, don't do anything.
 [[ $- != *i* ]] && return
+_BASHRC_LOADED=1
 
 
 # Add the following locations to $PATH if not already present.
