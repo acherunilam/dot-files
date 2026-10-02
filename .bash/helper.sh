@@ -45,7 +45,6 @@ alias perf='sudo perf'              # performance analysis
 alias port='sudo ss -tulpn'         # show all listening ports
 alias scl='sudo systemctl'          # systemd inspection
 # Run with specific settings.
-alias bc='sed "s/^/scale=2;/g" | bc -l'                  # floating-point precision of 2
 alias mkdir='mkdir -p'                                   # create parent directory if it doesn't exist
 alias pls='sudo bash -c "$(history -p \!\!)"'            # re-execute last command with elevated privileges
 alias rsync='rsync -avhPLK --partial-dir=.rsync-partial' # enable partial synchronization
@@ -84,6 +83,14 @@ aw() {
 		done
 	done
 	command awk $opts '{print '"${columns%,}"'}'
+}
+
+# Calculator with a floating-point precision of 2.
+#
+# Usage:
+#       bc [<file>...]
+bc() {
+	command bc -ql <(echo scale=2) "$@"
 }
 
 # Intelligently columnate lists.
