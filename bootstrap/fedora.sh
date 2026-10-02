@@ -308,6 +308,7 @@ sudo dnf install -y "${CLI_APPS[@]}" --allowerasing ||
 	error "CLI package install failed"
 
 SERVICES=(
+	crond
 	dnf5-automatic.timer
 	docker
 	et
