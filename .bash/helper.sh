@@ -402,7 +402,7 @@ pct() {
 # Usage:
 #       pst [<delimiter>]
 pst() {
-	command sed ':a;N;$!ba;s/\n/'"$*"'/g'
+	command awk -v d="$*" 'NR > 1 { printf "%s", d } { printf "%s", $0 } END { if (NR) print "" }'
 }
 
 # Simplified version of xargs.
