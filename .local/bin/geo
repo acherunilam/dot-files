@@ -45,19 +45,19 @@ download_mmdb() {
 		"https://ipinfo.io/data/free/country_asn.mmdb?token=$IPINFO_API_TOKEN" \
 		--create-dirs -o "$DB_PATH.new"; then
 		rm -f "$DB_PATH.new"
-		error "unable to download the MMDB from ipinfo.io"
+		error "unable to download the MMDB from ipinfo.io" 69 # EX_UNAVAILABLE
 	fi
 	if grep -aq "per day limit" "$DB_PATH.new" 2>/dev/null; then
 		rm -f "$DB_PATH.new"
-		error "download failed, per day limit reached"
+		error "download failed, per day limit reached" 75 # EX_TEMPFAIL
 	fi
 	# Only replace the current MMDB with a real one, as ipinfo.io can answer with
 	# an error page instead. Its metadata marker sits in the last 128 KiB.
 	if ! tail -c 131072 "$DB_PATH.new" | LC_ALL=C grep -aqF "MaxMind.com"; then
 		rm -f "$DB_PATH.new"
-		error "download failed, ipinfo.io did not return an MMDB"
+		error "download failed, ipinfo.io did not return an MMDB" 76 # EX_PROTOCOL
 	fi
-	mv "$DB_PATH.new" "$DB_PATH" || error "unable to replace '$DB_PATH'"
+	mv "$DB_PATH.new" "$DB_PATH" || error "unable to replace '$DB_PATH'" 73 # EX_CANTCREAT
 }
 
 # Usage:
@@ -219,7 +219,7 @@ if [[ -z "$ip_addr" ]]; then # local MMDB
 	} 3>&1
 	if [[ -n "$lookup_errors" ]]; then
 		echo "$lookup_errors" >&2
-		exit 1
+		exit 74 # EX_IOERR
 	fi
 else # external API
 	# If a prefix is passed, only the first IP is considered.
@@ -229,8 +229,8 @@ else # external API
 	# shellcheck disable=SC2086
 	response="$(
 		curl -qsS $CURL_ARGS "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN"
-	)" || error "unable to reach ipinfo.io"
-	jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from ipinfo.io"
+	)" || error "unable to reach ipinfo.io" 69 # EX_UNAVAILABLE
+	jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from ipinfo.io" 76 # EX_PROTOCOL
 	api_error="$(
 		jq -r '.error // empty | if type == "object" then "\(.title): \(.message)" else . end' <<<"$response"
 	)"

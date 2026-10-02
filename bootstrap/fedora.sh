@@ -63,8 +63,8 @@ while (($#)); do
 		;;
 	--keys)
 		KEYS_FILE="$2"
-		[[ ! -r "$KEYS_FILE" ]] && error "file '$KEYS_FILE' not found"
-		[[ ! -s "$KEYS_FILE" ]] && error "file '$KEYS_FILE' empty"
+		[[ ! -r "$KEYS_FILE" ]] && error "file '$KEYS_FILE' not found" 66 # EX_NOINPUT
+		[[ ! -s "$KEYS_FILE" ]] && error "file '$KEYS_FILE' empty" 65 # EX_DATAERR
 		shift
 		;;
 	--user)
@@ -78,7 +78,7 @@ while (($#)); do
 	shift
 done
 if [[ $UID -eq 0 ]]; then
-	[[ -z "$USER_NAME" ]] && error "please pass the user name with --user"
+	[[ -z "$USER_NAME" ]] && error "please pass the user name with --user" 64 # EX_USAGE
 else
 	[[ -z "$USER_NAME" ]] && USER_NAME="$USER"
 fi

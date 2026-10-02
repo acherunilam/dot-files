@@ -82,7 +82,7 @@ shift $((OPTIND - 1))
 [[ $# -eq 0 ]] && error "missing input, please pass a URL" 64                                          # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one URL" 64                              # EX_USAGE
 url="$1"
-[[ ! $url =~ ^https?://[^\.]+\..+$ || $url =~ [[:cntrl:]] ]] && error "invalid input, please pass a URL" 65 # EX_DATAERR
+[[ ! $url =~ ^https?://[^\.]+\..+$ || $url =~ [[:cntrl:]] ]] && error "invalid input, please pass a URL" 64 # EX_USAGE
 
 ################################################################################
 # Execute.
@@ -95,8 +95,8 @@ curl_auth_args=()
 response="$(
 	curl -qfsS $CURL_ARGS -X POST "${curl_auth_args[@]}" \
 		-d "{\"longlink\":$(json_string "$url")}" "$shortener_url/api/new"
-)" || error "unable to shorten the URL via $shortener_url"
-[[ -z "$response" ]] && error "unknown error, missing response"
+)" || error "unable to shorten the URL via $shortener_url" 69 # EX_UNAVAILABLE
+[[ -z "$response" ]] && error "unknown error, missing response" 76 # EX_PROTOCOL
 response="$shortener_url/$response"
 [[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(sed -E 's|https?://||g' <<<"$response")"
 echo "$response"

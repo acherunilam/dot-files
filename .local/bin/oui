@@ -35,14 +35,14 @@ download_oui_db() {
 	if ! curl -qfsS $CURL_ARGS "https://standards-oui.ieee.org/oui/oui.txt" \
 		--create-dirs -o "$DB_PATH.new"; then
 		rm -f "$DB_PATH.new"
-		error "unable to download the DB from standards-oui.ieee.org"
+		error "unable to download the DB from standards-oui.ieee.org" 69 # EX_UNAVAILABLE
 	fi
 	if ! head -n1 "$DB_PATH.new" | grep -q '^OUI/MA-L' ||
 		! grep -q '(base 16)' "$DB_PATH.new"; then
 		rm -f "$DB_PATH.new"
-		error "download failed, standards-oui.ieee.org did not return the OUI DB"
+		error "download failed, standards-oui.ieee.org did not return the OUI DB" 76 # EX_PROTOCOL
 	fi
-	mv "$DB_PATH.new" "$DB_PATH" || error "unable to replace '$DB_PATH'"
+	mv "$DB_PATH.new" "$DB_PATH" || error "unable to replace '$DB_PATH'" 73 # EX_CANTCREAT
 }
 
 # Usage:
@@ -128,7 +128,7 @@ fi
 mac_id="${1^^}"
 # Either the three byte OUI itself or a whole MAC address.
 [[ ! "$mac_id" =~ ^[0-9A-F]{2}([:-]?[0-9A-F]{2}){2}(([:-]?[0-9A-F]{2}){3})?$ ]] &&
-	error "invalid input, please pass an OUI" 65 # EX_DATAERR
+	error "invalid input, please pass an OUI" 64 # EX_USAGE
 [[ ! -f "$DB_PATH" ]] && download_oui_db
 
 ################################################################################
@@ -139,7 +139,7 @@ mac_prefix="$(echo "$mac_id" | sed -E 's/(-|:)//g' | cut -c1-6)"
 # Only the "(base 16)" line of an entry starts with the bare prefix, the rest
 # (addresses included) could contain it anywhere.
 vendors="$(grep -E "^${mac_prefix}[[:space:]]+\(base 16\)" "$DB_PATH")"
-[[ $? -gt 1 ]] && error "unable to read '$DB_PATH'"
+[[ $? -gt 1 ]] && error "unable to read '$DB_PATH'" 74 # EX_IOERR
 # An OUI nobody has registered is an answer rather than an error.
 [[ -z "$vendors" ]] && exit 0
 # The DB has DOS line endings.
