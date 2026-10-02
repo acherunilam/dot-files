@@ -101,8 +101,8 @@ profile() {
 	if [[ -z "$BASH_VERSION" ]]; then
 		error "your shell $SHELL is unsupported"
 		return
-	elif [[ $(echo "$BASH_VERSION" | command cut -d'.' -f1-2 | command tr -d '.') -lt 42 ]]; then
-		error "Bash version $BASH_VERSION is too old, cannot redirect trace output"
+	elif ((BASH_VERSINFO[0] < 5)); then
+		error "Bash version $BASH_VERSION is too old, \$EPOCHREALTIME needs 5.0+"
 		return
 	fi
 	if [[ $# -eq 0 ]]; then
@@ -114,7 +114,7 @@ profile() {
 		error "'$1' is not a sourceable file" 2
 		return
 	else
-		src_cmd="source $1"
+		src_cmd="source $(printf '%q' "$1")"
 	fi
 	local CONTEXT_LINES=2
 	local script_file="$(command mktemp)"
