@@ -23,7 +23,6 @@ Options:
   --help              Print help.
   --mitmproxy         Install Mitmproxy config file.
   --node              Install NPM config file.
-  --python            Install Python config file.
   --readline          Install Readline config file.
   --ripgrep           Install Ripgrep config file.
   --screen            Install Screen config file.
@@ -97,9 +96,6 @@ for arg in "$@"; do
 	--mitmproxy)
 		INSTALL_MITMPROXY=1
 		;;
-	--python)
-		INSTALL_PYTHON=1
-		;;
 	--readline)
 		INSTALL_READLINE=1
 		;;
@@ -162,7 +158,6 @@ if [[ $INSTALL_ALL == 1 ]]; then
 	INSTALL_GIT=1
 	INSTALL_NODE=1
 	INSTALL_MITMPROXY=1
-	INSTALL_PYTHON=1
 	INSTALL_READLINE=1
 	INSTALL_RIPGREP=1
 	INSTALL_SCREEN=1
@@ -177,7 +172,6 @@ fi
 [[ $INSTALL_FASD == 1 ]] && SOURCE+=" .fasdrc"
 [[ $INSTALL_GIT == 1 ]] && SOURCE+=" .gitconfig"
 [[ $INSTALL_MITMPROXY == 1 ]] && SOURCE+=" .mitmproxy/*.yaml"
-[[ $INSTALL_PYTHON == 1 ]] && SOURCE+=" .pythonrc"
 [[ $INSTALL_READLINE == 1 ]] && SOURCE+=" .inputrc"
 [[ $INSTALL_RIPGREP == 1 ]] && SOURCE+=" .ripgreprc"
 [[ $INSTALL_SCREEN == 1 ]] && SOURCE+=" .screenrc"
