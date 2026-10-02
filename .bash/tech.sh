@@ -142,19 +142,3 @@ EOF
 	command bash --noprofile --norc -il "$script_file"
 	command rm "$script_file"
 }
-
-# Switch Tailscale exit node.
-#
-# Usage:
-#		ts [<exit_node_alias>]
-#
-# Environment variables:
-#       export TAILSCALE_EXIT_NODES=("node1" "node2")
-#
-# shellcheck disable=SC2086
-ts() {
-	local node="$1"
-	local args="--accept-routes"
-	[[ -n "$node" ]] && args+=" --exit-node-allow-lan-access"
-	command sudo tailscale up --reset --exit-node="$node" $args
-}
