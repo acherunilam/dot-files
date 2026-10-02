@@ -74,19 +74,13 @@ map <F9> :set list!<CR>
 " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 " then execute :PlugInstall inside Vim to set up all these plugins
 call plug#begin('~/.vim/plugged')
-Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}                 " tree explorer
-Plug 'scrooloose/syntastic'                                          " syntax checker
+Plug 'preservim/nerdtree', {'on': 'NERDTreeToggle'}                  " tree explorer
+Plug 'dense-analysis/ale'                                            " asynchronous lint engine
 Plug 'tpope/vim-surround'                                            " quoting/parenthesizing made simple
-Plug 'scrooloose/nerdcommenter'                                      " powerful comment functions
+Plug 'preservim/nerdcommenter'                                       " powerful comment functions
 Plug 'airblade/vim-gitgutter'                                        " show git diff in the sign column
 Plug 'chr4/nginx.vim'                                                " recognize Nginx config files
 call plug#end()
-" Syntastic plugin settings
-set statusline+=%#WarningMsg#                                        " enable highlight group 'WarningMsg'
-set statusline+=%{SyntasticStatuslineFlag()}                         " enable error flagging on the statusline
-set statusline+=%*                                                   " restore normal highlight
-let g:syntastic_check_on_open = 1                                    " run syntax checks when buffers are loaded
-let g:syntastic_check_on_wq = 0                                      " don't syntax check before write quit
 
 
 " Appearance
