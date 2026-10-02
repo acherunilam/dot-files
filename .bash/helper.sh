@@ -168,8 +168,8 @@ dnp() {
 #
 # Environment variables:
 #       export DOWNLOAD_ARIA_OPTIONS='(
-#           ["*uri_regex1*"]="--http-user=user --http-passwd=pass"
-#           ["*uri_regex2*"]="--header=\"Referer: https://example.com\""
+#           ["<uri_regex1>"]="--http-user=user --http-passwd=pass"
+#           ["<uri_regex2>"]="--header=\"Referer: https://example.com\""
 #       )'
 #
 # Dependencies:
@@ -177,21 +177,24 @@ dnp() {
 #
 # shellcheck disable=SC1003,SC2086
 download() {
-	local file files file_count failed message
-	local opts="--connect-timeout=2 --follow-torrent=false -x8 --continue=true"
+	local file files file_count failed message uri_regex extra_opts
+	local opts=(--connect-timeout=2 --follow-torrent=false -x8 --continue=true)
+	local -A download_opts=()
 	files="$*"
 	[[ -z "$files" ]] && files="$(command pbpaste)"
 	[[ -z "$files" ]] && return 1
 	file_count=$(command wc -w <<<"$files" | command tr -d ' ')
 	failed=0
-	declare -A download_opts=$DOWNLOAD_ARIA_OPTIONS
+	[[ -n "$DOWNLOAD_ARIA_OPTIONS" ]] && eval "download_opts=$DOWNLOAD_ARIA_OPTIONS"
 	for file in $files; do
-		extra_opts=""
+		extra_opts=()
 		for uri_regex in "${!download_opts[@]}"; do
-			[[ $file =~ $uri_regex ]] &&
-				extra_opts+=" ${download_opts[$uri_regex]}" && break
+			if [[ $file =~ $uri_regex ]]; then
+				eval "extra_opts=(${download_opts[$uri_regex]})"
+				break
+			fi
 		done
-		command aria2c $opts$extra_opts "$file" || ((failed += 1))
+		command aria2c "${opts[@]}" "${extra_opts[@]}" "$file" || ((failed += 1))
 	done
 	[[ $failed -eq 0 ]] &&
 		message="download: success" ||
