@@ -52,7 +52,7 @@ query_cymru() {
 	dig_output="$(dig +noall +comments +answer $DIG_ARGS TXT "$1")"
 	status="$(sed -nE 's/.*status: ([A-Z]+).*/\1/p' <<<"$dig_output" | head -n1)"
 	[[ "$status" == "NOERROR" || "$status" == "NXDOMAIN" ]] ||
-		error "unable to resolve '$1' via DNS${status:+ ($status)}"
+		error "unable to resolve '$1' via DNS${status:+ ($status)}" 69 # EX_UNAVAILABLE
 	sed -nE 's/^[^;].*[[:space:]]TXT[[:space:]]+//p' <<<"$dig_output" | sed -E 's/"//g'
 }
 
@@ -83,9 +83,9 @@ query_peeringdb() {
 	output="$(
 		curl -qsS $CURL_ARGS -H "Authorization: Api-Key $PEERINGDB_API_KEY" \
 			"https://www.peeringdb.com/api/${1#/}"
-	)" || error "unable to reach peeringdb.com"
+	)" || error "unable to reach peeringdb.com" 69 # EX_UNAVAILABLE
 	err_status="$(jq -r '.meta.error // empty' <<<"$output")" ||
-		error "unexpected response from peeringdb.com"
+		error "unexpected response from peeringdb.com" 76 # EX_PROTOCOL
 	[[ -n "$err_status" ]] && error "[PeeringDB] $err_status"
 	jq -r ".${2#.} // empty" <<<"$output"
 }
@@ -231,7 +231,7 @@ elif [[ $input =~ ^(as)?[0-9]+$ ]]; then # ASN
 				awk '{print (index($0, ":") ? 6 : 4) "\t" $0}' |
 				sort -t"$(printf '\t')" -k1,1n -k2,2V |
 				cut -f2-
-		)" || error "unable to reach stat.ripe.net"
+		)" || error "unable to reach stat.ripe.net" 69 # EX_UNAVAILABLE
 		if [[ -n "$output" ]] && [[ $all_prefixes -gt 1 ]]; then
 			check_if_installed "netmask" "https://github.com/tlby/netmask"
 			# shellcheck disable=SC2046

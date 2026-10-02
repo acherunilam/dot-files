@@ -78,7 +78,7 @@ response="$(
 			--form-string "priority=$priority" \
 			--form-string "message=$*" \
 			"https://api.pushover.net/1/messages.json"
-)" || error "unable to reach pushover.net"
+)" || error "unable to reach pushover.net" 69 # EX_UNAVAILABLE
 if grep -q '"user":"invalid"' <<<"$response"; then
 	error "invalid user, please check the environment variable PUSHOVER_USER" 78 # EX_CONFIG
 elif grep -q '"token":"invalid"' <<<"$response"; then

@@ -340,9 +340,9 @@ if [[ -z "$midis" ]]; then
 	error "unable to read chord '$1'" 70 # EX_SOFTWARE
 fi
 [[ "$midis" == "-" ]] &&
-	error "unknown chord '$1', please pass a symbol such as C, Cmaj7, or G7sus4/D" 65 # EX_DATAERR
+	error "unknown chord '$1', please pass a symbol such as C, Cmaj7, or G7sus4/D" 64 # EX_USAGE
 [[ "$midis" == "!" ]] &&
-	error "chord '$1' runs past the top of the MIDI range" 65 # EX_DATAERR
+	error "chord '$1' runs past the top of the MIDI range" 64 # EX_USAGE
 
 # A slash chord comes back as "<notes>/<bass>".
 bass=""

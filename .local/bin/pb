@@ -82,7 +82,7 @@ shift $((OPTIND - 1))
 [[ $# -gt 0 ]] && error "invalid input, please pass the text via STDIN rather than as an argument" 64 # EX_USAGE
 # Upload the content byte for byte from a file, as holding it in a variable
 # drops NUL bytes and trailing newlines.
-content_file="$(mktemp)" || error "unable to create a temporary file"
+content_file="$(mktemp)" || error "unable to create a temporary file" 73 # EX_CANTCREAT
 trap 'rm -f "$content_file"' EXIT
 if [[ -t 0 ]] || ! { : </dev/stdin; } 2>/dev/null; then # nothing piped in, or STDIN is closed
 	type -P pbpaste >/dev/null && pbpaste >"$content_file"
@@ -104,8 +104,8 @@ curl_auth_args=()
 response="$(
 	curl -qfsS $CURL_ARGS -XPOST "${curl_auth_args[@]}" --data-binary @"$content_file" \
 		"${PASTEBIN_URL%/}$curl_query"
-)" || error "unable to upload to $PASTEBIN_URL"
-[[ -z "$response" ]] && error "unknown error, missing response"
+)" || error "unable to upload to $PASTEBIN_URL" 69 # EX_UNAVAILABLE
+[[ -z "$response" ]] && error "unknown error, missing response" 76 # EX_PROTOCOL
 [[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(sed -E 's|https?://||g' <<<"$response")"
 echo "$response"
 [[ -t 1 ]] && echo -n "$response" | pbcopy

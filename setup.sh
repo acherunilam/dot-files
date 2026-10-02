@@ -167,10 +167,13 @@ fi
 [[ $INSTALL_TMUX == 1 ]] && SOURCE+=" .tmux.conf"
 [[ $INSTALL_VIM == 1 ]] && SOURCE+=" .vimrc"
 [[ "$OSTYPE" != "darwin"* ]] && EXCLUDE_FILES+=" --exclude=mac.sh"
-[[ -n $SOURCE ]] && rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR"
+if [[ -n $SOURCE ]]; then
+	rsync -avhLK --relative $OVERWRITE_SETTINGS $EXCLUDE_FILES $SOURCE "$TARGET_DIR" ||
+		error "unable to copy the dot files to $TARGET_DIR"
+fi
 
 if [[ $INSTALL_BASH == 1 ]] && [[ "$OSTYPE" == "darwin"* ]]; then
-	brew list | grep ^bash$ >/dev/null || brew install bash
+	brew list | grep ^bash$ >/dev/null || brew install bash || error "unable to install bash"
 fi
 if [[ $INSTALL_NODE == 1 ]]; then
 	sed -E -i.bak '/^(fund|prefix)=/d' "$HOME/.npmrc" 2>/dev/null && rm -f "$HOME/.npmrc.bak"
@@ -180,11 +183,11 @@ if [[ $INSTALL_VIM == 1 ]]; then
 	install_if_missing "curl"
 	install_if_missing "vim"
 	curl $CURL_ARGS -o "$TARGET_DIR/.vim/autoload/plug.vim" --create-dirs \
-		"https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-	vim +PlugInstall +qall </dev/null
+		"https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim" ||
+		error "unable to download vim-plug" 69 # EX_UNAVAILABLE
+	vim +PlugInstall +qall </dev/null || error "unable to install the Vim plugins"
 fi
 if [[ $INSTALL_SSH == 1 ]]; then
-	chmod 700 "$TARGET_DIR"
-	chmod 700 "$TARGET_DIR/.ssh"
-	chmod 644 "$TARGET_DIR/.ssh/config"
+	{ chmod 700 "$TARGET_DIR" "$TARGET_DIR/.ssh" && chmod 644 "$TARGET_DIR/.ssh/config"; } ||
+		error "unable to set the SSH permissions"
 fi

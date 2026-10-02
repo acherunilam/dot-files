@@ -83,8 +83,8 @@ if [[ "$target" =~ ^(https?://)?(www\.)?atlas\.ripe\.net/measurements/([0-9]+)([
 		printf 'header = %s\n' "$(quote_curl_config "Authorization: Key $ATLAS_CREATE_KEY")" |
 			curl -qsS $CURL_ARGS --config - \
 				"https://atlas.ripe.net/api/v2/measurements/$measurement_id/results"
-	)" || error "unable to reach atlas.ripe.net"
-	jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from atlas.ripe.net"
+	)" || error "unable to reach atlas.ripe.net" 69 # EX_UNAVAILABLE
+	jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from atlas.ripe.net" 76 # EX_PROTOCOL
 	api_error="$(
 		jq -r 'if type == "object" and has("error") then "\(.error.title): \(.error.detail)" else empty end' <<<"$response"
 	)"
@@ -93,12 +93,12 @@ if [[ "$target" =~ ^(https?://)?(www\.)?atlas\.ripe\.net/measurements/([0-9]+)([
 elif [[ "$target" =~ ^[a-z]{2}$ || "$target" =~ ^[0-9]{1,10}$ ]]; then # count probes
 	check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
 	# AS0 is reserved, and the search would take it as no filter at all.
-	[[ "$target" =~ ^0+$ ]] && error "'AS$target' is not a valid country or ASN" 65 # EX_DATAERR
+	[[ "$target" =~ ^0+$ ]] && error "'AS$target' is not a valid country or ASN" 64 # EX_USAGE
 	[[ "$target" =~ ^[a-z]{2}$ ]] && filter_by="country" || filter_by="asn"
 	probes="$(
 		ripe-atlas probe-search --limit "$PROBE_SEARCH_LIMIT" --"$filter_by" \
 			"$target" --status 1 --ids-only
-	)" || error "unable to count the probes in '$1'"
+	)" || error "unable to count the probes in '$1'" 69 # EX_UNAVAILABLE
 	grep -c . <<<"$probes"
 	exit 0
 else # run traceroute
@@ -112,7 +112,7 @@ else # run traceroute
 	elif [[ "$filter_value" =~ ^[A-Z]{2}$ ]] && [[ "$filter_value" != "WW" ]]; then
 		filter_by="country"
 	elif [[ "$filter_value" != "WW" ]]; then
-		error "'$filter_value' is not a valid country or ASN" 65 # EX_DATAERR
+		error "'$filter_value' is not a valid country or ASN" 64 # EX_USAGE
 	fi
 	probe_count="${3:-$PROBE_COUNT_DEFAULT}"
 	[[ "$probe_count" =~ ^[1-9][0-9]*$ ]] ||
