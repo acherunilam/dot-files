@@ -22,6 +22,11 @@
 [core]
     # make sure that CRLF is replaced with LF when writing file to object database
     autocrlf = input
+[diff]
+    algorithm = histogram
+    colorMoved = default
+[fetch]
+    prune = true
 [init]
     defaultBranch = main
 [merge]
@@ -31,6 +36,8 @@
 [push]
     default = current
     autoSetupRemote = true
+[rerere]
+    enabled = true
 
 [alias]
     # show all aliases
