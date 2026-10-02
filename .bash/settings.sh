@@ -5,14 +5,16 @@
 export INPUTRC="$HOME/.inputrc"
 # Set default text editor.
 export EDITOR="vim"
-# Enable color support for Less. Also, search within is case insensitive unless
-# the pattern contains uppercase letters.
-export LESS="-Ri"
+# Enable color support for Less, show a verbose prompt, and quit if the output
+# fits on one screen. Also, search within is case insensitive unless the
+# pattern contains uppercase letters.
+export LESS="-FiMR"
 
 
 # Configure command history.
 HISTCONTROL=ignoreboth                              # don't store commands if they start with a space, or if they are duplicates
 HISTFILE="$HOME/.bash_history"                      # store the history of commands that were executed over here
+HISTIGNORE='..:..2:..3:..4:..5:bg:cd:cd -:cd ..:clear:exit:fg:history:l:la:ld:lh:ll:ls:pwd' # don't store these trivial commands
 HISTSIZE='INFINITE'                                 # number of lines that are allowed in the history file at the start/end of a session
 HISTTIMEFORMAT="%d/%m/%y %T "                       # timestamp format to associate each command with
 PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND%;};}"

@@ -13,6 +13,12 @@
     changed = green bold
     untracked = cyan bold
 
+[branch]
+    sort = -committerdate
+[column]
+    ui = auto
+[commit]
+    verbose = true
 [core]
     # make sure that CRLF is replaced with LF when writing file to object database
     autocrlf = input
@@ -21,6 +27,8 @@
     colorMoved = default
 [fetch]
     prune = true
+[help]
+    autocorrect = prompt
 [init]
     defaultBranch = main
 [merge]
@@ -30,6 +38,9 @@
 [push]
     default = current
     autoSetupRemote = true
+    followTags = true
+[rebase]
+    autoStash = true
 [rerere]
     enabled = true
 

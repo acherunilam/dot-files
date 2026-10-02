@@ -339,15 +339,24 @@ msync() {
 # Send a notification via the terminal.
 #
 # It works using OSC 9, an Xterm-specific escape sequence used to send terminal
-# notifications (https://iterm2.com/documentation-escape-codes.html).
+# notifications (https://iterm2.com/documentation-escape-codes.html). If no
+# message is passed, it defaults to the host and the tmux pane (or the TTY).
 #
 # Usage:
-#       notify <message>
+#       notify [<message>]
 #
 # shellcheck disable=SC1003
 notify() {
-	local output
-	output="$(printf '\e]9;%s\a' "${*:-Attention}")"
+	local message="$*" output
+	if [[ -z $message ]]; then
+		message="${HOSTNAME%%.*}:"
+		if [[ -n "$TMUX" ]]; then
+			message+="$(command tmux display-message -p '#S[#I:#W].#P')"
+		else
+			message+="$(command tty)"
+		fi
+	fi
+	output="$(printf '\e]9;%s\a' "$message")"
 	[[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
 	printf "%s" "$output"
 }
@@ -395,6 +404,26 @@ pipp() {
 #		cat <numbers.txt> | sort | uniq -c | sort -nr | pct
 pct() {
 	command awk '{ total += $1; lines[NR] = $0; numbers[NR] = $1 } END { for (i = 1; i <= NR; i++) printf "%5.2f%%\t%s\n", (numbers[i] / total) * 100, lines[i] }'
+}
+
+# Show the processes whose command line matches the pattern, along with the
+# ps header. The match is case insensitive and highlighted.
+#
+# Usage:
+#       psg <pattern>
+psg() {
+	local pids result
+	if [[ $# -eq 0 ]]; then
+		error "please pass a pattern" 2
+		return
+	fi
+	pids="$(command pgrep -d, -if -- "$*")"
+	result="$(command ps -ww -o user,pid,ppid,%cpu,%mem,start,command -p "${pids:-0}" 2>/dev/null)"
+	if [[ $result != *$'\n'* ]]; then
+		error "no process matches '$*'"
+		return
+	fi
+	command grep -Ei --color=auto -- "$*|$" <<<"$result"
 }
 
 # Combine the lines from STDIN with an optional delimiter.

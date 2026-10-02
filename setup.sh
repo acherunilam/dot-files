@@ -159,7 +159,7 @@ fi
 [[ $INSTALL_BIN == 1 ]] && SOURCE+=" .local/bin/*"
 [[ $INSTALL_CURL == 1 ]] && SOURCE+=" .curlrc"
 [[ $INSTALL_EDITLINE == 1 ]] && SOURCE+=" .editrc"
-[[ $INSTALL_GIT == 1 ]] && SOURCE+=" .gitconfig"
+[[ $INSTALL_GIT == 1 ]] && SOURCE+=" .gitconfig .config/git/ignore"
 [[ $INSTALL_MITMPROXY == 1 ]] && SOURCE+=" .mitmproxy/*.yaml"
 [[ $INSTALL_READLINE == 1 ]] && SOURCE+=" .inputrc"
 [[ $INSTALL_RIPGREP == 1 ]] && SOURCE+=" .ripgreprc"
