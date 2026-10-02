@@ -12,9 +12,6 @@ prepend_path PATH "$HOMEBREW_PREFIX/bin"
 prepend_path MANPATH "$HOMEBREW_PREFIX/share/man"
 prepend_path INFOPATH "$HOMEBREW_PREFIX/share/info"
 include "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh"
-for file in "$HOMEBREW_PREFIX/etc/bash_completion.d/"*; do
-	include "$file"
-done
 
 # Preview the colors here (https://geoff.greer.fm/lscolors).
 export CLICOLOR=1
