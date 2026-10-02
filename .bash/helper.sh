@@ -303,9 +303,15 @@ j() {
 # Usage:
 #       msync <src> <dst>
 msync() {
+	local arg
 	# bare on purpose: the rsync alias adds the progress bar
-	rsync --remove-source-files "$@" && for arg in "${@:1:$#-1}"; do
-		command find "$(command dirname "$arg")" -type d -empty -delete
+	rsync --remove-source-files "$@" || return
+	for arg in "$@"; do
+		[[ $arg == --dry-run || ($arg == -[!-]* && $arg == *n*) ]] && return
+	done
+	for arg in "${@:1:$#-1}"; do
+		[[ $arg == -* || ! -d $arg ]] && continue
+		command find "$arg" -depth -type d -empty -delete
 	done
 }
 
