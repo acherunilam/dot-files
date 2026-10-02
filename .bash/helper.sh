@@ -209,7 +209,7 @@ download() {
 #       extract <file>
 #
 # Dependencies:
-#       dnf install binutils cabextract p7zip p7zip-plugins unrar xz
+#       dnf install binutils bsdtar cabextract p7zip p7zip-plugins unrar xz zstd
 extract() {
 	if [[ -f "$1" ]]; then
 		case "$1" in
@@ -225,12 +225,14 @@ extract() {
 		*.lzma) command unlzma "$1" ;;
 		*.r0 | *.r00) command unrar x "$1" ;;
 		*.rar) command unrar x "$1" ;;
-		*.rpm) command tar xzf "$1" ;;
+		*.rpm) command bsdtar -xvf "$1" ;;
 		*.tar) command tar xf "$1" ;;
 		*.tbz2) command tar xjf "$1" ;;
 		*.tgz) command tar xzf "$1" ;;
 		*.tar.xz) command tar xJf "$1" ;;
 		*.xz) command unxz "$1" ;;
+		*.tar.zst) command tar --zstd -xf "$1" ;;
+		*.zst) command unzstd "$1" ;;
 		*.zip) command 7z x "$1" ;;
 		*.Z) command uncompress "$1" ;;
 		*)
