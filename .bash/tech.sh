@@ -23,7 +23,7 @@ alias tor-ip='tor-curl https://checkip.amazonaws.com'                           
 # Dependencies:
 #	   brew install coreutils
 cert() {
-	local calculate_expiry
+	local calculate_expiry result
 	# shellcheck disable=SC2015
 	[[ "$OSTYPE" == "darwin"* ]] && local date_bin="gdate" || local date_bin="date"
 	[[ "$1" == "-e" ]] && calculate_expiry=1 && shift
