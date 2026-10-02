@@ -154,10 +154,13 @@ clear-history() {
 				command tail -r >"$tmp_file" &&
 				command cp -f "$tmp_file" "$hist_file"
 		done || error "unable to clear Bash history keywords"
-		# Clear Fasd paths containing any of the specified paths.
-		echo -e "${CLEAR_HISTORY_KEYWORDS//:/\\n}" | while read -r p; do
-			command sed -i "/${p//\//\\/}/d" "${_FASD_DATA:-$HOME/.fasd}"
-		done || error "unable to clear Fasd paths"
+		# Clear zoxide directories containing any of the specified keywords.
+		if type -P zoxide >/dev/null; then
+			echo -e "${CLEAR_HISTORY_KEYWORDS//:/\\n}" | while read -r k; do
+				command zoxide query --list --all | command grep -F -- "$k" |
+					while read -r d; do command zoxide remove "$d"; done
+			done || error "unable to clear zoxide directories"
+		fi
 	fi
 }
 

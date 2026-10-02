@@ -18,7 +18,6 @@ Options:
   --bash              Install Bash dot files.
   --curl              Install Curl config file.
   --editline          Install Editline config file.
-  --fasd              Install Fasd config file.
   --git               Install Git config file.
   --help              Print help.
   --mitmproxy         Install Mitmproxy config file.
@@ -80,9 +79,6 @@ for arg in "$@"; do
 		;;
 	--editline)
 		INSTALL_EDITLINE=1
-		;;
-	--fasd)
-		INSTALL_FASD=1
 		;;
 	--git)
 		INSTALL_GIT=1
@@ -154,7 +150,6 @@ if [[ $INSTALL_ALL == 1 ]]; then
 	INSTALL_BIN=1
 	INSTALL_CURL=1
 	INSTALL_EDITLINE=1
-	INSTALL_FASD=1
 	INSTALL_GIT=1
 	INSTALL_NODE=1
 	INSTALL_MITMPROXY=1
@@ -169,7 +164,6 @@ fi
 [[ $INSTALL_BIN == 1 ]] && SOURCE+=" .local/bin/*"
 [[ $INSTALL_CURL == 1 ]] && SOURCE+=" .curlrc"
 [[ $INSTALL_EDITLINE == 1 ]] && SOURCE+=" .editrc"
-[[ $INSTALL_FASD == 1 ]] && SOURCE+=" .fasdrc"
 [[ $INSTALL_GIT == 1 ]] && SOURCE+=" .gitconfig"
 [[ $INSTALL_MITMPROXY == 1 ]] && SOURCE+=" .mitmproxy/*.yaml"
 [[ $INSTALL_READLINE == 1 ]] && SOURCE+=" .inputrc"
@@ -183,11 +177,6 @@ fi
 
 if [[ $INSTALL_BASH == 1 ]] && [[ "$OSTYPE" == "darwin"* ]]; then
 	brew list | grep ^bash$ >/dev/null || brew install bash
-fi
-if [[ $INSTALL_FASD == 1 ]]; then
-	install_if_missing "curl"
-	curl $CURL_ARGS -o "$HOME/.local/bin/fasd" --create-dirs "https://raw.githubusercontent.com/clvv/fasd/master/fasd" &&
-		chmod 755 "$HOME/.local/bin/fasd"
 fi
 if [[ $INSTALL_NODE == 1 ]]; then
 	sed -E -i.bak '/^(fund|prefix)=/d' "$HOME/.npmrc" 2>/dev/null && rm -f "$HOME/.npmrc.bak"

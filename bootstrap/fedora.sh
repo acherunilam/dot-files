@@ -302,6 +302,7 @@ CLI_APPS=(
 	wireshark-cli
 	xq
 	yt-dlp
+	zoxide
 )
 sudo dnf install -y "${CLI_APPS[@]}" --allowerasing ||
 	error "CLI package install failed"
