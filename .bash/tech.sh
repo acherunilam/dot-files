@@ -13,7 +13,7 @@ prepend_path PATH "/usr/share/bcc/tools"
 # Configure helpers for Tor (https://www.torproject.org), an anonymous overlay network.
 alias tor-curl='curl -qsS --location --proxy socks5://localhost:9050'                    # curl through Tor
 alias tor-cycle='sudo killall -HUP tor'                                                  # change the Tor exit node
-alias tor-ip='curl-time --proxy socks5://localhost:9050 "https://checkip.amazonaws.com"' # check the outbound IP for your Tor setup
+alias tor-ip='tor-curl https://checkip.amazonaws.com'                                    # check the outbound IP for your Tor setup
 
 # Print the X.509 TLS certificate details.
 #
