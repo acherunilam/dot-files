@@ -215,23 +215,36 @@ mdownload() {
 	eval "$cmd"
 }
 
+# Write the image on your clipboard to a PNG file.
+#
+# Usage:
+#       _clipboard_png <file>
+_clipboard_png() {
+	local tmp_dir rc=1
+	tmp_dir="$(command mktemp -d)"
+	command osascript -e "tell application \"System Events\" to write (the clipboard \
+        as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
+        {name:\"clipboard.png\"})" 2>/dev/null
+	[[ -s "$tmp_dir/clipboard.png" ]] && command mv "$tmp_dir/clipboard.png" "$1" && rc=0
+	command rm -rf "$tmp_dir"
+	return "$rc"
+}
+
 # Read the text from an image file using Tesseract
 # (https://github.com/tesseract-ocr/tesseract), an open-source OCR engine.
 #
 # Usage:
 #       ocr <file>
 ocr() {
+	local tmp_file
 	if [[ -z "$1" ]]; then
-		local tmp_dir="$(command mktemp -d)"
-		command osascript -e "tell application \"System Events\" to write (the clipboard \
-            as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
-            {name:\"screenshot.png\"})" 2>/dev/null
-		if [[ -s "$tmp_dir/screenshot.png" ]]; then
-			set -- "$tmp_dir/screenshot.png"
-		else
+		tmp_file="$(command mktemp)"
+		if ! _clipboard_png "$tmp_file"; then
+			command rm -f "$tmp_file"
 			error "no image found in clipboard"
 			return
 		fi
+		set -- "$tmp_file"
 	elif ! [[ -r "$1" ]]; then
 		error "unable to open file '$1'"
 		return
@@ -239,7 +252,7 @@ ocr() {
 	local result="$(command tesseract "$1" - --tessdata-dir "$HOMEBREW_PREFIX/share/tessdata" 2>/dev/null)"
 	echo "$result"
 	[[ -t 1 ]] && echo -n "$result" | command pbcopy
-	[[ -n "$tmp_dir" ]] && command rm "$tmp_dir/screenshot.png"
+	[[ -n "$tmp_file" ]] && command rm -f "$tmp_file"
 }
 
 # Copy content as plaintext and HTML to the clipboard. Note that the plaintext
@@ -265,13 +278,7 @@ EOF
 pngpaste() {
 	local filename="${1:-screenshot.png}"
 	[[ $filename == *".png" ]] || filename+=".png"
-	local tmp_dir="$(command mktemp -d)"
-	command osascript -e "tell application \"System Events\" to write (the clipboard \
-        as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
-        {name:\"screenshot.png\"})" 2>/dev/null
-	if [[ -s "$tmp_dir/screenshot.png" ]]; then
-		command mv "$tmp_dir/screenshot.png" "$filename"
-	else
+	if ! _clipboard_png "$filename"; then
 		error "no image found in clipboard"
 		return
 	fi
@@ -283,17 +290,15 @@ pngpaste() {
 # Usage:
 #       qr <file>
 qr() {
+	local tmp_file
 	if [[ -z "$1" ]]; then
-		local tmp_dir="$(command mktemp -d)"
-		command osascript -e "tell application \"System Events\" to write (the clipboard \
-            as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
-            {name:\"screenshot.png\"})" 2>/dev/null
-		if [[ -s "$tmp_dir/screenshot.png" ]]; then
-			set -- "$tmp_dir/screenshot.png"
-		else
+		tmp_file="$(command mktemp)"
+		if ! _clipboard_png "$tmp_file"; then
+			command rm -f "$tmp_file"
 			error "no image found in clipboard"
 			return
 		fi
+		set -- "$tmp_file"
 	elif ! [[ -r "$1" ]]; then
 		error "unable to open file '$1'"
 		return
@@ -301,7 +306,7 @@ qr() {
 	local result="$(command zbarimg --quiet --raw "$1")"
 	echo "$result"
 	[[ -t 1 ]] && echo -n "$result" | command pbcopy
-	[[ -n "$tmp_dir" ]] && command rm "$tmp_dir/screenshot.png"
+	[[ -n "$tmp_file" ]] && command rm -f "$tmp_file"
 }
 
 # Remove extended attributes for a file downloaded from the internet.
