@@ -29,7 +29,7 @@ DB_PATH="$HOME/.local/share/oui/oui.txt"
 # Usage:
 #       download_oui_db
 download_oui_db() {
-	# Download next to the DB and only swap it in once complete, so a cut short
+	# Download next to the DB and only swap it in once complete, so a cut-short
 	# transfer or an error page never replaces a working one.
 	# shellcheck disable=SC2086
 	if ! curl -qfsS $CURL_ARGS "https://standards-oui.ieee.org/oui/oui.txt" \
@@ -126,7 +126,7 @@ fi
 [[ $# -eq 0 ]] && error "missing input, please pass an OUI" 64            # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one OUI" 64 # EX_USAGE
 mac_id="${1^^}"
-# Either the three byte OUI itself or a whole MAC address.
+# Either the three-byte OUI itself or a whole MAC address.
 [[ ! "$mac_id" =~ ^[0-9A-F]{2}([:-]?[0-9A-F]{2}){2}(([:-]?[0-9A-F]{2}){3})?$ ]] &&
 	error "invalid input, please pass an OUI" 64 # EX_USAGE
 [[ ! -f "$DB_PATH" ]] && download_oui_db
@@ -136,7 +136,7 @@ mac_id="${1^^}"
 ################################################################################
 
 mac_prefix="$(echo "$mac_id" | sed -E 's/(-|:)//g' | cut -c1-6)"
-# Only the "(base 16)" line of an entry starts with the bare prefix, the rest
+# Only the "(base 16)" line of an entry starts with the bare prefix; the rest
 # (addresses included) could contain it anywhere.
 vendors="$(grep -E "^${mac_prefix}[[:space:]]+\(base 16\)" "$DB_PATH")"
 [[ $? -gt 1 ]] && error "unable to read '$DB_PATH'" 74 # EX_IOERR

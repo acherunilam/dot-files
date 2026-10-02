@@ -10,7 +10,7 @@ DEFAULT_OCTAVE=3
 DEFAULT_TRANSPOSE=0
 DEFAULT_INVERSION=0
 VELOCITY=100
-# Expands a chord symbol to MIDI numbers, voiced upwards from the base octave.
+# Expand a chord symbol to MIDI numbers, voiced upwards from the base octave.
 # tonal matches symbols against a fixed dictionary rather than composing them, so
 # anything it does not carry is rebuilt from the longest chord type it does
 # recognize plus the modifiers left over. A slash chord's bass follows the notes
@@ -54,7 +54,7 @@ const intervalFor = (degree, accidental) => {
 	return degree + (PERFECT.has(degree) ? "P" : "M");
 };
 
-// Applies the modifiers no dictionary can enumerate to a set of base intervals.
+// Apply the modifiers no dictionary can enumerate to a set of base intervals.
 const applyModifiers = (base, modifiers) => {
 	let intervals = base;
 	let rest = modifiers;
@@ -97,11 +97,11 @@ const applyModifiers = (base, modifiers) => {
 const asciiAccidentals = (symbol) =>
 	symbol.replace(/𝄪/g, "##").replace(/𝄫/g, "bb").replace(/♯/g, "#").replace(/♭/g, "b");
 
-// Stacks a set of intervals upwards from a root, one note to a pitch.
+// Stack a set of intervals upwards from a root, one note to a pitch.
 const fromIntervals = (rootMidi, intervals) =>
 	[...new Set(intervals.map((iv) => Interval.semitones(iv)))].sort((a, b) => a - b).map((s) => rootMidi + s);
 
-// Resolves a chord symbol without a bass to MIDI numbers in root position,
+// Resolve a chord symbol without a bass to MIDI numbers in root position,
 // voiced upwards from the base octave.
 function rootPositionMidi(symbol, baseOctave) {
 	const built = Chord.get(symbol);
@@ -126,7 +126,7 @@ function rootPositionMidi(symbol, baseOctave) {
 	return fromIntervals(rootMidi, intervals);
 }
 
-// Resolves a chord symbol to its MIDI numbers in root position, plus the MIDI
+// Resolve a chord symbol to its MIDI numbers in root position, plus the MIDI
 // number of the bass for a slash chord (null otherwise). The bass is added
 // below the root rather than inverting the chord, as inversions are chosen
 // separately. It is read off here rather than by tonal, which inverts a slash
@@ -186,9 +186,10 @@ check_if_installed() {
 	type -P "$1" >/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
 }
 
+# A node module ships no binary of its own, so it cannot be looked up on PATH.
+#
 # Usage:
 #       check_if_module_installed <module>
-# A node module ships no binary of its own, so it cannot be looked up on PATH.
 check_if_module_installed() {
 	node -e "require(\"$1\")" 2>/dev/null ||
 		error "please install '$1' (npm install --global $1)" 69 # EX_UNAVAILABLE
@@ -222,7 +223,7 @@ resolve_chord() {
 # Usage:
 #       silence_chord <exit_code>
 silence_chord() {
-	# Stop playback first, so its own note offs don't follow ours.
+	# Stop playback first, so its own note-offs don't follow ours.
 	[[ -n "$sendmidi_pid" ]] && kill "$sendmidi_pid" 2>/dev/null && wait "$sendmidi_pid"
 	# Not every receiver acts on an All Notes Off, so release each note by name
 	# and only fall back on the broadcast for anything already playing.
@@ -335,7 +336,7 @@ inversion=$((10#${BASH_REMATCH[1]}))
 check_if_installed "node" "https://nodejs.org"
 midis="$(resolve_chord "$1")"
 if [[ -z "$midis" ]]; then
-	# Only pay for the second node start up on the path that already failed.
+	# Only pay for the second node startup on the path that already failed.
 	check_if_module_installed "tonal"
 	error "unable to read chord '$1'" 70 # EX_SOFTWARE
 fi

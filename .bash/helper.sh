@@ -106,7 +106,7 @@ col() {
 }
 
 # Print stats about the numbers read from STDIN. Run `datamash --help` to see
-# various grouping operations available (perc:10, pstdev, etc.)
+# various grouping operations available (perc:10, pstdev, etc.).
 #
 # Usage:
 #       dm [<grouping_operation>]...
@@ -166,9 +166,9 @@ dnp() {
 
 # Download files.
 #
-# If no file is specified, then we attempt to detect the link from the clipboard.
-# It notifies once the download is complete using an iTerm-specific escape
-# sequence (https://iterm2.com/documentation-escape-codes.html).
+# If no file is specified, then we attempt to detect the link from the
+# clipboard. It notifies once the download is complete using an iTerm-specific
+# escape sequence (https://iterm2.com/documentation-escape-codes.html).
 #
 # Usage:
 #       download [<file>...]
@@ -325,7 +325,7 @@ j() {
 #       msync <src> <dst>
 msync() {
 	local arg
-	# bare on purpose: the rsync alias adds the progress bar
+	# Bare on purpose: the rsync alias adds the progress bar.
 	rsync --remove-source-files "$@" || return
 	for arg in "$@"; do
 		[[ $arg == --dry-run || ($arg == -[!-]* && $arg == *n*) ]] && return
@@ -338,7 +338,7 @@ msync() {
 
 # Send a notification via the terminal.
 #
-# It works using OSC 9, an Xterm-specific escape sequence used to send terminal
+# It works using OSC 9, an iTerm-specific escape sequence used to send terminal
 # notifications (https://iterm2.com/documentation-escape-codes.html). If no
 # message is passed, it defaults to the host and the tmux pane (or the TTY).
 #
@@ -363,9 +363,10 @@ notify() {
 
 # Copy data from STDIN to the clipboard. It removes trailing newlines.
 #
-# Both iTerm and Tmux are supported. For the former, you'll have to enable "Preferences >
-# General > Selection > Applications in terminal may access clipboard". It works using
-# OSC 52, an Xterm-specific escape sequence used to copy printed text into the clipboard.
+# Both iTerm and tmux are supported. For the former, you'll have to enable
+# "Preferences > General > Selection > Applications in terminal may access
+# clipboard". It works using OSC 52, an Xterm-specific escape sequence used to
+# copy printed text into the clipboard.
 #
 # Usage:
 #       echo "text message" | pbcopy
@@ -401,7 +402,7 @@ pipp() {
 # Convert numbers to percentage.
 #
 # Usage:
-#		cat <numbers.txt> | sort | uniq -c | sort -nr | pct
+#       cat <numbers.txt> | sort | uniq -c | sort -nr | pct
 pct() {
 	command awk '{ total += $1; lines[NR] = $0; numbers[NR] = $1 } END { for (i = 1; i <= NR; i++) printf "%5.2f%%\t%s\n", (numbers[i] / total) * 100, lines[i] }'
 }

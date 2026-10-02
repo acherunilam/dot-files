@@ -20,7 +20,7 @@
 [commit]
     verbose = true
 [core]
-    # make sure that CRLF is replaced with LF when writing file to object database
+    # make sure that CRLF is replaced with LF when writing a file to the object database
     autocrlf = input
 [diff]
     algorithm = histogram

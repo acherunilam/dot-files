@@ -6,7 +6,7 @@ Uses [SendMIDI](https://github.com/gbevin/SendMIDI) to send the notes and [tonal
 ```bash
 # Play an A minor chord on the port in $MIDI_PORT.
 chord Am
-# Play the second inversion of the chord on the MiniLab MIDI port 1 octave higher for 3 sec
+# Play the second inversion of the chord on the MiniLab MIDI port one octave higher for 3 seconds.
 chord G7sus4/D -i 2 -p minilab -o +1 -d 3
 ```
 

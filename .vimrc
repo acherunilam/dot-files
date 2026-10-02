@@ -48,7 +48,7 @@ syntax on                                                            " enable sy
 set hlsearch                                                         " highlight matches
 set incsearch                                                        " search as characters are entered
 set ignorecase                                                       " search is not case sensitive
-set showmatch                                                        " highlight matching parantheses
+set showmatch                                                        " highlight matching parentheses
 set smartcase                                                        " search is case sensitive if it has both upper and lower case
 
 
@@ -73,7 +73,7 @@ map <Esc>S :w !sudo tee % > /dev/null<CR>
 map <Esc>w :wq!<CR>
 " <escape>,q will quit the file without saving
 map <Esc>q :q!<CR>
-" F3 will remove all trailing whitespaces
+" F3 will remove all trailing whitespace
 nnoremap <silent> <F3> :let _s=@/ <Bar> :%s/\s\+$//e <Bar> :let @/=_s <Bar> :nohl <Bar> :unlet _s<CR>
 " F4 will toggle spell check
 map <F4> :setlocal spell!<CR>
@@ -94,7 +94,7 @@ Plug 'preservim/nerdtree', {'on': 'NERDTreeToggle'}                  " tree expl
 Plug 'dense-analysis/ale'                                            " asynchronous lint engine
 Plug 'tpope/vim-surround'                                            " quoting/parenthesizing made simple
 Plug 'airblade/vim-gitgutter'                                        " show git diff in the sign column
-Plug 'chr4/nginx.vim'                                                " recognize Nginx config files
+Plug 'chr4/nginx.vim'                                                " recognize nginx config files
 call plug#end()
 
 
@@ -116,7 +116,7 @@ set keywordprg=:Man                                                  " K opens t
 colorscheme slate                                                    " set color scheme
 " change the selected menu entry's background color to make it more visible
 highlight PmenuSel ctermbg=4
-" highlight trailing whitespaces
+" highlight trailing whitespace
 highlight ExtraWhitespace ctermbg=red guibg=red
 match ExtraWhitespace /\s\+$/
 augroup ExtraWhitespace
