@@ -1,2 +1,7 @@
+bind -e                                          # use Emacs key bindings
 bind "\e[A" ed-search-prev-history               # Up arrow does a reverse history search
 bind "\e[B" ed-search-next-history               # Down arrow does a forward history search
+bind "^R" em-inc-search-prev                     # Ctrl-R does an incremental reverse history search
+bind "^W" ed-delete-prev-word                    # Ctrl-W deletes the previous word
+bind "\e[1;5D" ed-prev-word                      # Ctrl-Left moves back a word
+bind "\e[1;5C" em-next-word                      # Ctrl-Right moves forward a word

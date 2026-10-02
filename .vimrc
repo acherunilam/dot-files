@@ -5,6 +5,24 @@ set backspace=indent,eol,start                                       " allow bac
 set wildmenu                                                         " visual autocomplete for command menu
 
 
+" Files
+set hidden                                                           " switch buffers without saving first
+set autoread                                                         " reload files changed outside Vim if the buffer is unmodified
+set splitbelow splitright                                            " open new splits below and to the right
+set undofile                                                         " keep undo history across sessions
+for s:dir in ['swp', 'undo', 'bak']
+  call mkdir(expand('~/.vim/.local/' . s:dir), 'p', 0700)
+endfor
+set directory=~/.vim/.local/swp//                                    " store swap files centrally, named after the full path
+set undodir=~/.vim/.local/undo//                                     " store undo files centrally, named after the full path
+set backupdir=~/.vim/.local/bak//                                    " store backup files centrally, named after the full path
+" never persist undo history for files in temporary directories
+augroup NoUndoFileInTmp
+  autocmd!
+  autocmd BufWritePre /tmp/*,/private/tmp/*,/var/tmp/*,/var/folders/*,/private/var/folders/*,/dev/shm/* setlocal noundofile
+augroup END
+
+
 " Folding
 set foldenable                                                       " enable folding
 set foldlevelstart=10                                                " open most folds by default
@@ -75,10 +93,23 @@ call plug#begin('~/.vim/plugged')
 Plug 'preservim/nerdtree', {'on': 'NERDTreeToggle'}                  " tree explorer
 Plug 'dense-analysis/ale'                                            " asynchronous lint engine
 Plug 'tpope/vim-surround'                                            " quoting/parenthesizing made simple
-Plug 'preservim/nerdcommenter'                                       " powerful comment functions
 Plug 'airblade/vim-gitgutter'                                        " show git diff in the sign column
 Plug 'chr4/nginx.vim'                                                " recognize Nginx config files
 call plug#end()
+
+
+" Built-in packages
+packadd! comment                                                     " gcc / gc{motion} toggles comments
+packadd! editorconfig                                                " apply a project's .editorconfig settings
+packadd! matchit                                                     " % also jumps between if/else/endif, HTML tags
+if !has('mac')
+  let g:osc52_disable_paste = 1                                      " copy only; an OSC 52 paste can hang
+  let g:osc52_force_avail = 1                                        " tmux hides OSC 52 support from detection
+  packadd osc52
+  set clipmethod+=osc52                                              " "+y copies to the local clipboard over SSH
+endif
+runtime ftplugin/man.vim
+set keywordprg=:Man                                                  " K opens the man page in a Vim split
 
 
 " Appearance
