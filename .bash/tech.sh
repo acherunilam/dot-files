@@ -82,9 +82,9 @@ dns-flush() {
 	fi
 	local is_systemd_resolved="$(command systemctl is-active systemd-resolved 2>/dev/null)"
 	if [[ "$is_systemd_resolved" == "active" ]]; then
-		command sudo systemd-resolve --flush-caches
+		command sudo resolvectl flush-caches
 	else
-		error "error, only systemd-resolved is supported on Linux"
+		error "only systemd-resolved is supported on Linux"
 		return
 	fi
 }
