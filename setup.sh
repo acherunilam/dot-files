@@ -24,7 +24,6 @@ Options:
   --node              Install NPM config file.
   --readline          Install Readline config file.
   --ripgrep           Install Ripgrep config file.
-  --screen            Install Screen config file.
   --skip-existing     Skip installing the dot file if it already exists locally.
   --ssh               Install SSH config file.
   --tmux              Install Tmux config file.
@@ -101,9 +100,6 @@ for arg in "$@"; do
 	--skip-existing)
 		SKIP_EXISTING=1
 		;;
-	--screen)
-		INSTALL_SCREEN=1
-		;;
 	--ssh)
 		INSTALL_SSH=1
 		;;
@@ -155,7 +151,6 @@ if [[ $INSTALL_ALL == 1 ]]; then
 	INSTALL_MITMPROXY=1
 	INSTALL_READLINE=1
 	INSTALL_RIPGREP=1
-	INSTALL_SCREEN=1
 	INSTALL_SSH=1
 	INSTALL_TMUX=1
 	INSTALL_VIM=1
@@ -168,7 +163,6 @@ fi
 [[ $INSTALL_MITMPROXY == 1 ]] && SOURCE+=" .mitmproxy/*.yaml"
 [[ $INSTALL_READLINE == 1 ]] && SOURCE+=" .inputrc"
 [[ $INSTALL_RIPGREP == 1 ]] && SOURCE+=" .ripgreprc"
-[[ $INSTALL_SCREEN == 1 ]] && SOURCE+=" .screenrc"
 [[ $INSTALL_SSH == 1 ]] && SOURCE+=" .ssh"
 [[ $INSTALL_TMUX == 1 ]] && SOURCE+=" .tmux.conf"
 [[ $INSTALL_VIM == 1 ]] && SOURCE+=" .vimrc"
