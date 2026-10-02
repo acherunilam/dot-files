@@ -185,8 +185,8 @@ eject() {
 
 # Set iTerm's tab title.
 #
-# It works using OSC 9, an Xterm-specific escape sequence used to send terminal
-# notifications (https://iterm2.com/documentation-escape-codes.html).
+# It works using OSC 1, an Xterm escape sequence used to set the icon/tab title
+# (https://iterm2.com/documentation-escape-codes.html).
 #
 # Usage:
 #       iterm-title <title>
