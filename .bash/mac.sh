@@ -249,10 +249,13 @@ ocr() {
 #       echo "this is <b>bold</b> text" | pbc
 pbc() {
 	local content="$(</dev/stdin)"
-	local plaintext="$(echo -n "$content" | command sed 's/<[^>]*>//g')"
-	local htmlbinary="$(echo -n "$content" | command xxd -p | command tr -d '\n')"
-	command osascript -e "set the clipboard to {string:\"$plaintext\", \
-        «class HTML»:«data HTML${htmlbinary}»}"
+	local plaintext="$(printf '%s' "$content" | command sed 's/<[^>]*>//g')"
+	local htmlbinary="$(printf '%s' "$content" | command xxd -p | command tr -d '\n')"
+	command osascript - "$plaintext" <<EOF
+on run argv
+	set the clipboard to {string:(item 1 of argv), «class HTML»:«data HTML${htmlbinary}»}
+end run
+EOF
 }
 
 # Paste the image on your clipboard to the current directory.
