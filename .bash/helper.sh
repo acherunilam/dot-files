@@ -331,7 +331,7 @@ msync() {
 # shellcheck disable=SC1003
 notify() {
 	local output
-	output="$(printf '\e]9;%s\a' "${*:-'Attention'}")"
+	output="$(printf '\e]9;%s\a' "${*:-Attention}")"
 	[[ -n "$TMUX" ]] && output="$(printf '\ePtmux;\e%s\e\\' "$output")"
 	printf "%s" "$output"
 }
