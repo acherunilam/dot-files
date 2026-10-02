@@ -1,6 +1,7 @@
 # shellcheck shell=bash
 
-# Load ACME (https://github.com/acmesh-official/acme.sh), an ACME protocol client.
+# Load ACME (https://github.com/acmesh-official/acme.sh), an ACME protocol
+# client.
 include "$HOME/.acme.sh/acme.sh.env"
 
 # Load BCC (https://github.com/iovisor/bcc), a toolkit for creating efficient
@@ -10,7 +11,8 @@ include "$HOME/.acme.sh/acme.sh.env"
 #       dnf install bcc
 prepend_path PATH "/usr/share/bcc/tools"
 
-# Configure helpers for Tor (https://www.torproject.org), an anonymous overlay network.
+# Configure helpers for Tor (https://www.torproject.org), an anonymous overlay
+# network.
 alias tor-curl='curl -qsS --location --proxy socks5://localhost:9050'                    # curl through Tor
 alias tor-cycle='sudo killall -HUP tor'                                                  # change the Tor exit node
 alias tor-ip='tor-curl https://checkip.amazonaws.com'                                    # check the outbound IP for your Tor setup
@@ -18,10 +20,10 @@ alias tor-ip='tor-curl https://checkip.amazonaws.com'                           
 # Print the X.509 TLS certificate details.
 #
 # Usage:
-#       cert <host>[:<port>] [<sni>]
+#       cert [-e] <host>[:<port>] [<sni>]
 #
 # Dependencies:
-#	   brew install coreutils
+#       brew install coreutils
 cert() {
 	local calculate_expiry result
 	# shellcheck disable=SC2015
@@ -89,8 +91,9 @@ dns-flush() {
 	fi
 }
 
-# Identify the bottleneck in the shell startup time by profiling your dot files. If the
-# dot file isn't specified, it defaults to sourcing both /etc/profile and ~/.bashrc.
+# Identify the bottleneck in the shell startup time by profiling your dot files.
+# If the dot file isn't specified, it defaults to sourcing both /etc/profile and
+# ~/.bashrc.
 #
 # Usage:
 #       profile [<dot_file>]

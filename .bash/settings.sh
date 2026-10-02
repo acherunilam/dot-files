@@ -37,10 +37,10 @@ shopt -s histappend                                 # append to history rather t
 shopt -s histreedit                                 # make fixing failed history substitution easier
 shopt -s hostcomplete                               # tab-completion of hostnames after @
 shopt -s huponexit                                  # send SIGHUP to all background jobs before exiting
-shopt -s nocaseglob                                 # let file name expansions be case insensitive
+shopt -s nocaseglob                                 # let filename expansions be case insensitive
 
 
-# Load Fzf (https://github.com/junegunn/fzf), a general-purpose command-line
+# Load fzf (https://github.com/junegunn/fzf), a general-purpose command-line
 # fuzzy finder.
 #
 # Dependencies:
@@ -66,8 +66,8 @@ if [[ "$OSTYPE" == "linux"* ]] ; then
 fi
 
 
-# Configure Ripgrep (https://github.com/BurntSushi/ripgrep), a faster
-# alternative to Grep.
+# Configure ripgrep (https://github.com/BurntSushi/ripgrep), a faster
+# alternative to grep.
 #
 # Dependencies:
 #       dnf install ripgrep

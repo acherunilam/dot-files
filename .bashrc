@@ -74,7 +74,7 @@ PS4='+ $EPOCHREALTIME\011(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0
 export MYSQL_PS1="\u@\h [\d]> "
 
 
-# Auto-attach to Tmux (https://github.com/tmux/tmux) when you SSH.
+# Auto-attach to tmux (https://github.com/tmux/tmux) when you SSH.
 #
 # Dependencies:
 #       dnf install tmux

@@ -1,15 +1,15 @@
 # load the system-wide defaults first, since this file replaces them
 $include /etc/inputrc
 
-# Up arrow does a reverse history search
+# up arrow does a reverse history search
 "\e[A": history-search-backward
-# Down arrow does a forward history search
+# down arrow does a forward history search
 "\e[B": history-search-forward
 
-# Alt-S prefixes the line with `sudo` and takes the cursor to end of line
+# Alt-S prefixes the line with `sudo` and jumps to the end of the line
 "\es":"\C-asudo \C-e"
 
-# display possible completions using different color
+# display possible completions using different colors
 set colored-stats on
 # filename matching is case insensitive
 set completion-ignore-case on
@@ -17,7 +17,7 @@ set completion-ignore-case on
 set completion-map-case on
 # common prefixes longer than this value are replaced with an ellipsis
 set completion-prefix-display-length 2
-# don't echo character (e.g. ^C) corresponding to the signal (e.g. Ctrl-C)
+# don't echo the character (e.g. ^C) corresponding to the signal (e.g. Ctrl-C)
 set echo-control-characters off
 # completed names which are symbolic links to directories have a slash appended
 set mark-symlinked-directories on

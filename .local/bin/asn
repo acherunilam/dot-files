@@ -47,7 +47,7 @@ error() {
 query_cymru() {
 	# dig +short prints nothing for a failed lookup (SERVFAIL, REFUSED) just as it
 	# does for a genuine no match, so read the response status instead. Only
-	# NOERROR and NXDOMAIN are answers, a missing status means no reply at all.
+	# NOERROR and NXDOMAIN are answers; a missing status means no reply at all.
 	local dig_output status
 	dig_output="$(dig +noall +comments +answer $DIG_ARGS TXT "$1")"
 	status="$(sed -nE 's/.*status: ([A-Z]+).*/\1/p' <<<"$dig_output" | head -n1)"
@@ -59,7 +59,7 @@ query_cymru() {
 # Usage:
 #       query_cymru_and_append_asn_info <ip_reversed> <domain>
 query_cymru_and_append_asn_info() {
-	# Longest prefix matching in case IP is reachable through multiple prefixes.
+	# Longest prefix match in case the IP is reachable via multiple prefixes.
 	ip_info="$(
 		query_cymru "$1.$2" |
 			awk -F'|' '{split($2, prefix, "/"); print prefix[2] + 0 "\t" $0}' |
@@ -77,7 +77,7 @@ query_cymru_and_append_asn_info() {
 }
 
 # Usage:
-#		query_peeringdb <api_endpoint> <jq_op>
+#       query_peeringdb <api_endpoint> <jq_op>
 # shellcheck disable=SC2086
 query_peeringdb() {
 	output="$(
@@ -91,7 +91,7 @@ query_peeringdb() {
 }
 
 # Usage:
-#		cat <file> | tac
+#       cat <file> | tac
 tac() {
 	# GNU coreutils ships tac, BSD tail supports -r (GNU tail does not).
 	if type -P tac >/dev/null; then
@@ -102,7 +102,7 @@ tac() {
 }
 
 # Usage:
-#		is_ipv6 <ip_address>
+#       is_ipv6 <ip_address>
 is_ipv6() {
 	local hextet='[0-9a-f]{1,4}' left right colons count=0
 	if [[ "$1" == *::* ]]; then
@@ -122,7 +122,7 @@ is_ipv6() {
 }
 
 # Usage:
-#		cat <prefixes> | align_prefixes
+#       cat <prefixes> | align_prefixes
 align_prefixes() {
 	# Right-align addresses on the "/" separator; only util-linux column has -R.
 	if column --version 2>/dev/null | grep -q util-linux; then

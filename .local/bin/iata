@@ -26,7 +26,7 @@ CRON_COMMENT="# Update IATA/country DB."
 CURL_ARGS="--connect-timeout 2 --max-time 30"
 DB_PATH="$HOME/.local/share/iata"
 # Splits each CSV row into f[], with the quotes dropped and any comma inside a
-# field kept as "~" so the output can stay comma separated, and maps each header
+# field kept as "~" so the output can stay comma-separated, and maps each header
 # to its column in col[], as the upstream CSV gains columns over time.
 # shellcheck disable=SC2016
 _CSV_AWK='
@@ -47,7 +47,7 @@ NR == 1 { header = $0; n = parse(); for (i = 1; i <= n; i++) col[f[i]] = i; next
 # Helper methods.
 ################################################################################
 
-# Usage
+# Usage:
 #       airport_search <keyword> (code | name)
 airport_search() {
 	# Parsing every row is slow, so let grep pick out the rows that can match
@@ -116,7 +116,7 @@ install_cron_job() {
 		error "installation failed"
 }
 
-# Usage
+# Usage:
 #       download_iata_db <db>
 download_iata_db() {
 	# shellcheck disable=SC2086

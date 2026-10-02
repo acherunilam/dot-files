@@ -53,7 +53,7 @@ alias osv='sw_vers'                                                 # output mac
 alias paste='gpaste'                                                # `paste -sd' '` should work
 alias port='sudo lsof -nP -iudp -itcp -stcp:listen | grep -v ":\*"' # show all ports listening for connections
 alias tac='gtac'                                                    # BSD doesn't have tac
-alias wc='gwc'                                                      # `wc -l` should not having leading whitespace
+alias wc='gwc'                                                      # `wc -l` should not have leading whitespace
 
 # Run with elevated privileges by default.
 alias dtruss='sudo dtruss'
@@ -135,7 +135,7 @@ clear-history() {
             menu bar item \"Go\" of menu bar of process \"Finder\"" \
 		1>/dev/null ||
 		error "unable to clear recent folders"
-	# Clear 'Go to' Folder.
+	# Clear 'Go to Folder'.
 	command defaults delete com.apple.finder GoToField &>/dev/null
 	command defaults delete com.apple.finder GoToFieldHistory &>/dev/null
 	command killall "Finder" || error "unable to clear Go to Folder"
@@ -192,8 +192,8 @@ eject() {
 
 # Set iTerm's tab title.
 #
-# It works using OSC 1, an Xterm escape sequence used to set the icon/tab title
-# (https://iterm2.com/documentation-escape-codes.html).
+# It works using OSC 1, an Xterm-specific escape sequence used to set the
+# icon/tab title (https://iterm2.com/documentation-escape-codes.html).
 #
 # Usage:
 #       iterm-title <title>
@@ -206,7 +206,7 @@ iterm-title() {
 	printf "%s" "$output"
 }
 
-# Move the downloaded files matching the regex into current directory.
+# Move the downloaded files matching the regex into the current directory.
 #
 # Usage:
 #       mdownload [-n] [<pattern>]
@@ -291,7 +291,7 @@ pngpaste() {
 	fi
 }
 
-# Scan QR code from an image file using Zbar (https://github.com/mchehab/zbar),
+# Scan QR code from an image file using ZBar (https://github.com/mchehab/zbar),
 # an open-source bar code reader.
 #
 # Usage:
@@ -319,7 +319,7 @@ qr() {
 # Remove extended attributes for a file downloaded from the internet.
 #
 # Usage:
-#       whitelist
+#       whitelist <file>...
 whitelist() {
 	command sudo xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
 	command sudo xattr -rd com.apple.quarantine "$@"
