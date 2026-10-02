@@ -1,3 +1,6 @@
+# load the system-wide defaults first, since this file replaces them
+$include /etc/inputrc
+
 # Up arrow does a reverse history search
 "\e[A": history-search-backward
 # Down arrow does a forward history search
