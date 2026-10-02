@@ -1,7 +1,3 @@
-[user]
-    name = Adithya Cherunilam
-    email = me@adi.xyz
-
 [color "branch"]
     current = yellow bold reverse
     local = yellow bold
@@ -80,3 +76,6 @@
         URL=$(git remote get-url \"$REMOTE\" | sed -E 's#^https://([^/]+)/(.+)$#git@\\1:\\2#; s#(\\.git)?$#.git#') ; \
         git remote set-url \"$REMOTE\" \"$URL\" ; \
     } ; remote_update_ssh"
+
+[include]
+    path = ~/.gitconfig.local
