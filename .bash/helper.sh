@@ -297,10 +297,19 @@ ipp() {
 #       j <file.json>
 #       cat <file.json> | j
 j() {
-	local cmd="command jq '.'"
-	[[ -t 0 ]] && cmd+=" \"$*\""
-	[[ -t 1 ]] && cmd+=" -C | command less -Ri"
-	eval "$cmd"
+	local args=(.)
+	if [[ -t 0 ]]; then
+		if [[ $# -eq 0 ]]; then
+			error "please pass a file" 2
+			return
+		fi
+		args+=("$@")
+	fi
+	if [[ -t 1 ]]; then
+		command jq -C "${args[@]}" | command less -Ri
+	else
+		command jq "${args[@]}"
+	fi
 }
 
 # Like mv, but with a progress bar.
