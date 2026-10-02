@@ -11,7 +11,7 @@ prepend_path MANPATH "$NPM_PACKAGES/share/man"
 [[ -n "$MANPATH" && "$MANPATH" != *: ]] && MANPATH+=":"
 
 # Python
-for dir in $(printf '%s\n' "$HOME"/Library/Python/*/bin | command sort -rV); do
+for dir in $(printf '%s\n' "$HOME"/Library/Python/*/bin | command sort -V); do
 	prepend_path PATH "$dir"
 done
 
