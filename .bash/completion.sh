@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2207,SC2155
 
-include "/usr/share/bash-completion/bash_completion"
+[[ -z "${BASH_COMPLETION_VERSINFO-}" ]] && include "/usr/share/bash-completion/bash_completion"
 
 _git_ru() {
 	local cur="${COMP_WORDS[COMP_CWORD]}"
