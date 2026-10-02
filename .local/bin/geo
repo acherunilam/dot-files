@@ -4,7 +4,7 @@
 # Global variables.
 ################################################################################
 
-_NAME="$(command basename "$0")"
+_NAME="$(basename "$0")"
 _HELP_DOC="Print geolocation information for an IP address.
 
 Usage:
@@ -32,7 +32,7 @@ DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
 # Usage:
 #       check_if_installed <binary>
 check_if_installed() {
-	builtin hash "$1" 2>/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
+	type -P "$1" >/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
 }
 
 # Usage:
@@ -41,44 +41,44 @@ download_mmdb() {
 	[[ -z "$IPINFO_API_TOKEN" ]] &&
 		error "missing environment variable, please set IPINFO_API_TOKEN" 78 # EX_CONFIG
 	# shellcheck disable=SC2086
-	if ! command curl -qfsS $CURL_ARGS -L \
+	if ! curl -qfsS $CURL_ARGS -L \
 		"https://ipinfo.io/data/free/country_asn.mmdb?token=$IPINFO_API_TOKEN" \
 		--create-dirs -o "$DB_PATH.new"; then
-		command rm -f "$DB_PATH.new"
+		rm -f "$DB_PATH.new"
 		error "unable to download the MMDB from ipinfo.io"
 	fi
-	if command grep -aq "per day limit" "$DB_PATH.new" 2>/dev/null; then
-		command rm -f "$DB_PATH.new"
+	if grep -aq "per day limit" "$DB_PATH.new" 2>/dev/null; then
+		rm -f "$DB_PATH.new"
 		error "download failed, per day limit reached"
 	fi
 	# Only replace the current MMDB with a real one, as ipinfo.io can answer with
 	# an error page instead. Its metadata marker sits in the last 128 KiB.
-	if ! command tail -c 131072 "$DB_PATH.new" | LC_ALL=C command grep -aqF "MaxMind.com"; then
-		command rm -f "$DB_PATH.new"
+	if ! tail -c 131072 "$DB_PATH.new" | LC_ALL=C grep -aqF "MaxMind.com"; then
+		rm -f "$DB_PATH.new"
 		error "download failed, ipinfo.io did not return an MMDB"
 	fi
-	command mv "$DB_PATH.new" "$DB_PATH" || error "unable to replace '$DB_PATH'"
+	mv "$DB_PATH.new" "$DB_PATH" || error "unable to replace '$DB_PATH'"
 }
 
 # Usage:
 #       install_cron_job
 install_cron_job() {
 	local current geo_path cron_entry
-	if ! current="$(command crontab -l 2>&1)"; then
+	if ! current="$(crontab -l 2>&1)"; then
 		[[ "$current" == *"no crontab for"* ]] || error "unable to read the crontab: $current"
 		current=""
 	fi
-	geo_path="$(command realpath "$0")"
+	geo_path="$(realpath "$0")"
 	# Cron runs jobs without the login shell's environment, which is where
 	# IPINFO_API_TOKEN lives, so run the sync through an interactive login shell.
 	# Without a terminal that shell warns about job control, which isn't news.
-	cron_entry="$CRON_SCHEDULE $BASH -ilc '$(builtin printf '%q' "$geo_path") -s' 2>&1 |"
+	cron_entry="$CRON_SCHEDULE $BASH -ilc '$(printf '%q' "$geo_path") -s' 2>&1 |"
 	cron_entry+=" grep -v -e 'cannot set terminal process group' -e 'no job control in this shell'"
 	# Replace any earlier entry for this script rather than add a duplicate, and
 	# collapse the run of blank lines its removal leaves. The command
 	# substitution drops any left at the end.
 	current="$(
-		command awk -v comment="$CRON_COMMENT" -v job="$geo_path -s" '
+		awk -v comment="$CRON_COMMENT" -v job="$geo_path -s" '
 			function emit(line) { if (line != "" || !blank) print line; blank = (line == "") }
 			$0 == comment { held = 1; next }
 			index($0, job) { held = 0; next }
@@ -86,7 +86,7 @@ install_cron_job() {
 			END { if (held) emit(comment) }
 		' <<<"$current"
 	)"
-	command crontab - <<<"${current:+$current$'\n\n'}$CRON_COMMENT"$'\n'"$cron_entry" ||
+	crontab - <<<"${current:+$current$'\n\n'}$CRON_COMMENT"$'\n'"$cron_entry" ||
 		error "installation failed"
 }
 
@@ -129,7 +129,7 @@ is_ipv4() {
 #       error <message> [<exit_code>]
 error() {
 	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
-	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
 
@@ -155,10 +155,10 @@ while getopts ":ish" arg; do
 		sync=1
 		;;
 	h) # help
-		builtin echo "$_HELP_DOC" && exit
+		echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
+		echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
@@ -168,11 +168,11 @@ if [[ $install -eq 1 || $sync -eq 1 ]]; then
 	[[ $# -gt 0 ]] && error "invalid input, -i and -s do not take an IP address" 64 # EX_USAGE
 	if [[ $install -eq 1 ]]; then
 		install_cron_job
-		builtin echo "$_NAME: installed cron job"
+		echo "$_NAME: installed cron job"
 	fi
 	if [[ $sync -eq 1 ]]; then
 		download_mmdb
-		builtin echo "$_NAME: synced DB"
+		echo "$_NAME: synced DB"
 	fi
 	exit 0
 fi
@@ -199,8 +199,8 @@ if [[ -z "$ip_addr" ]]; then # local MMDB
 	# one bare IP (first address of a prefix, as with an argument) and refuse the
 	# rest up front.
 	ip_list="$(
-		command tr -d '\r' </dev/stdin |
-			command sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s#/[0-9]+$##; /^$/d'
+		tr -d '\r' </dev/stdin |
+			sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s#/[0-9]+$##; /^$/d'
 	)"
 	[[ -z "$ip_list" ]] && error "missing input, please pass an IP address" 64 # EX_USAGE
 	while IFS= read -r line; do
@@ -213,27 +213,27 @@ if [[ -z "$ip_addr" ]]; then # local MMDB
 	# no data for is an answer rather than an error, so drop those.
 	{
 		lookup_errors="$(
-			{ command mmdbctl read "$DB_PATH" <<<"$ip_list" | command jq -c '.' >&3; } 2>&1 |
-				command grep -v "^err: couldn't get data for "
+			{ mmdbctl read "$DB_PATH" <<<"$ip_list" | jq -c '.' >&3; } 2>&1 |
+				grep -v "^err: couldn't get data for "
 		)"
 	} 3>&1
 	if [[ -n "$lookup_errors" ]]; then
-		builtin echo "$lookup_errors" >&2
+		echo "$lookup_errors" >&2
 		exit 1
 	fi
 else # external API
 	# If a prefix is passed, only the first IP is considered.
-	ip_addr="$(command sed -E 's/\/[0-9]+$//g' <<<"$ip_addr")"
+	ip_addr="$(sed -E 's/\/[0-9]+$//g' <<<"$ip_addr")"
 	is_ipv4 "$ip_addr" || is_ipv6 "$ip_addr" ||
 		error "invalid input, please pass an IP address" 64 # EX_USAGE
 	# shellcheck disable=SC2086
 	response="$(
-		command curl -qsS $CURL_ARGS "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN"
+		curl -qsS $CURL_ARGS "https://ipinfo.io/$ip_addr?token=$IPINFO_API_TOKEN"
 	)" || error "unable to reach ipinfo.io"
-	command jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from ipinfo.io"
+	jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from ipinfo.io"
 	api_error="$(
-		command jq -r '.error // empty | if type == "object" then "\(.title): \(.message)" else . end' <<<"$response"
+		jq -r '.error // empty | if type == "object" then "\(.title): \(.message)" else . end' <<<"$response"
 	)"
 	[[ -n "$api_error" ]] && error "[ipinfo.io] $api_error"
-	command jq '.' <<<"$response"
+	jq '.' <<<"$response"
 fi

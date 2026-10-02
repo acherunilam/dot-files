@@ -72,7 +72,7 @@ alias slp='pmset sleepnow'               # go to sleep
 #       -r      Reboot instead of shutting down.
 bye() {
 	local mode="${1:--h}"
-	[[ $# -le 1 ]] && sudo command shutdown "$mode" now || return 1
+	[[ $# -le 1 ]] && command sudo shutdown "$mode" now || return 1
 }
 
 # cd into the directory that is currently open in Finder.
@@ -81,7 +81,7 @@ bye() {
 #       cdf
 cdf() {
 	local target="$(
-		osascript -e "tell application \"Finder\" to if (count of Finder \
+		command osascript -e "tell application \"Finder\" to if (count of Finder \
             windows) > 0 then get POSIX path of (target of front Finder \
             window as text)" 2>/dev/null
 	)"
@@ -120,29 +120,29 @@ clean() {
 # shellcheck disable=SC2015
 clear-history() {
 	# Clear recent files.
-	osascript -e "tell application \"System Events\" to click menu item \
+	command osascript -e "tell application \"System Events\" to click menu item \
             \"Clear Menu\" of menu of menu item \"Recent Items\" of menu of \
             menu bar item \"Apple\" of menu bar of process \"Finder\"" \
 		1>/dev/null ||
 		error "unable to clear recent files"
 	# Clear recent folders.
-	osascript -e "tell application \"System Events\" to click menu item \
+	command osascript -e "tell application \"System Events\" to click menu item \
             \"Clear Menu\" of menu of menu item \"Recent Folders\" of menu of \
             menu bar item \"Go\" of menu bar of process \"Finder\"" \
 		1>/dev/null ||
 		error "unable to clear recent folders"
 	# Clear 'Go to' Folder.
-	defaults delete com.apple.finder GoToField &>/dev/null
-	defaults delete com.apple.finder GoToFieldHistory &>/dev/null
-	killall "Finder" || error "unable to clear Go to Folder"
+	command defaults delete com.apple.finder GoToField &>/dev/null
+	command defaults delete com.apple.finder GoToFieldHistory &>/dev/null
+	command killall "Finder" || error "unable to clear Go to Folder"
 	# Clear VLC's recent files.
-	osascript -e "tell application \"VLC\" to activate" 1>/dev/null &&
-		osascript -e "tell application \"Finder\" to set visible of process \
+	command osascript -e "tell application \"VLC\" to activate" 1>/dev/null &&
+		command osascript -e "tell application \"Finder\" to set visible of process \
             \"VLC\" to false" 1>/dev/null &&
-		osascript -e "tell application \"System Events\" to click menu item \
+		command osascript -e "tell application \"System Events\" to click menu item \
             \"Clear Menu\" of menu of menu item \"Open Recent\" of menu of menu \
             bar item \"File\" of menu bar 1 of process \"VLC\"" 1>/dev/null &&
-		killall "VLC" ||
+		command killall "VLC" ||
 		error "unable to clear recent VLC files"
 	if [[ -n "$CLEAR_HISTORY_KEYWORDS" ]]; then
 		# Clear Bash history lines containing any of the specified keywords.
@@ -223,7 +223,7 @@ mdownload() {
 ocr() {
 	if [[ -z "$1" ]]; then
 		local tmp_dir="$(command mktemp -d)"
-		osascript -e "tell application \"System Events\" to write (the clipboard \
+		command osascript -e "tell application \"System Events\" to write (the clipboard \
             as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
             {name:\"screenshot.png\"})" 2>/dev/null
 		if [[ -s "$tmp_dir/screenshot.png" ]]; then
@@ -263,7 +263,7 @@ pngpaste() {
 	local filename="${1:-screenshot.png}"
 	[[ $filename == *".png" ]] || filename+=".png"
 	local tmp_dir="$(command mktemp -d)"
-	osascript -e "tell application \"System Events\" to write (the clipboard \
+	command osascript -e "tell application \"System Events\" to write (the clipboard \
         as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
         {name:\"screenshot.png\"})" 2>/dev/null
 	if [[ -s "$tmp_dir/screenshot.png" ]]; then
@@ -282,7 +282,7 @@ pngpaste() {
 qr() {
 	if [[ -z "$1" ]]; then
 		local tmp_dir="$(command mktemp -d)"
-		osascript -e "tell application \"System Events\" to write (the clipboard \
+		command osascript -e "tell application \"System Events\" to write (the clipboard \
             as «class PNGf») to (make new file at folder \"$tmp_dir\" with properties \
             {name:\"screenshot.png\"})" 2>/dev/null
 		if [[ -s "$tmp_dir/screenshot.png" ]]; then
@@ -306,6 +306,6 @@ qr() {
 # Usage:
 #       whitelist
 whitelist() {
-	sudo command xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
-	sudo command xattr -rd com.apple.quarantine "$@"
+	command sudo xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
+	command sudo xattr -rd com.apple.quarantine "$@"
 }

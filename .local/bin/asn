@@ -4,7 +4,7 @@
 # Global variables.
 ################################################################################
 
-_NAME="$(command basename "$0")"
+_NAME="$(basename "$0")"
 _HELP_DOC="Print the AS details of an IP or ASN.
 
 Usage:
@@ -30,14 +30,14 @@ DIG_ARGS=""
 # Usage:
 #       check_if_installed <binary>
 check_if_installed() {
-	builtin hash "$1" 2>/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
+	type -P "$1" >/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
 }
 
 # Usage:
 #       error <message> [<exit_code>]
 error() {
 	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
-	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
 
@@ -49,11 +49,11 @@ query_cymru() {
 	# does for a genuine no match, so read the response status instead. Only
 	# NOERROR and NXDOMAIN are answers, a missing status means no reply at all.
 	local dig_output status
-	dig_output="$(command dig +noall +comments +answer $DIG_ARGS TXT "$1")"
-	status="$(command sed -nE 's/.*status: ([A-Z]+).*/\1/p' <<<"$dig_output" | command head -n1)"
+	dig_output="$(dig +noall +comments +answer $DIG_ARGS TXT "$1")"
+	status="$(sed -nE 's/.*status: ([A-Z]+).*/\1/p' <<<"$dig_output" | head -n1)"
 	[[ "$status" == "NOERROR" || "$status" == "NXDOMAIN" ]] ||
 		error "unable to resolve '$1' via DNS${status:+ ($status)}"
-	command sed -nE 's/^[^;].*[[:space:]]TXT[[:space:]]+//p' <<<"$dig_output" | command sed -E 's/"//g'
+	sed -nE 's/^[^;].*[[:space:]]TXT[[:space:]]+//p' <<<"$dig_output" | sed -E 's/"//g'
 }
 
 # Usage:
@@ -62,18 +62,18 @@ query_cymru_and_append_asn_info() {
 	# Longest prefix matching in case IP is reachable through multiple prefixes.
 	ip_info="$(
 		query_cymru "$1.$2" |
-			command awk -F'|' '{split($2, prefix, "/"); print prefix[2] + 0 "\t" $0}' |
-			command sort -n |
-			command tail -n1 |
-			command cut -f2-
+			awk -F'|' '{split($2, prefix, "/"); print prefix[2] + 0 "\t" $0}' |
+			sort -n |
+			tail -n1 |
+			cut -f2-
 	)" || exit
 	# No AS announces the IP, which is an answer rather than an error.
 	[[ -z "$ip_info" ]] && exit 0
-	asn=$(command awk '{print $1}' <<<"$ip_info")
+	asn=$(awk '{print $1}' <<<"$ip_info")
 	asn_info="$(
-		query_cymru "AS$asn.asn.cymru.com" | command awk -F'|' '{print $5}'
+		query_cymru "AS$asn.asn.cymru.com" | awk -F'|' '{print $5}'
 	)" || exit
-	builtin echo "$ip_info |$asn_info"
+	echo "$ip_info |$asn_info"
 }
 
 # Usage:
@@ -81,23 +81,23 @@ query_cymru_and_append_asn_info() {
 # shellcheck disable=SC2086
 query_peeringdb() {
 	output="$(
-		command curl -qsS $CURL_ARGS -H "Authorization: Api-Key $PEERINGDB_API_KEY" \
+		curl -qsS $CURL_ARGS -H "Authorization: Api-Key $PEERINGDB_API_KEY" \
 			"https://www.peeringdb.com/api/${1#/}"
 	)" || error "unable to reach peeringdb.com"
-	err_status="$(command jq -r '.meta.error // empty' <<<"$output")" ||
+	err_status="$(jq -r '.meta.error // empty' <<<"$output")" ||
 		error "unexpected response from peeringdb.com"
 	[[ -n "$err_status" ]] && error "[PeeringDB] $err_status"
-	command jq -r ".${2#.} // empty" <<<"$output"
+	jq -r ".${2#.} // empty" <<<"$output"
 }
 
 # Usage:
 #		cat <file> | tac
 tac() {
 	# GNU coreutils ships tac, BSD tail supports -r (GNU tail does not).
-	if builtin type -P tac >/dev/null; then
+	if type -P tac >/dev/null; then
 		command tac
 	else
-		command tail -r
+		tail -r
 	fi
 }
 
@@ -125,11 +125,11 @@ is_ipv6() {
 #		cat <prefixes> | align_prefixes
 align_prefixes() {
 	# Right-align addresses on the "/" separator; only util-linux column has -R.
-	if command column --version 2>/dev/null | command grep -q util-linux; then
-		command column -tR1 -s'/' |
-			command sed -E 's/([0-9a-f.:]+)[[:space:]]+([0-9]+)/\1\/\2/g'
+	if column --version 2>/dev/null | grep -q util-linux; then
+		column -tR1 -s'/' |
+			sed -E 's/([0-9a-f.:]+)[[:space:]]+([0-9]+)/\1\/\2/g'
 	else
-		command awk -F'/' '
+		awk -F'/' '
 			{ address[NR] = $1; length_[NR] = $2; if (length($1) > width) width = length($1) }
 			END { for (i = 1; i <= NR; i++) printf("%" width "s/%s\n", address[i], length_[i]) }
 		'
@@ -159,10 +159,10 @@ while getopts ":psh" arg; do
 		sibling_asn=1
 		;;
 	h) # help
-		builtin echo "$_HELP_DOC" && exit
+		echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
+		echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
@@ -173,7 +173,7 @@ shift $((OPTIND - 1))
 [[ $# -eq 0 ]] && error "missing input, please pass an IP or ASN" 64             # EX_USAGE
 [[ $# -gt 1 ]] && error "invalid input, do not pass more than one IP address" 64 # EX_USAGE
 # If a prefix is passed, only the first IP is considered.
-input="$(command sed -E 's/\/[0-9]+$//g' <<<"${1,,}")"
+input="$(sed -E 's/\/[0-9]+$//g' <<<"${1,,}")"
 # IPv4-mapped IPv6 addresses (::ffff:a.b.c.d) are looked up as IPv4.
 [[ $input =~ ^(::|(0{1,4}:){5})ffff:([0-9.]+)$ ]] && input="${BASH_REMATCH[3]}"
 
@@ -186,73 +186,73 @@ if [[ $input =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]]; the
 		[[ $((10#$octet)) -gt 255 ]] && error "invalid input, please pass an IP or ASN" 64 # EX_USAGE
 	done
 	reversed_ip="$(
-		builtin echo "$input" |
-			command tr '.' '\n' |
+		echo "$input" |
+			tr '.' '\n' |
 			tac |
-			command tr '\n' '.' |
-			command sed 's/\.$//g'
+			tr '\n' '.' |
+			sed 's/\.$//g'
 	)"
 	query_cymru_and_append_asn_info "$reversed_ip" origin.asn.cymru.com
 elif is_ipv6 "$input"; then # IPv6
 	hextets=$(
-		builtin echo "$input" |
-			command sed 's/::/:/g;s/:/\n/g;/^$/d' |
-			command wc -l
+		echo "$input" |
+			sed 's/::/:/g;s/:/\n/g;/^$/d' |
+			wc -l
 	)
 	[[ $hextets -ge 8 ]] && extra_zeros="" || extra_zeros="$(
-		command yes "0:" |
-			command head -n $((8 - hextets)) |
-			command tr -d '\n'
+		yes "0:" |
+			head -n $((8 - hextets)) |
+			tr -d '\n'
 	)"
-	exploded_ip="$(command sed -E "s/::/:$extra_zeros/g;s/^://g;s/:$//g" <<<"$input")"
+	exploded_ip="$(sed -E "s/::/:$extra_zeros/g;s/^://g;s/:$//g" <<<"$input")"
 	reversed_ip="$(
-		builtin echo "$exploded_ip" |
-			command tr ':' '\n' |
-			while read -r line; do builtin printf "%04x\n" "0x$line" 2>/dev/null; done |
+		echo "$exploded_ip" |
+			tr ':' '\n' |
+			while read -r line; do printf "%04x\n" "0x$line" 2>/dev/null; done |
 			tac |
-			command rev |
-			command sed -E 's/./&\./g' |
-			command tr -d '\n' |
-			command sed -E 's/\.$//g'
+			rev |
+			sed -E 's/./&\./g' |
+			tr -d '\n' |
+			sed -E 's/\.$//g'
 	)"
 	query_cymru_and_append_asn_info "$reversed_ip" origin6.asn.cymru.com
 elif [[ $input =~ ^(as)?[0-9]+$ ]]; then # ASN
-	asn="$(builtin echo "$input" | command sed -E 's/^as//g')"
+	asn="$(echo "$input" | sed -E 's/^as//g')"
 	if [[ $all_prefixes -gt 0 ]]; then
 		check_if_installed "jq" "https://github.com/stedolan/jq"
 		# Use RIPEstat Data API (https://stat.ripe.net/docs/02.data-api) to fetch prefixes
 		# seen by at least 10 RIS peers over the last 2 weeks.
 		# shellcheck disable=SC2086
 		output="$(
-			command curl -qsS $CURL_ARGS \
+			curl -qsS $CURL_ARGS \
 				"https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS$asn" |
-				command jq -r '.data.prefixes[].prefix' |
+				jq -r '.data.prefixes[].prefix' |
 				# IPv4 prefixes first, then IPv6.
-				command awk '{print (index($0, ":") ? 6 : 4) "\t" $0}' |
-				command sort -t"$(builtin printf '\t')" -k1,1n -k2,2V |
-				command cut -f2-
+				awk '{print (index($0, ":") ? 6 : 4) "\t" $0}' |
+				sort -t"$(printf '\t')" -k1,1n -k2,2V |
+				cut -f2-
 		)" || error "unable to reach stat.ripe.net"
 		if [[ -n "$output" ]] && [[ $all_prefixes -gt 1 ]]; then
 			check_if_installed "netmask" "https://github.com/tlby/netmask"
 			# shellcheck disable=SC2046
-			output="$(builtin echo "$output" | command netmask -f - | command sed -E 's/^[[:space:]]+//g')"
+			output="$(echo "$output" | netmask -f - | sed -E 's/^[[:space:]]+//g')"
 		fi
-		[[ -n "$output" ]] && output="$(builtin echo "$output" | align_prefixes)"
+		[[ -n "$output" ]] && output="$(echo "$output" | align_prefixes)"
 	elif [[ $sibling_asn -eq 1 ]]; then
 		[[ -z "$PEERINGDB_API_KEY" ]] && error "missing environment variable, please set PEERINGDB_API_KEY" 78 # EX_CONFIG
 		asn_org="$(query_peeringdb "/org?asn=$asn" ".data[0].id")" || exit
 		[[ -z "$asn_org" ]] && exit
-		output="$(query_peeringdb "/net?org=$asn_org" ".data[].asn" | command sort -n)" || exit
+		output="$(query_peeringdb "/net?org=$asn_org" ".data[].asn" | sort -n)" || exit
 		[[ "$output" == "$asn" ]] && exit
 		[[ -t 1 ]] && color="always" || color="never"
-		command grep -E --color="$color" "^$asn$|$" <<<"$output"
+		grep -E --color="$color" "^$asn$|$" <<<"$output"
 		exit
 	else
 		output="$(query_cymru "AS$asn.asn.cymru.com")" || exit
 	fi
 	# Nothing known about the ASN is an answer rather than an error.
 	[[ -z "$output" ]] && exit 0
-	builtin echo "$output"
+	echo "$output"
 else
 	error "invalid input, please pass an IP or ASN" 64 # EX_USAGE
 fi

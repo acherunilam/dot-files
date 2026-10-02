@@ -4,14 +4,14 @@
 # Global variables
 ################################################################################
 
-_NAME=$(command basename "$0")
+_NAME=$(basename "$0")
 if compgen -G '/usr/share/wayland-sessions/*.desktop' >/dev/null ||
 	compgen -G '/usr/share/xsessions/*.desktop' >/dev/null; then
 	HAS_GUI=1
 else
 	HAS_GUI=0
 fi
-if command grep -qs 0x10de /sys/bus/pci/devices/*/vendor; then
+if grep -qs 0x10de /sys/bus/pci/devices/*/vendor; then
 	HAS_NVIDIA=1
 else
 	HAS_NVIDIA=0
@@ -117,11 +117,11 @@ sudo systemctl restart systemd-resolved
 # Expand root partition
 free_space="$(
 	sudo vgs --rows 2>/dev/null |
-		command grep 'VFree' |
-		command awk '{print $2}'
+		grep 'VFree' |
+		awk '{print $2}'
 )"
 if [[ -n "$free_space" && "$free_space" != "0" ]]; then
-	logical_volume="$(command findmnt -no SOURCE /)"
+	logical_volume="$(findmnt -no SOURCE /)"
 	sudo lvextend -r -l +100%FREE "$logical_volume"
 fi
 # Firewall
@@ -129,12 +129,12 @@ sudo systemctl disable --now firewalld
 # Hostname
 [[ -n "$HOST_NAME" ]] && sudo hostnamectl set-hostname "$HOST_NAME"
 # User
-if ! command id "$USER_NAME" &>/dev/null; then
+if ! id "$USER_NAME" &>/dev/null; then
 	sudo useradd -m -G wheel "$USER_NAME"
 fi
 # SSH
 if [[ -n "$KEYS_FILE" ]]; then
-	user_home="$(command getent passwd "$USER_NAME" | command cut -d: -f6)"
+	user_home="$(getent passwd "$USER_NAME" | cut -d: -f6)"
 	sudo chmod 700 "$user_home"
 	sudo mkdir -p "$user_home/.ssh"
 	sudo cp "$KEYS_FILE" "$user_home/.ssh/authorized_keys"
@@ -372,7 +372,7 @@ fi
 
 for lang in golang node python rust; do
 	# shellcheck disable=SC2024
-	sudo -iu "$USER_NAME" bash -s <"$(command dirname "$0")/lib/$lang.sh" ||
+	sudo -iu "$USER_NAME" bash -s <"$(dirname "$0")/lib/$lang.sh" ||
 		error "$lang install failed"
 done
 
@@ -389,15 +389,15 @@ fi
 # Docker
 sudo usermod -aG docker "$USER_NAME"
 [[ ! -r /etc/docker/daemon.json ]] && echo "{}" | sudo tee /etc/docker/daemon.json
-daemon_json="$(command jq '
+daemon_json="$(jq '
 	.["metrics-addr"] = "0.0.0.0:9323" |
 	.["log-driver"] = "json-file" |
 	.["log-opts"] = {"max-size": "10m", "max-file": "3"}
 ' /etc/docker/daemon.json)"
-if [[ "$daemon_json" != "$(command cat /etc/docker/daemon.json)" ]]; then
+if [[ "$daemon_json" != "$(cat /etc/docker/daemon.json)" ]]; then
 	echo "$daemon_json" | sudo tee /etc/docker/daemon.json
 	sudo systemctl restart docker
-elif ! command ss -tulpn | command grep -q :9323; then
+elif ! ss -tulpn | grep -q :9323; then
 	sudo systemctl restart docker
 fi
 # Tailscale
@@ -407,8 +407,8 @@ net.ipv6.conf.all.forwarding = 1
 EOF
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
 printf '#!/bin/sh\n\nethtool -K %s rx-udp-gro-forwarding on rx-gro-list off \n' "$(
-	command ip -o route get 8.8.8.8 |
-		command cut -f 5 -d " "
+	ip -o route get 8.8.8.8 |
+		cut -f 5 -d " "
 )" |
 	sudo tee /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale
 sudo chmod 755 /etc/NetworkManager/dispatcher.d/pre-up.d/50-tailscale

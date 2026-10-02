@@ -4,7 +4,7 @@
 # Global variables.
 ################################################################################
 
-_NAME="$(command basename "$0")"
+_NAME="$(basename "$0")"
 DEFAULT_DURATION=1
 DEFAULT_OCTAVE=3
 DEFAULT_TRANSPOSE=0
@@ -176,21 +176,21 @@ Environment variables:
 #       error <message> [<exit_code>]
 error() {
 	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
-	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
 
 # Usage:
 #       check_if_installed <binary>
 check_if_installed() {
-	builtin hash "$1" 2>/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
+	type -P "$1" >/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
 }
 
 # Usage:
 #       check_if_module_installed <module>
 # A node module ships no binary of its own, so it cannot be looked up on PATH.
 check_if_module_installed() {
-	command node -e "require(\"$1\")" 2>/dev/null ||
+	node -e "require(\"$1\")" 2>/dev/null ||
 		error "please install '$1' (npm install --global $1)" 69 # EX_UNAVAILABLE
 }
 
@@ -199,7 +199,7 @@ check_if_module_installed() {
 seconds_to_timestamp() {
 	# SendMIDI ignores timestamps that aren't fully zero padded, so always emit
 	# the widest +HH:MM:SS.mmm form.
-	command awk -v seconds="$1" 'BEGIN {
+	awk -v seconds="$1" 'BEGIN {
 		ms = int(seconds * 1000 + 0.5)
 		h = int(ms / 3600000); ms -= h * 3600000
 		m = int(ms / 60000); ms -= m * 60000
@@ -213,24 +213,24 @@ seconds_to_timestamp() {
 resolve_chord() {
 	# The global install is only on NODE_PATH once the shell profile is sourced.
 	if [[ -z "$NODE_PATH" ]]; then
-		NODE_PATH="$(command npm root -g 2>/dev/null)"
+		NODE_PATH="$(npm root -g 2>/dev/null)"
 		export NODE_PATH
 	fi
-	command node -e "$_CHORD_SCRIPT" -- "$DEFAULT_OCTAVE" "$1" 2>/dev/null
+	node -e "$_CHORD_SCRIPT" -- "$DEFAULT_OCTAVE" "$1" 2>/dev/null
 }
 
 # Usage:
 #       silence_chord <exit_code>
 silence_chord() {
 	# Stop playback first, so its own note offs don't follow ours.
-	[[ -n "$sendmidi_pid" ]] && builtin kill "$sendmidi_pid" 2>/dev/null && builtin wait "$sendmidi_pid"
+	[[ -n "$sendmidi_pid" ]] && kill "$sendmidi_pid" 2>/dev/null && wait "$sendmidi_pid"
 	# Not every receiver acts on an All Notes Off, so release each note by name
 	# and only fall back on the broadcast for anything already playing.
 	local args=() midi
 	for midi in "${chord[@]}"; do
 		args+=(off "$midi" 0)
 	done
-	command sendmidi dev "$port" "${args[@]}" cc 123 0 2>/dev/null
+	sendmidi dev "$port" "${args[@]}" cc 123 0 2>/dev/null
 	exit "$1"
 }
 
@@ -245,7 +245,7 @@ operands=()
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 	-[pdoi])                                                         # an option and its separate argument
-		[[ $# -ge 2 ]] || { builtin echo "$_HELP_DOC" >&2 && exit 64; } # EX_USAGE
+		[[ $# -ge 2 ]] || { echo "$_HELP_DOC" >&2 && exit 64; } # EX_USAGE
 		options+=("$1" "$2")
 		shift 2
 		;;
@@ -289,10 +289,10 @@ while getopts ":p:d:o:i:h" arg; do
 		inversion="$OPTARG"
 		;;
 	h) # help
-		builtin echo "$_HELP_DOC" && exit
+		echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
+		echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
@@ -300,13 +300,13 @@ shift $((OPTIND - 1))
 
 check_if_installed "sendmidi" "https://github.com/gbevin/SendMIDI"
 
-ports="$(command sendmidi list)"
+ports="$(sendmidi list)"
 [[ -z "$port" ]] &&
 	error "missing port, please pass -p or set MIDI_PORT
 ${ports:+
 Available ports:
 $ports}" 78 # EX_CONFIG
-command grep -qiF -- "$port" <<<"$ports" ||
+grep -qiF -- "$port" <<<"$ports" ||
 	error "unknown port '$port'
 ${ports:+
 Available ports:
@@ -358,7 +358,7 @@ chord=($midis)
 for ((i = 0; i < inversion; i++)); do
 	chord[i]=$((chord[i] + 12))
 done
-readarray -t chord < <(printf "%s\n" "${chord[@]}" | command sort -n -u)
+readarray -t chord < <(printf "%s\n" "${chord[@]}" | sort -n -u)
 [[ -n "$bass" ]] && chord=("$bass" "${chord[@]}")
 
 for i in "${!chord[@]}"; do
@@ -387,6 +387,6 @@ trap 'silence_chord 129' HUP
 trap 'silence_chord 130' INT
 trap 'silence_chord 143' TERM
 
-command sendmidi dev "$port" "${args[@]}" &
+sendmidi dev "$port" "${args[@]}" &
 sendmidi_pid=$!
-builtin wait "$sendmidi_pid" || error "unable to send to '$port'"
+wait "$sendmidi_pid" || error "unable to send to '$port'"

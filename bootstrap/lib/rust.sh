@@ -7,7 +7,7 @@ PKGS=(
 	ttl
 )
 export PATH="$HOME/.cargo/bin:$PATH"
-if ! command -v cargo &>/dev/null; then
+if ! type -P cargo &>/dev/null; then
 	PATH="$(brew --prefix rustup)/bin:$PATH"
 	rustup default stable
 fi

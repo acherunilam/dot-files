@@ -4,7 +4,7 @@
 # Global variables.
 ################################################################################
 
-_NAME="$(command basename "$0")"
+_NAME="$(basename "$0")"
 _HELP_DOC="Run various RIPE Atlas operations - run traceroute, count probes, get report, etc.
 
 Usage:
@@ -29,14 +29,14 @@ PROBE_COUNT_DEFAULT=10
 # Usage:
 #       check_if_installed <binary>
 check_if_installed() {
-	builtin hash "$1" 2>/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
+	type -P "$1" >/dev/null || error "please install '$1' ($2)" 69 # EX_UNAVAILABLE
 }
 
 # Usage:
 #       error <message> [<exit_code>]
 error() {
 	[[ ${2:-1} -eq 0 ]] && std_err_or_out=1 || std_err_or_out=2
-	builtin echo "$_NAME: $1" >&"$std_err_or_out"
+	echo "$_NAME: $1" >&"$std_err_or_out"
 	exit "${2:-1}"
 }
 
@@ -44,7 +44,7 @@ error() {
 #       quote_curl_config <value>
 quote_curl_config() {
 	local value="${1//\\/\\\\}"
-	builtin printf '"%s"' "${value//\"/\\\"}"
+	printf '"%s"' "${value//\"/\\\"}"
 }
 
 ################################################################################
@@ -54,17 +54,17 @@ quote_curl_config() {
 while getopts ":h" arg; do
 	case $arg in
 	h) # help
-		builtin echo "$_HELP_DOC" && exit
+		echo "$_HELP_DOC" && exit
 		;;
 	*)
-		builtin echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
+		echo "$_HELP_DOC" >&2 && exit 64 # EX_USAGE
 		;;
 	esac
 done
 shift $((OPTIND - 1))
 
 [[ $# -eq 0 ]] && error "missing input, please pass a destination, country, ASN, or measurement link" 64 # EX_USAGE
-target="$(command sed -E 's/^as([0-9]+)$/\1/g' <<<"${1,,}")"
+target="$(sed -E 's/^as([0-9]+)$/\1/g' <<<"${1,,}")"
 check_if_installed "jq" "https://github.com/stedolan/jq"
 [[ -z "$ATLAS_CREATE_KEY" ]] && error "missing environment variable, please set ATLAS_CREATE_KEY" 78 # EX_CONFIG
 
@@ -80,32 +80,32 @@ if [[ "$target" =~ ^(https?://)?(www\.)?atlas\.ripe\.net/measurements/([0-9]+)([
 	# of a running curl.
 	# shellcheck disable=SC2086
 	response="$(
-		builtin printf 'header = %s\n' "$(quote_curl_config "Authorization: Key $ATLAS_CREATE_KEY")" |
-			command curl -qsS $CURL_ARGS --config - \
+		printf 'header = %s\n' "$(quote_curl_config "Authorization: Key $ATLAS_CREATE_KEY")" |
+			curl -qsS $CURL_ARGS --config - \
 				"https://atlas.ripe.net/api/v2/measurements/$measurement_id/results"
 	)" || error "unable to reach atlas.ripe.net"
-	command jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from atlas.ripe.net"
+	jq -e '.' <<<"$response" >/dev/null 2>&1 || error "unexpected response from atlas.ripe.net"
 	api_error="$(
-		command jq -r 'if type == "object" and has("error") then "\(.error.title): \(.error.detail)" else empty end' <<<"$response"
+		jq -r 'if type == "object" and has("error") then "\(.error.title): \(.error.detail)" else empty end' <<<"$response"
 	)"
 	[[ -n "$api_error" ]] && error "[atlas.ripe.net] $api_error"
-	command jq '.' <<<"$response"
+	jq '.' <<<"$response"
 elif [[ "$target" =~ ^[a-z]{2}$ || "$target" =~ ^[0-9]{1,10}$ ]]; then # count probes
 	check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
 	# AS0 is reserved, and the search would take it as no filter at all.
 	[[ "$target" =~ ^0+$ ]] && error "'AS$target' is not a valid country or ASN" 65 # EX_DATAERR
 	[[ "$target" =~ ^[a-z]{2}$ ]] && filter_by="country" || filter_by="asn"
 	probes="$(
-		command ripe-atlas probe-search --limit "$PROBE_SEARCH_LIMIT" --"$filter_by" \
+		ripe-atlas probe-search --limit "$PROBE_SEARCH_LIMIT" --"$filter_by" \
 			"$target" --status 1 --ids-only
 	)" || error "unable to count the probes in '$1'"
-	command grep -c . <<<"$probes"
+	grep -c . <<<"$probes"
 	exit 0
 else # run traceroute
 	check_if_installed "ripe-atlas" "https://github.com/RIPE-NCC/ripe-atlas-tools"
 	filter_by="area"
 	filter_value="$(
-		builtin echo "${2:-WW}" | command tr '[:lower:]' '[:upper:]' | command sed -E 's/^AS//g'
+		echo "${2:-WW}" | tr '[:lower:]' '[:upper:]' | sed -E 's/^AS//g'
 	)"
 	if [[ "$filter_value" =~ ^[0-9]+$ ]]; then
 		filter_by="asn"
@@ -117,7 +117,7 @@ else # run traceroute
 	probe_count="${3:-$PROBE_COUNT_DEFAULT}"
 	[[ "$probe_count" =~ ^[1-9][0-9]*$ ]] ||
 		error "invalid probe count '$probe_count', please pass a positive whole number" 64 # EX_USAGE
-	command ripe-atlas measure traceroute "$target" \
+	ripe-atlas measure traceroute "$target" \
 		--description "[traceroute] [$filter_value] $target" \
 		--from-"$filter_by" "$filter_value" \
 		--probes "$probe_count" \

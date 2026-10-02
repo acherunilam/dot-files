@@ -110,8 +110,8 @@ col() {
 # shellcheck disable=SC2046,SC2048
 dm() {
 	local op
-	datamash --sort --header-out --round 2 mean 1 median 1 perc:90 1 perc:99 1 \
-		$(for op in $*; do echo "$op 1"; done | paste -sd' ') |
+	command datamash --sort --header-out --round 2 mean 1 median 1 perc:90 1 perc:99 1 \
+		$(for op in $*; do echo "$op 1"; done | command paste -sd' ') |
 		command sed 's/(field-1)//g' |
 		command column -t
 }
@@ -129,7 +129,7 @@ dns() {
 		error "invalid input, do not pass more than one keyword" 2
 		return
 	fi
-	sudo dnf search -qC "$pkg" |
+	command sudo dnf search -qC "$pkg" |
 		command grep -i "$pkg.* :" | command grep --color=always -i "$pkg"
 }
 
@@ -153,7 +153,7 @@ dnp() {
 	else
 		file_type="bin"
 	fi
-	sudo dnf provides -qC "*/$file_type*/$file" |
+	command sudo dnf provides -qC "*/$file_type*/$file" |
 		command grep -E --color=always "/.*$file_type.*/$file|"
 }
 
@@ -180,7 +180,7 @@ download() {
 	local file files file_count failed message
 	local opts="--connect-timeout=2 --follow-torrent=false -x8 --continue=true"
 	files="$*"
-	[[ -z "$files" ]] && files="$(pbpaste)"
+	[[ -z "$files" ]] && files="$(command pbpaste)"
 	[[ -z "$files" ]] && return 1
 	file_count=$(command wc -w <<<"$files" | command tr -d ' ')
 	failed=0
@@ -210,26 +210,26 @@ download() {
 extract() {
 	if [[ -f "$1" ]]; then
 		case "$1" in
-		*.7z) 7z x "$1" ;;
-		*.tar.bz2) tar xjf "$1" ;;
-		*.bz2) bunzip2 "$1" ;;
-		*.deb) ar x "$1" ;;
-		*.exe) cabextract "$1" ;;
-		*.tar.gz) tar xzf "$1" ;;
-		*.gz) gunzip "$1" ;;
-		*.jar) 7z x "$1" ;;
-		*.iso) 7z x "$1" -o"${1%.*}" ;;
-		*.lzma) unlzma "$1" ;;
-		*.r0 | *.r00) unrar x "$1" ;;
-		*.rar) unrar x "$1" ;;
-		*.rpm) tar xzf "$1" ;;
-		*.tar) tar xf "$1" ;;
-		*.tbz2) tar xjf "$1" ;;
-		*.tgz) tar xzf "$1" ;;
-		*.tar.xz) tar xJf "$1" ;;
-		*.xz) unxz "$1" ;;
-		*.zip) 7z x "$1" ;;
-		*.Z) uncompress "$1" ;;
+		*.7z) command 7z x "$1" ;;
+		*.tar.bz2) command tar xjf "$1" ;;
+		*.bz2) command bunzip2 "$1" ;;
+		*.deb) command ar x "$1" ;;
+		*.exe) command cabextract "$1" ;;
+		*.tar.gz) command tar xzf "$1" ;;
+		*.gz) command gunzip "$1" ;;
+		*.jar) command 7z x "$1" ;;
+		*.iso) command 7z x "$1" -o"${1%.*}" ;;
+		*.lzma) command unlzma "$1" ;;
+		*.r0 | *.r00) command unrar x "$1" ;;
+		*.rar) command unrar x "$1" ;;
+		*.rpm) command tar xzf "$1" ;;
+		*.tar) command tar xf "$1" ;;
+		*.tbz2) command tar xjf "$1" ;;
+		*.tgz) command tar xzf "$1" ;;
+		*.tar.xz) command tar xJf "$1" ;;
+		*.xz) command unxz "$1" ;;
+		*.zip) command 7z x "$1" ;;
+		*.Z) command uncompress "$1" ;;
 		*)
 			error "'$1' cannot be extracted" 2
 			return
@@ -264,7 +264,7 @@ his() {
 ipp() {
 	local result
 	# Always prefer `ip` over `ifconfig` since the latter has been deprecated.
-	if hash "ip" 2>/dev/null; then
+	if type -P "ip" >/dev/null; then
 		result="$(
 			command ip -brief addr show scope global |
 				command sort |
@@ -303,6 +303,7 @@ j() {
 # Usage:
 #       msync <src> <dst>
 msync() {
+	# bare on purpose: the rsync alias adds the progress bar
 	rsync --remove-source-files "$@" && for arg in "${@:1:$#-1}"; do
 		command find "$(command dirname "$arg")" -type d -empty -delete
 	done

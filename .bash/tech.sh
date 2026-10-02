@@ -75,14 +75,14 @@ curly() {
 # shellcheck disable=SC2155
 dns-flush() {
 	if [[ "$OSTYPE" == "darwin"* ]]; then
-		sudo command killall -HUP mDNSResponder
-		sudo command killall mDNSResponderHelper
-		sudo command dscacheutil -flushcache
+		command sudo killall -HUP mDNSResponder
+		command sudo killall mDNSResponderHelper
+		command sudo dscacheutil -flushcache
 		return
 	fi
 	local is_systemd_resolved="$(command systemctl is-active systemd-resolved 2>/dev/null)"
 	if [[ "$is_systemd_resolved" == "active" ]]; then
-		sudo command systemd-resolve --flush-caches
+		command sudo systemd-resolve --flush-caches
 	else
 		error "error, only systemd-resolved is supported on Linux"
 		return
@@ -118,7 +118,7 @@ profile() {
 	fi
 	local CONTEXT_LINES=2
 	local script_file="$(command mktemp)"
-	cat <<EOF >"$script_file"
+	command cat <<EOF >"$script_file"
 TRACE_OUT="\$(command mktemp)"
 
 exec 2>/dev/null
@@ -156,5 +156,5 @@ ts() {
 	local node="$1"
 	local args="--accept-routes"
 	[[ -n "$node" ]] && args+=" --exit-node-allow-lan-access"
-	sudo tailscale up --reset --exit-node="$node" $args
+	command sudo tailscale up --reset --exit-node="$node" $args
 }
