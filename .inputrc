@@ -15,9 +15,9 @@ set colored-stats on
 set completion-ignore-case on
 # treat '-' and '_' as equivalent when performing filename matching
 set completion-map-case on
-# common prefixes longer than this value is replaced with an ellipsis
+# common prefixes longer than this value are replaced with an ellipsis
 set completion-prefix-display-length 2
-# don't echo character (eg. ^C) corresponding to the signal (eg. Ctrl-C)
+# don't echo character (e.g. ^C) corresponding to the signal (e.g. Ctrl-C)
 set echo-control-characters off
 # completed names which are symbolic links to directories have a slash appended
 set mark-symlinked-directories on

@@ -37,7 +37,7 @@ shopt -s histreedit                                 # make fixing failed history
 shopt -s hostcomplete                               # tab-completion of hostnames after @
 shopt -s huponexit                                  # send SIGHUP to all background jobs before exiting
 shopt -s nocaseglob                                 # let file name expansions be case insensitive
-shopt -s nullglob                                   # file name pattern expand to NULL if there's no match
+shopt -s nullglob                                   # file name patterns expand to null if there's no match
 
 
 # Load Fzf (https://github.com/junegunn/fzf), a general-purpose command-line
