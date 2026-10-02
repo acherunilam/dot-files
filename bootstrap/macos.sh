@@ -317,3 +317,5 @@ BREW_SERVICES=(
 for service in "${BREW_SERVICES[@]}"; do
 	brew services start "$service"
 done
+# Finder: don't write .DS_Store files on network shares (NFS, SMB, AFP)
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
