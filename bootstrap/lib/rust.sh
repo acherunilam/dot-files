@@ -4,7 +4,6 @@ set -euo pipefail
 
 PKGS=(
 	htmlq
-	topgrade
 	ttl
 )
 export PATH="$HOME/.cargo/bin:$PATH"
