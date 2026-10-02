@@ -4,11 +4,13 @@ set -euo pipefail
 
 PKGS=(
 	htmlq
+	topgrade
 	ttl
 )
 export PATH="$HOME/.cargo/bin:$PATH"
 if ! type -P cargo &>/dev/null; then
 	PATH="$(brew --prefix rustup)/bin:$PATH"
+	rustup update stable
 	rustup default stable
 fi
 cargo install "${PKGS[@]}"
