@@ -3,6 +3,7 @@
 set -euo pipefail
 
 MODULES=(
+	bdd.fi/x/runitor/cmd/runitor
 	github.com/cemulus/crt
 	github.com/danielgatis/imgcat
 	github.com/ffuf/ffuf/v2
