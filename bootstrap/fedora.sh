@@ -392,6 +392,7 @@ fi
 sudo usermod -aG docker "$USER_NAME"
 [[ ! -r /etc/docker/daemon.json ]] && echo "{}" | sudo tee /etc/docker/daemon.json
 daemon_json="$(jq '
+	.["live-restore"] = true |
 	.["metrics-addr"] = "0.0.0.0:9323" |
 	.["log-driver"] = "json-file" |
 	.["log-opts"] = {"max-size": "10m", "max-file": "3"}
