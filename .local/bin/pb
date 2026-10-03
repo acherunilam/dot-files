@@ -19,9 +19,7 @@ Options:
 Environment variables:
   PASTEBIN_AUTH_BASIC
   PASTEBIN_URL"
-# The time limit covers the whole upload, so leave room for a large paste on a
-# slow link.
-CURL_ARGS="--connect-timeout 2 --max-time 60"
+CURL_ARGS="--connect-timeout 2 --max-time 10"
 SKIP_HTTP_PREFIX='true'
 
 ################################################################################

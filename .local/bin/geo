@@ -22,7 +22,8 @@ Environment variables:
   IPINFO_API_TOKEN	https://ipinfo.io/account/token"
 CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
 CRON_COMMENT="# Update geolocation MMDB."
-CURL_ARGS="--connect-timeout 2 --max-time 30"
+CURL_ARGS="--connect-timeout 2 --max-time 10"
+CURL_SYNC_ARGS="--connect-timeout 2 --max-time 60"
 DB_PATH="$HOME/.local/share/geo/country_asn.mmdb"
 
 ################################################################################
@@ -41,7 +42,7 @@ download_mmdb() {
 	[[ -z "$IPINFO_API_TOKEN" ]] &&
 		error "missing environment variable, please set IPINFO_API_TOKEN" 78 # EX_CONFIG
 	# shellcheck disable=SC2086
-	if ! curl -qfsS $CURL_ARGS -L \
+	if ! curl -qfsS $CURL_SYNC_ARGS -L \
 		"https://ipinfo.io/data/free/country_asn.mmdb?token=$IPINFO_API_TOKEN" \
 		--create-dirs -o "$DB_PATH.new"; then
 		rm -f "$DB_PATH.new"

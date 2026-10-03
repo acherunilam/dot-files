@@ -19,7 +19,7 @@ Options:
 CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
 CRON_COMMENT="# Update OUI DB."
 # The DB runs to several MB and has taken close to 30 seconds to download.
-CURL_ARGS="--connect-timeout 2 --max-time 300"
+CURL_ARGS="--connect-timeout 2 --max-time 60"
 DB_PATH="$HOME/.local/share/oui/oui.txt"
 
 ################################################################################
