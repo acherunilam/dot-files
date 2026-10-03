@@ -87,7 +87,6 @@ CLI_APPS=(
 	lynis
 	mariadb
 	mas
-	mcpm
 	media-info
 	midicsv
 	miller
