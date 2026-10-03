@@ -5,7 +5,7 @@
 ################################################################################
 
 _NAME="$(basename "$0")"
-_HELP_DOC="Upload text to @mkaczanowski's Pastebin, a self-hosted pastebin. If
+_HELP_DOC="Upload text to rustypaste, a self-hosted pastebin. If
 nothing is piped in, then the contents of the clipboard will be used (macOS only).
 
 Usage:
@@ -63,10 +63,11 @@ for arg in "$@"; do
 	[[ "$arg" == -?* ]] && options+=("$arg") || operands+=("$arg")
 done
 set -- "${options[@]}" "${operands[@]}"
+upload_field="file"
 while getopts ":bh" arg; do
 	case $arg in
 	b) # burn
-		curl_query="?burn=true"
+		upload_field="oneshot"
 		;;
 	h) # help
 		echo "$_HELP_DOC" && exit
@@ -102,8 +103,8 @@ curl_auth_args=()
 [[ -n $PASTEBIN_AUTH_BASIC ]] && curl_auth_args=(-u "$PASTEBIN_AUTH_BASIC")
 # shellcheck disable=SC2086
 response="$(
-	curl -qfsS $CURL_ARGS -XPOST "${curl_auth_args[@]}" --data-binary @"$content_file" \
-		"${PASTEBIN_URL%/}$curl_query"
+	curl -qfsS $CURL_ARGS "${curl_auth_args[@]}" -F "$upload_field=@$content_file" \
+		"${PASTEBIN_URL%/}"
 )" || error "unable to upload to $PASTEBIN_URL" 69 # EX_UNAVAILABLE
 [[ -z "$response" ]] && error "unknown error, missing response" 76 # EX_PROTOCOL
 [[ -n "$SKIP_HTTP_PREFIX" ]] && response="$(sed -E 's|https?://||g' <<<"$response")"
