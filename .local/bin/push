@@ -17,7 +17,7 @@ Options:
 Environment variables:
   PUSHOVER_USER		https://pushover.net
   PUSHOVER_TOKEN	https://pushover.net/apps/build"
-CURL_ARGS="--connect-timeout 2 --max-time 5"
+CURL_ARGS="--connect-timeout 2 --max-time 10"
 
 ################################################################################
 # Helper methods.

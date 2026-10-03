@@ -16,7 +16,7 @@ Options:
 Environment variables:
   URL_SHORTENER_AUTH_BASIC
   URL_SHORTENER_URL"
-CURL_ARGS="--connect-timeout 2 --max-time 5"
+CURL_ARGS="--connect-timeout 2 --max-time 10"
 SKIP_HTTP_PREFIX='true'
 
 ################################################################################

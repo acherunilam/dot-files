@@ -23,7 +23,7 @@ Options:
   -h    Print help."
 CRON_SCHEDULE="0 5 * * 1" # every Mon 5 AM
 CRON_COMMENT="# Update IATA/country DB."
-CURL_ARGS="--connect-timeout 2 --max-time 30"
+CURL_ARGS="--connect-timeout 2 --max-time 60"
 DB_PATH="$HOME/.local/share/iata"
 # Splits each CSV row into f[], with the quotes dropped and any comma inside a
 # field kept as "~" so the output can stay comma-separated, and maps each header

@@ -20,7 +20,7 @@ Options:
 
 Environment Variables:
   PEERINGDB_API_KEY	https://docs.peeringdb.com/howto/api_keys"
-CURL_ARGS="--connect-timeout 2 --max-time 30"
+CURL_ARGS="--connect-timeout 2 --max-time 10"
 DIG_ARGS=""
 
 ################################################################################
