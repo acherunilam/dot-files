@@ -86,7 +86,7 @@ push "Script has finished"
 ```
 
 ## Pastebin
-Uses [Pastebin](https://github.com/mkaczanowski/pastebin), a self-hosted pastebin.
+Uses [rustypaste](https://github.com/orhun/rustypaste), a self-hosted pastebin.
 ```bash
 # Upload file to pastebin.
 cat file.txt | pb
