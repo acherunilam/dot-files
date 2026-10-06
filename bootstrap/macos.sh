@@ -62,6 +62,7 @@ CLI_APPS=(
 	gcc
 	gdown
 	gdrive
+	gh
 	git
 	git-extras
 	gnu-sed
