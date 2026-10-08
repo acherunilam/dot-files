@@ -173,6 +173,11 @@ sudo visudo -cf /etc/sudoers.d/wheel || sudo rm -f /etc/sudoers.d/wheel
 # CLI.
 ################################################################################
 
+# Arcane
+sudo dnf config-manager addrepo --overwrite --id=arcane \
+	--set=name="Arcane Repository" \
+	--set=baseurl='https://pkgs.getarcane.app/repository/yum/$basearch/' \
+	--set=gpgcheck=0
 # Docker
 sudo rpm --import "https://download.docker.com/linux/fedora/gpg"
 sudo dnf config-manager addrepo --overwrite --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
@@ -204,6 +209,7 @@ sudo dnf upgrade -y
 CLI_APPS=(
 	7zip
 	aircrack-ng
+	arcane-cli
 	aria2
 	bat
 	bc
