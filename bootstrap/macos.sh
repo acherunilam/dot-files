@@ -201,7 +201,6 @@ GUI_APPS=(
 	daisydisk
 	discord
 	docker-desktop
-	dropbox
 	elgato-control-center
 	elgato-stream-deck
 	fabfilter-pro-c
