@@ -74,6 +74,7 @@ CLI_APPS=(
 	htmlq
 	htop
 	hydra
+	hyper-mcp-rs/tap/hyper-mcp-remote
 	icoutils
 	iftop
 	imagemagick
