@@ -2,10 +2,6 @@
 
 set -euo pipefail
 
-LIBS=(
-	Pillow
-	pycookiecheat
-)
 TOOLS=(
 	bashplotlib
 	black
@@ -21,5 +17,4 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	pip3 config set global.break-system-packages true
 	pip3 config set global.user true
 fi
-pip3 install -U "${LIBS[@]}"
 pipx upgrade --install "${TOOLS[@]}"
