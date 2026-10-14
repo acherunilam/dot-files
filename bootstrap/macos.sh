@@ -120,7 +120,6 @@ CLI_APPS=(
 	poppler
 	pv
 	pwgen
-	pyenv
 	python
 	qrencode
 	rclone
