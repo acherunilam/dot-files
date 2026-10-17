@@ -127,6 +127,7 @@ CLI_APPS=(
 	rename
 	restic
 	ripgrep
+	rsync
 	rustup
 	shellcheck
 	shfmt
