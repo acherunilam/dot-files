@@ -5,10 +5,9 @@
 export INPUTRC="$HOME/.inputrc"
 # Set default text editor.
 export EDITOR="vim"
-# Enable color support for Less, show a verbose prompt, and quit if the output
-# fits on one screen. Also, search within is case insensitive unless the
-# pattern contains uppercase letters.
-export LESS="-FiMR"
+# Enable color support for Less and show a verbose prompt. Also, search within
+# is case insensitive unless the pattern contains uppercase letters.
+export LESS="-iMR"
 
 
 # Configure command history.
