@@ -105,6 +105,7 @@ CLI_APPS=(
 	node
 	oath-toolkit
 	open-completion
+	openclaw/tap/peekaboo
 	openjdk
 	openssh
 	opus-tools
