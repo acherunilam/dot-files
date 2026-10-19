@@ -25,6 +25,8 @@ brew trust --command domt4/autoupdate/autoupdate
 CLI_APPS=(
 	aircrack-ng
 	amass
+	ansible
+	ansible-lint
 	aria2
 	bash
 	bash-completion@2
