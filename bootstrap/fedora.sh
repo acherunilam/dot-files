@@ -90,9 +90,10 @@ fi
 # Cockpit
 sudo dnf remove -y 'cockpit*'
 # DNF
-if ! grep -q '^max_parallel_downloads' /etc/dnf/dnf.conf; then
-	echo "max_parallel_downloads=20" | sudo tee -a /etc/dnf/dnf.conf
-fi
+sudo tee /etc/dnf/libdnf5.conf.d/80-local.conf <<EOF
+[main]
+max_parallel_downloads = 20
+EOF
 # DNS
 sudo tee /etc/systemd/resolved.conf <<EOF
 [Resolve]
