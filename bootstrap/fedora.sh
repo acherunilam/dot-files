@@ -318,7 +318,6 @@ SERVICES=(
 	dnf5-automatic.timer
 	docker
 	et
-	fwupd-refresh.timer
 	tailscaled
 	tor
 )
