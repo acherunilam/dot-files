@@ -71,6 +71,7 @@ CLI_APPS=(
 	gnu-tar
 	gnumeric
 	go
+	grafana/grafana/alloy
 	handbrake
 	hivemq/mqtt-cli/mqtt-cli
 	htmlq
