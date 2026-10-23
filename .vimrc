@@ -1,8 +1,12 @@
 " Settings
 let mapleader=","                                                    " set the command prefix from the default '\' to ','
-set lazyredraw                                                       " don't redraw in between macros
-set backspace=indent,eol,start                                       " allow backspace to erase previously entered characters
-set wildmenu                                                         " visual autocomplete for command menu
+set ttimeout ttimeoutlen=100                                         " wait at most 100ms after Esc for the rest of a key code
+set display=truncate                                                 " show @@@ on the last line when it doesn't fit instead of hiding it
+set nrformats-=octal                                                 " Ctrl-A on 007 gives 008, not 010
+set updatetime=100                                                   " show git signs 100ms after a change instead of 4s
+set wildoptions=pum,fuzzy                                            " complete : commands in a popup menu with fuzzy matching
+set formatoptions+=j                                                 " drop the comment leader when joining commented lines
+set listchars=eol:$,tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+      " what F9's list mode shows for each invisible character
 
 
 " Files
@@ -21,10 +25,21 @@ augroup NoUndoFileInTmp
   autocmd!
   autocmd BufWritePre /tmp/*,/private/tmp/*,/var/tmp/*,/var/folders/*,/private/var/folders/*,/dev/shm/* setlocal noundofile
 augroup END
+" reopen a file at the last cursor position, except for commit messages, rebase todos and diffs
+function! s:RestoreCursor() abort
+  if line("'\"") >= 1 && line("'\"") <= line("$") && &filetype !~# 'commit' && index(['xxd', 'gitrebase', 'tutor'], &filetype) == -1 && !&diff
+    execute "normal! g`\""
+  endif
+endfunction
+augroup RestoreCursor
+  autocmd!
+  autocmd BufReadPost * call s:RestoreCursor()
+augroup END
+" :DiffOrig shows the unsaved changes as a diff against the file on disk
+command! DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd p | diffthis
 
 
 " Folding
-set foldenable                                                       " enable folding
 set foldlevelstart=10                                                " open most folds by default
 set foldnestmax=10                                                   " 10 nested fold max
 set foldmethod=indent                                                " fold based on indent level
@@ -44,7 +59,6 @@ set autoindent                                                       " new line 
 " Search
 " <comma>,<space> will turn off search highlight
 nnoremap <leader><space> :nohlsearch<CR>
-syntax on                                                            " enable syntax processing
 set hlsearch                                                         " highlight matches
 set incsearch                                                        " search as characters are entered
 set ignorecase                                                       " search is not case sensitive
@@ -53,32 +67,37 @@ set smartcase                                                        " search is
 
 
 " Navigation
-" move vertically down by visual line using j/k
-nnoremap j gj
-nnoremap k gk
+" move by visual line using j/k, but by real line when given a count
+nnoremap <expr> j v:count ? 'j' : 'gj'
+nnoremap <expr> k v:count ? 'k' : 'gk'
 set number                                                           " show line numbers on the left pane
-set ruler                                                            " show line and column number in the status bar
+set signcolumn=yes                                                   " always reserve the sign column so text doesn't shift
 set scrolloff=10                                                     " number of lines to be shown above and below the cursor
-set showcmd                                                          " show information about the current command going on
 
 
 " Shortcuts
 " <comma>,sv will source ~/.vimrc
 nnoremap <leader>sv :source $MYVIMRC<CR>
-" <escape>,s will save the file
-map <Esc>s :w<CR>
-" <escape>,S will save the file with elevated privileges
-map <Esc>S :w !sudo tee % > /dev/null<CR>
-" <escape>,w will save the file and then quit
-map <Esc>w :wq!<CR>
-" <escape>,q will quit the file without saving
-map <Esc>q :q!<CR>
+" <comma>,n will toggle the file tree
+nnoremap <leader>n :NERDTreeToggle<CR>
+" <comma>,w will save the file
+nnoremap <leader>w :w<CR>
+" <comma>,W will save the file with elevated privileges
+nnoremap <leader>W :w !sudo tee % > /dev/null<CR>
+" <comma>,x will save the file and then quit
+nnoremap <leader>x :x<CR>
+" <comma>,q will quit the file without saving
+nnoremap <leader>q :q!<CR>
+" Ctrl-U in insert mode can be undone instead of eating the whole line
+inoremap <C-U> <C-G>u<C-U>
+" Ctrl-W in insert mode can be undone instead of eating the whole word
+inoremap <C-W> <C-G>u<C-W>
 " F3 will remove all trailing whitespace
 nnoremap <silent> <F3> :let _s=@/ <Bar> :%s/\s\+$//e <Bar> :let @/=_s <Bar> :nohl <Bar> :unlet _s<CR>
 " F4 will toggle spell check
 map <F4> :setlocal spell!<CR>
-" F5 will toggle absolute line numbers
-map <F5> :set nu! <Bar> :GitGutterSignsToggle<CR>
+" F5 will toggle absolute line numbers and the sign column
+nnoremap <F5> :set nu! <Bar> let &signcolumn = &signcolumn ==# 'yes' ? 'no' : 'yes'<CR>
 " F6 will toggle relative line numbers
 map <F6> :set rnu!<CR>
 " F9 will toggle all control characters
@@ -94,7 +113,6 @@ Plug 'preservim/nerdtree', {'on': 'NERDTreeToggle'}                  " tree expl
 Plug 'dense-analysis/ale'                                            " asynchronous lint engine
 Plug 'tpope/vim-surround'                                            " quoting/parenthesizing made simple
 Plug 'airblade/vim-gitgutter'                                        " show git diff in the sign column
-Plug 'chr4/nginx.vim'                                                " recognize nginx config files
 call plug#end()
 
 
@@ -102,6 +120,7 @@ call plug#end()
 packadd! comment                                                     " gcc / gc{motion} toggles comments
 packadd! editorconfig                                                " apply a project's .editorconfig settings
 packadd! matchit                                                     " % also jumps between if/else/endif, HTML tags
+packadd! hlyank                                                      " briefly highlight the yanked region
 if !has('mac')
   let g:osc52_disable_paste = 1                                      " copy only; an OSC 52 paste can hang
   let g:osc52_force_avail = 1                                        " tmux hides OSC 52 support from detection
@@ -113,9 +132,13 @@ set keywordprg=:Man                                                  " K opens t
 
 
 " Appearance
+syntax on                                                            " enable syntax processing
+if &t_Co >= 256
+  set termguicolors                                                  " 24-bit colors; iTerm2 and tmux both support them
+endif
 colorscheme slate                                                    " set color scheme
 " change the selected menu entry's background color to make it more visible
-highlight PmenuSel ctermbg=4
+highlight PmenuSel ctermbg=4 guibg=DarkBlue
 " highlight trailing whitespace
 highlight ExtraWhitespace ctermbg=red guibg=red
 match ExtraWhitespace /\s\+$/
