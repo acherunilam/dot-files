@@ -6,6 +6,7 @@ TOOLS=(
 	bashplotlib
 	black
 	blaeu
+	celq
 	cinemagoer
 	ffsubsync
 	hashid
