@@ -11,6 +11,7 @@ MODULES=(
 	github.com/ipinfo/cli/ipinfo
 	github.com/ipinfo/mmdbctl
 	github.com/mikefarah/yq/v4
+	github.com/open-policy-agent/opa
 	mvdan.cc/sh/v3/cmd/shfmt
 )
 for module in "${MODULES[@]}"; do
