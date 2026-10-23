@@ -4,6 +4,7 @@ set -euo pipefail
 
 PKGS=(
 	htmlq
+	imdb-rename
 	ttl
 )
 export PATH="$HOME/.cargo/bin:$PATH"
