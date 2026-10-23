@@ -117,11 +117,11 @@ call plug#end()
 
 
 " Built-in packages
-packadd! comment                                                     " gcc / gc{motion} toggles comments
-packadd! editorconfig                                                " apply a project's .editorconfig settings
+silent! packadd! comment                                             " gcc / gc{motion} toggles comments
+silent! packadd! editorconfig                                        " apply a project's .editorconfig settings
 packadd! matchit                                                     " % also jumps between if/else/endif, HTML tags
-packadd! hlyank                                                      " briefly highlight the yanked region
-if !has('mac')
+silent! packadd! hlyank                                              " briefly highlight the yanked region
+if !has('mac') && exists('+clipmethod')
   let g:osc52_disable_paste = 1                                      " copy only; an OSC 52 paste can hang
   let g:osc52_force_avail = 1                                        " tmux hides OSC 52 support from detection
   packadd osc52
@@ -133,7 +133,7 @@ set keywordprg=:Man                                                  " K opens t
 
 " Appearance
 syntax on                                                            " enable syntax processing
-if &t_Co >= 256
+if exists('+termguicolors') && &t_Co >= 256
   set termguicolors                                                  " 24-bit colors; iTerm2 and tmux both support them
 endif
 colorscheme slate                                                    " set color scheme
