@@ -113,8 +113,16 @@ Cache=yes
 #ResolveUnicastSingleLabel=no
 #StaleRetentionSec=0
 EOF
+sudo install -d /etc/systemd/resolved.conf.d
+sudo tee /etc/systemd/resolved.conf.d/80-local.conf <<EOF
+[Resolve]
+LLMNR=no
+EOF
 sudo systemctl daemon-reload
 sudo systemctl restart systemd-resolved
+# Journal
+sudo systemctl disable --now systemd-journald-audit.socket
+sudo systemctl restart systemd-journald
 # Expand root partition
 free_space="$(
 	sudo vgs --rows 2>/dev/null |
