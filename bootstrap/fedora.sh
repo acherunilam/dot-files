@@ -290,6 +290,7 @@ CLI_APPS=(
 	progress
 	pv
 	pwgen
+	python3-certbot-dns-cloudflare
 	python3-certbot-dns-google
 	python3-devel
 	python3-pip
