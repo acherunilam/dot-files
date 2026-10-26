@@ -403,6 +403,47 @@ if [[ -r /etc/dnf/automatic.conf ]]; then
 else
 	printf '[commands]\napply_updates = yes\n' | sudo tee /etc/dnf/automatic.conf
 fi
+# Reboot window
+sudo tee /usr/local/sbin/reboot-if-needed <<'EOF'
+#!/bin/bash
+
+state=/var/lib/reboot-if-needed/reason
+latest="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n 1)"
+reason="$(
+	[[ "$(uname -r)" != "$latest" ]] && echo "kernel $latest"
+	fwupdmgr get-devices --json 2>/dev/null |
+		jq -r '.Devices[]? | select(.UpdateState == 4) | "firmware \(.DeviceId) \(.Version)"'
+)"
+[[ -z "$reason" ]] && exit 0
+if [[ -r "$state" ]] && ! grep -qvxFf "$state" <<<"$reason"; then
+	echo "Still pending after a reboot, not rebooting again: $reason" >&2
+	exit 1
+fi
+mkdir -p "${state%/*}"
+echo "$reason" >"$state"
+systemctl reboot
+EOF
+sudo chmod 755 /usr/local/sbin/reboot-if-needed
+sudo tee /etc/systemd/system/reboot-if-needed.service <<EOF
+[Unit]
+Description=Reboot if a new kernel or firmware is pending
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/reboot-if-needed
+EOF
+sudo tee /etc/systemd/system/reboot-if-needed.timer <<EOF
+[Unit]
+Description=Reboot window for pending kernel and firmware updates
+
+[Timer]
+OnCalendar=*-*-* 03:00
+
+[Install]
+WantedBy=timers.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl enable --now reboot-if-needed.timer
 # Docker
 sudo usermod -aG docker "$USER_NAME"
 [[ ! -r /etc/docker/daemon.json ]] && echo "{}" | sudo tee /etc/docker/daemon.json
