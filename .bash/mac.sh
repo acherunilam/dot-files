@@ -321,6 +321,6 @@ qr() {
 # Usage:
 #       whitelist <file>...
 whitelist() {
-	command sudo xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
-	command sudo xattr -rd com.apple.quarantine "$@"
+	command sudo /usr/bin/xattr -rd com.apple.metadata:kMDItemWhereFroms "$@"
+	command sudo /usr/bin/xattr -rd com.apple.quarantine "$@"
 }
