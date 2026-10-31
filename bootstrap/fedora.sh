@@ -247,6 +247,7 @@ CLI_APPS=(
 	ffmpeg
 	filebot
 	fzf
+	gcc-c++
 	git
 	git-extras
 	golang
@@ -260,6 +261,7 @@ CLI_APPS=(
 	intel-media-driver
 	iperf3
 	jq
+	libicu-devel
 	libnotify
 	libva-utils
 	lynis
@@ -294,7 +296,6 @@ CLI_APPS=(
 	python3-certbot-dns-google
 	python3-devel
 	python3-pip
-	python3-pyicu
 	qrencode
 	rclone
 	ripgrep

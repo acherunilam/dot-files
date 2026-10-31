@@ -78,6 +78,7 @@ CLI_APPS=(
 	hydra
 	hyper-mcp-rs/tap/hyper-mcp-remote
 	icoutils
+	icu4c
 	iftop
 	imagemagick
 	img2pdf
