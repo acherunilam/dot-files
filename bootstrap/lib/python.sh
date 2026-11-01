@@ -8,6 +8,7 @@ LIBS=(
 )
 TOOLS=(
 	bashplotlib
+	'beets[chroma,fetchart]'
 	black
 	blaeu
 	cinemagoer

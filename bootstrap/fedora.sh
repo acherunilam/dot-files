@@ -228,6 +228,7 @@ CLI_APPS=(
 	calibre
 	cargo
 	certbot
+	chromaprint-tools
 	cksfv
 	cmake
 	containerd.io
