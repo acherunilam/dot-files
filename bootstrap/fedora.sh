@@ -414,6 +414,7 @@ state=/var/lib/reboot-if-needed/reason
 latest="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n 1)"
 reason="$(
 	[[ "$(uname -r)" != "$latest" ]] && echo "kernel $latest"
+	[[ -e /run/reboot-required ]] && echo "requested $(stat -c %Y /run/reboot-required) $(head -n 1 /run/reboot-required)"
 	fwupdmgr get-devices --json 2>/dev/null |
 		jq -r '.Devices[]? | select(.UpdateState == 4) | "firmware \(.DeviceId) \(.Version)"'
 )"
